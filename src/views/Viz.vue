@@ -1,21 +1,21 @@
 <template>
-  <main class="grid-canvas">
-    <pixi-canvas />
+  <main class="grid-viz">
+    <pixi-renderer />
   </main>
 </template>
 
 <script>
 import * as PIXI from 'pixi.js'
-import PixiCanvas from '@/components/PixiCanvas.vue'
+import PixiRenderer from '@/components/PixiRenderer.vue'
 
 export default {
-  name: 'grid-canvas',
+  name: 'grid-viz',
   provide: function () {
     // initial settings for PIXI
     return {
-      app: new PIXI.Application({
-        width: 0,
-        height: 0,
+      PIXIApp: new PIXI.Application({
+        width: 800,
+        height: 600,
         antialias: true,
         transparent: true,
         resolution: 1
@@ -23,18 +23,22 @@ export default {
     }
   },
   components: {
-    'pixi-canvas': PixiCanvas
+    'pixi-renderer': PixiRenderer
   },
+  data: function () {
+    return {}
+  },
+  methods: {},
   created: function () {
     // check if WebGL is available
     const type = !PIXI.utils.isWebGLSupported() ? 'canvas' : 'WebGL'
-    PIXI.utils.sayHello(type)
+    PIXI.utils.sayHello(type) 
   }
 }
 </script>
 
 <style scoped lang="scss">
-.grid-canvas {
+.grid-viz {
   width: 100%;
   height: max-content;
   display: flex;

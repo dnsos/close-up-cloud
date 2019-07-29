@@ -63,7 +63,7 @@ body {
   grid-template-rows: 4rem minmax(0, 1fr) 4rem;
   grid-template-areas:
     "h h h h h h h h h h h h"
-    "c c c c c c c c c c c c"
+    "m m m m m m m m m m m m"
     "f f f f f f f f f f f f";
   grid-gap: 0;
   overflow: hidden;
@@ -73,7 +73,7 @@ body {
   }
 
   .grid-header { grid-area: h; }
-  .grid-canvas { grid-area: c; }
+  .grid-home, .grid-viz, .grid-info { grid-area: m; }
   .grid-footer { grid-area: f; }
   .grid-header, .grid-footer {
     padding: calc(var(--grid-spacing)/4);
