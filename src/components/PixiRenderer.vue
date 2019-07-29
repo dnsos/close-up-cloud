@@ -9,7 +9,7 @@
 import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
 import { mapGetters } from 'vuex'
-import { appendTestImages, appendCloseups } from '../utils/utils'
+import { appendCloseups } from '../utils/cloud'
 
 export default {
   name: 'pixi-renderer',
@@ -25,14 +25,14 @@ export default {
   },
   methods: {
     handleLoaded: function () {
-      console.log('Loading complete')
+      console.log('Loading of resources complete')
       this.loading = false
 
-      //appendTestImages(this.imageData, this.PIXIApp)
-      for (const tag of this.taglist) {
-        const cloudContainer = this.PIXIApp.stage.children.find(child => child.name === 'cloudContainer')
-        cloudContainer.addChild(appendCloseups(tag, this.PIXIApp))
-      }
+      const cloudContainer = this.PIXIApp.stage.children.find(child => child.name === 'cloudContainer')
+
+      for (const tag of this.taglist) { cloudContainer.addChild(appendCloseups(tag, this.PIXIApp)) }
+
+      console.log('stage:', this.PIXIApp.stage)
     }
   },
   mounted: function () {

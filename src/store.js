@@ -31,8 +31,8 @@ export default new Vuex.Store({
       // loop through all unique tags
       const data = uniqueTaglist.map((tagString) => {
 
-        // loop through all occurences
-        const occurences = state.objects.map((object) => {
+        // loop through all occurrences
+        const occurrences = state.objects.map((object) => {
 
           // find tagData wherever it matches the current tagString
           const tagData = object.tags.find((tag) => {
@@ -55,13 +55,13 @@ export default new Vuex.Store({
           }  
         })
 
-        // filter occurences that are defined
-        const filteredOccurences = occurences.filter((occurence) => {
+        // filter occurrences that are defined
+        const filteredOccurrences = occurrences.filter((occurence) => {
           return occurence != undefined
         })
 
-        // count total occurences of each tag
-        const tagCount = filteredOccurences.map((occurence) => {
+        // count total occurrences of each tag
+        const tagCount = filteredOccurrences.map((occurence) => {
           let counter = 0
           counter += occurence.geometry.length
           return counter
@@ -70,8 +70,8 @@ export default new Vuex.Store({
         // return object with all relevant data
         return {
           title: tagString,
-          occurences: filteredOccurences,
-          objectCount: filteredOccurences.length, // counter for occurences in objects
+          occurrences: filteredOccurrences,
+          objectCount: filteredOccurrences.length, // counter for occurrences in objects
           tagCount: tagCount.reduce((accumulator, currentValue) => accumulator + currentValue) // sum up tagCount
         }
       })
