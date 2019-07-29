@@ -32,7 +32,7 @@ export default {
   --color-grey-04: #f5f5f5;
   --color-grey-02: #f9f9f9;
   --font-size: 16px;
-  --font-family-primary: serif;
+  --font-family-primary: 'Overpass', sans-serif;
   --grid-spacing: 2.5rem;
 }
 
@@ -46,7 +46,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: var(--font-size);
-  font-weight: 400;
+  font-weight: 600;
   color: var(--color-primary);
   * {
     box-sizing: border-box;
