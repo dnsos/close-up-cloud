@@ -1,4 +1,9 @@
 import * as PIXI from 'pixi.js'
+import { textStyle } from './styles'
+
+function getRandomInt(max) {
+  return Math.floor(Math.random() * Math.floor(max));
+}
 
 export function appendCloseups (properties, PIXIApp) {
 
@@ -16,19 +21,24 @@ export function appendCloseups (properties, PIXIApp) {
     // container to hold all occurrences of tag from iterated origin
     const occurrenceContainer = new PIXI.Container()
 
-    // define positions in origin image
+    const noOfOccurrences = occurrence.geometry.length
+    const randomIndex = getRandomInt(noOfOccurrences)
+
+    // retrieve coordinates/dimensions in origin image
     const crop = new PIXI.Rectangle(
-      occurrence.geometry[0].x,
-      occurrence.geometry[0].y,
-      occurrence.geometry[0].width,
-      occurrence.geometry[0].width)
+      occurrence.geometry[randomIndex].x,
+      occurrence.geometry[randomIndex].y,
+      occurrence.geometry[randomIndex].width,
+      occurrence.geometry[randomIndex].width)
     
     // load origin image from PIXI loader
     const resource = PIXIApp.loader.resources[occurrence.origin]
 
+    console.time("Single Texture creation")
     // create texture from crop of origin image
     const texture = new PIXI.Texture(resource.texture, crop)
     texture.updateUvs() // https://pixijs.download/dev/docs/PIXI.Texture.html#updateUvs
+    console.timeEnd("Single Texture creation")
     
     // create sprite from texture
     let sprite = new PIXI.Sprite(texture)
@@ -45,13 +55,11 @@ export function appendCloseups (properties, PIXIApp) {
 
     // add events
     sprite.on('pointerover', (event) => {
-      console.log('hover event', properties)
+      // console.log('hover event', properties)
     })
     sprite.on('pointertap', (event) => {
-      console.log('switching to Tag view', properties)
+      // console.log('switching to Tag view', properties)
     })
-
-    // texture swap ...
 
     // add sprite to occurrence container
     occurrenceContainer.addChild(sprite)
@@ -59,15 +67,6 @@ export function appendCloseups (properties, PIXIApp) {
   }
 
   // create text for tag title
-  const textStyle = new PIXI.TextStyle({
-      fontFamily: "\"Arial\", sans-serif",
-      fontSize: 18,
-      fontWeight: 400,
-      dropShadow: false,
-      dropShadowAngle: 0,
-      dropShadowBlur: 5,
-      dropShadowDistance: 2
-  })
   const tagTitle = new PIXI.Text(properties.title + ' (' + properties.tagCount + ')', textStyle)
   tagContainer.addChild(tagTitle)
   
