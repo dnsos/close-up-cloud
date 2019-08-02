@@ -1,6 +1,8 @@
 .DS_Store
 node_modules
 /dist
+/public/assets/img/original
+/public/assets/img/resized
 
 # local env files
 .env.local
