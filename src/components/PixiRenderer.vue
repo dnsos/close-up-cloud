@@ -9,7 +9,10 @@
 import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
 import { mapGetters } from 'vuex'
-import { appendCloseups } from '../utils/cloud'
+import { preparePIXIApp } from '../js/preparePIXIApp'
+import { appendCloseups } from '../js/appendCloseups'
+import { hideUnselectedTags } from '../js/hideUnselectedTags'
+import { spreadSelectedTag } from '../js/spreadSelectedTag'
 
 export default {
   name: 'pixi-renderer',
@@ -20,46 +23,70 @@ export default {
     }
   },
   computed: {
-    ...mapState(['imageData']),
-    ...mapGetters(['taglist'])
+    ...mapState(['resources', 'activeView', 'selection']),
+    ...mapGetters(['taglist']),
+    hoveredTag: function () {
+      return this.$store.state.selection.tag.hovered
+    }
   },
   methods: {
     handleLoaded: function () {
-      console.log('Loading of resources complete')
+
+      console.timeEnd('Resource loading completeted in:')
       this.loading = false
 
       const cloudContainer = this.PIXIApp.stage.children.find(child => child.name === 'cloudContainer')
 
       for (const tag of this.taglist) { cloudContainer.addChild(appendCloseups(tag, this.PIXIApp)) }
 
-      console.log('stage:', this.PIXIApp.stage)
+    }
+  },
+  watch: {
+    activeView: function (newView, previousView) {
+
+      if (newView === 'tag' && previousView === 'cloud') {
+
+        console.log('Active view set to:', newView)
+
+        const cloudContainer = this.PIXIApp.stage.children.find(child => child.name === 'cloudContainer')
+        const selectedTag = cloudContainer.children.find(child => child.name === this.selection.tag.active)
+        const unselectedTags = cloudContainer.children.filter(child => child.name != this.selection.tag.active)
+
+        // set their visibility to false
+        hideUnselectedTags(unselectedTags)
+        spreadSelectedTag(selectedTag)
+
+      }
+    },
+    hoveredTag: function (newTag, previousTag) {
+      
+      const cloudContainer = this.PIXIApp.stage.children.find(child => child.name === 'cloudContainer')
+      const hoveredContainer = cloudContainer.children.find(child => child.name === newTag)
+
+      /*if (hoveredContainer) {
+        const tagElement = hoveredContainer.children.find(child => child.text)
+        tagElement.alpha = 1
+      } else {
+        console.log('No hovered tag') 
+      }*/
+
     }
   },
   mounted: function () {
-    // resize renderer to whole canvas
-    this.PIXIApp.renderer.autoResize = true
-    this.PIXIApp.renderer.resize(this.$refs.rendererWrapper.offsetWidth, this.$refs.rendererWrapper.offsetHeight)
 
-    // append PIXI.Application to wrapper
-    document.querySelector('.renderer__wrapper').appendChild(this.PIXIApp.view)
-
-    // create root containers for cloud/tag views and object view
-    const cloudContainer = new PIXI.Container()
-    cloudContainer.name = 'cloudContainer'
-    const objectContainer = new PIXI.Container()
-    objectContainer.name = 'objectContainer'
-
-    this.PIXIApp.stage.addChild(cloudContainer, objectContainer)
+    // prepare PIXI
+    preparePIXIApp(this.PIXIApp)
 
     // load images into the texture cache
+    console.time('Resource loading completeted in:')
     this.PIXIApp.loader
-      .add(this.imageData)
+      .add(this.resources)
       .on('progress', handleProgress)
       .load(this.handleLoaded)
 
     function handleProgress(loader, resource) {
-      // console.log('loading: ' + resource.name)
-      // console.log('progress: ' + loader.progress + '%')
+      //console.log('loading: ' + resource.name)
+      //console.log('progress: ' + loader.progress + '%')
     }
   }
 }

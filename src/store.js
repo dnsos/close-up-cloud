@@ -2,16 +2,29 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 
 import objects from './assets/data/objects.json'
-import imageData from './assets/imageData.json'
+
+import resources from './assets/resources.json'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
+    objects: objects,
+    resources: resources, // points to image files with a scale factor of 0.5
     views: ['cloud', 'tag', 'detail'],
     activeView: 'cloud',
-    objects: objects,
-    imageData: imageData
+    selection: {
+      tag: {
+        hovered: '',
+        active: ''
+      },
+      object: {
+        hovered: {
+          hovered: '',
+          active: ''
+        }
+      }
+    }
   },
   getters: {
     taglist: (state) => {
@@ -77,12 +90,28 @@ export default new Vuex.Store({
       })
 
       return data
+    },
+    selectedTag: (state, getters) => {
+      return getters.taglist.find(tag => tag.title === state.selection.tag.active)
     }
   },
   mutations: {
-
+    setActiveTag: (state, payload) => {
+      state.selection.tag.active = payload
+    },
+    setHoveredTag: (state, payload) => {
+      state.selection.tag.hovered = payload
+    },
+    setView: (state, payload) => {
+      state.activeView = payload
+    }
   },
   actions: {
-
+    handleSetActiveTag: ({ commit }, payload) => {
+      commit('setActiveTag', payload)
+    },
+    handleSetView: ({ commit }, payload) => {
+      commit('setView', payload)
+    }
   }
 })
