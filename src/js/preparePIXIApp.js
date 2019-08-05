@@ -1,11 +1,11 @@
+import store from '../store'
 import { Container } from 'pixi.js'
 
 export function preparePIXIApp (PIXIApp) {
-  console.log('Init function')
+
   // resize renderer to whole canvas
   PIXIApp.renderer.autoResize = true
-  PIXIApp.renderer.resize(800, 500)
-  //PIXIApp.renderer.resize(this.$refs.rendererWrapper.offsetWidth, this.$refs.rendererWrapper.offsetHeight)
+  PIXIApp.renderer.resize(store.state.canvas.width, store.state.canvas.height)
 
   // append PIXI.Application to wrapper
   document.querySelector('.renderer__wrapper').appendChild(PIXIApp.view)
@@ -17,4 +17,6 @@ export function preparePIXIApp (PIXIApp) {
   objectContainer.name = 'objectContainer'
 
   PIXIApp.stage.addChild(cloudContainer, objectContainer)
+  console.log('cloudContainer + objectContainer added to stage')
+  
 }

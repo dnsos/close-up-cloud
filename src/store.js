@@ -5,6 +5,7 @@ import objects from './assets/data/objects.json'
 import mockupData from './assets/mockupData.json'
 
 import resources from './assets/resources.json'
+import forceLayout from './js/forceLayout.js';
 
 Vue.use(Vuex)
 
@@ -23,11 +24,13 @@ export default new Vuex.Store({
         active: ''
       },
       object: {
-        hovered: {
-          hovered: '',
-          active: ''
-        }
+        hovered: '',
+        active: ''
       }
+    },
+    canvas: {
+      width: 0,
+      height: 0
     }
   },
   getters: {
@@ -100,7 +103,7 @@ export default new Vuex.Store({
     }
   },
   mutations: {
-    defineCoordinates: (state, payload) => {
+    defineForceLayout: (state, payload) => {
       state.cloud.coordinates = payload
     },
     setActiveTag: (state, payload) => {
@@ -109,16 +112,28 @@ export default new Vuex.Store({
     setHoveredTag: (state, payload) => {
       state.selection.tag.hovered = payload
     },
+    setActiveObject: (state, payload) => {
+      state.selection.object.active = payload
+    },
     setView: (state, payload) => {
       state.activeView = payload
+    },
+    updateCanvasSize: (state, payload) => {
+      state.canvas = payload
     }
   },
   actions: {
     handleSetActiveTag: ({ commit }, payload) => {
       commit('setActiveTag', payload)
     },
+    handleSetActiveObject: ({ commit }, payload) => {
+      commit('setActiveObject', payload)
+    },
     handleSetView: ({ commit }, payload) => {
       commit('setView', payload)
+    },
+    handleDefineForceLayout: ({ commit }, payload) => {
+      commit('defineForceLayout', forceLayout(payload))
     }
   }
 })

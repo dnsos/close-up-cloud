@@ -13,8 +13,7 @@ import { preparePIXIApp } from '../js/preparePIXIApp'
 import { appendCloseups } from '../js/appendCloseups'
 import { hideUnselectedTags } from '../js/hideUnselectedTags'
 import { spreadSelectedTag } from '../js/spreadSelectedTag'
-
-import forceLayout from '../js/forceLayout'
+import { appendObject } from '../js/appendObject'
 
 export default {
   name: 'pixi-renderer',
@@ -40,25 +39,28 @@ export default {
       const cloudContainer = this.PIXIApp.stage.children.find(child => child.name === 'cloudContainer')
 
       for (const tag of this.taglist) { cloudContainer.addChild(appendCloseups(tag, this.PIXIApp)) }
+      console.log(this.PIXIApp.stage)
 
     }
   },
   watch: {
     activeView: function (newView, previousView) {
 
+      const cloudContainer = this.PIXIApp.stage.children.find(child => child.name === 'cloudContainer')
+      const objectContainer = this.PIXIApp.stage.children.find(child => child.name === 'objectContainer')
+
       if (newView === 'tag' && previousView === 'cloud') {
-
         console.log('Active view set to:', newView)
-
-        const cloudContainer = this.PIXIApp.stage.children.find(child => child.name === 'cloudContainer')
         const selectedTag = cloudContainer.children.find(child => child.name === this.selection.tag.active)
         const unselectedTags = cloudContainer.children.filter(child => child.name != this.selection.tag.active)
-
-        // set their visibility to false
+        spreadSelectedTag(selectedTag, this.PIXIApp)
         hideUnselectedTags(unselectedTags)
-        spreadSelectedTag(selectedTag)
-
       }
+      
+      else if (newView === 'object' && previousView === 'tag') {
+        objectContainer.addChild(appendObject(this.selection.object.active, this.PIXIApp))
+      }
+
     },
     hoveredTag: function (newTag, previousTag) {
       
@@ -75,7 +77,13 @@ export default {
     }
   },
   mounted: function () {
-    this.$store.commit('defineCoordinates', forceLayout(this.taglist))
+    this.$store.dispatch('handleDefineForceLayout', this.taglist)
+
+    const initialCanvasSize = {
+      width: this.$refs.rendererWrapper.offsetWidth,
+      height: this.$refs.rendererWrapper.offsetHeight
+    }
+    this.$store.commit('updateCanvasSize', initialCanvasSize)
 
     // prepare PIXI
     preparePIXIApp(this.PIXIApp)

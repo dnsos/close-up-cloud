@@ -1,13 +1,13 @@
 import { TextStyle } from 'pixi.js'
 
 export const mockupSettings = {
-  dimensionsUnit: 1000
+  dimensionsUnit: 100
 }
 export const animationSpeed = .2
 
 export const textStyle = new TextStyle({
   fontFamily: "\"Overpass\", sans-serif",
-  fontSize: 18,
+  fontSize: 12,
   fontWeight: 400,
   dropShadow: false,
   dropShadowAngle: 0,
