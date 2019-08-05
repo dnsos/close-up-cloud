@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 
 import objects from './assets/data/objects.json'
+import mockupData from './assets/mockupData.json'
 
 import resources from './assets/resources.json'
 
@@ -9,10 +10,13 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    objects: objects,
+    objects: mockupData,
     resources: resources, // points to image files with a scale factor of 0.5
     views: ['cloud', 'tag', 'detail'],
     activeView: 'cloud',
+    cloud: {
+      coordinates: null
+    },
     selection: {
       tag: {
         hovered: '',
@@ -96,6 +100,9 @@ export default new Vuex.Store({
     }
   },
   mutations: {
+    defineCoordinates: (state, payload) => {
+      state.cloud.coordinates = payload
+    },
     setActiveTag: (state, payload) => {
       state.selection.tag.active = payload
     },

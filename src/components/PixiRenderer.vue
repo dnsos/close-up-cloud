@@ -14,6 +14,8 @@ import { appendCloseups } from '../js/appendCloseups'
 import { hideUnselectedTags } from '../js/hideUnselectedTags'
 import { spreadSelectedTag } from '../js/spreadSelectedTag'
 
+import forceLayout from '../js/forceLayout'
+
 export default {
   name: 'pixi-renderer',
   inject: ['PIXIApp'],
@@ -23,7 +25,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(['resources', 'activeView', 'selection']),
+    ...mapState(['resources', 'activeView', 'cloud', 'selection']),
     ...mapGetters(['taglist']),
     hoveredTag: function () {
       return this.$store.state.selection.tag.hovered
@@ -73,6 +75,7 @@ export default {
     }
   },
   mounted: function () {
+    this.$store.commit('defineCoordinates', forceLayout(this.taglist))
 
     // prepare PIXI
     preparePIXIApp(this.PIXIApp)
