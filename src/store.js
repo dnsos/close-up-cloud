@@ -1,22 +1,22 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import objects from './assets/data/objects.json'
-import mockupData from './assets/mockupData.json'
+import data from './assets/data/objects-label-metadata.json'
 
 import resources from './assets/resources.json'
-import forceLayout from './js/forceLayout.js';
+import forceLayout from './js/forceLayout.js'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    objects: mockupData,
+    inverted: false,
+    objects: data,
     resources: resources, // points to image files with a scale factor of 0.5
     views: ['cloud', 'tag', 'detail'],
     activeView: 'cloud',
     cloud: {
-      coordinates: null
+      positioning: null
     },
     selection: {
       tag: {
@@ -31,6 +31,9 @@ export default new Vuex.Store({
     canvas: {
       width: 0,
       height: 0
+    },
+    helpers: {
+      renderTextures: false
     }
   },
   getters: {
@@ -47,6 +50,8 @@ export default new Vuex.Store({
 
       // create list of unique tags
       const uniqueTaglist = [...new Set(uncleanedTaglist)]
+      // remove 'Frame' tag
+      uniqueTaglist.splice(uniqueTaglist.indexOf('Frame'), 1)
 
       // loop through all unique tags
       const data = uniqueTaglist.map((tagString) => {
@@ -103,8 +108,11 @@ export default new Vuex.Store({
     }
   },
   mutations: {
+    toggleMode: (state) => {
+      state.inverted = !state.inverted
+    },
     defineForceLayout: (state, payload) => {
-      state.cloud.coordinates = payload
+      state.cloud.positioning = payload
     },
     setActiveTag: (state, payload) => {
       state.selection.tag.active = payload

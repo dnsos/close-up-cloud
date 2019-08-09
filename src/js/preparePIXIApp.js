@@ -1,5 +1,5 @@
 import store from '../store'
-import { Container } from 'pixi.js'
+import { Container, filters } from 'pixi.js'
 
 export function preparePIXIApp (PIXIApp) {
 
@@ -10,6 +10,12 @@ export function preparePIXIApp (PIXIApp) {
   // append PIXI.Application to wrapper
   document.querySelector('.renderer__wrapper').appendChild(PIXIApp.view)
 
+  // init negative filter (tween between alpha values)
+  let colorMatrix = new filters.ColorMatrixFilter()
+  colorMatrix.negative()
+  colorMatrix.alpha = 0
+  PIXIApp.stage.filters = [colorMatrix]
+
   // create root containers for cloud/tag views and object view
   const cloudContainer = new Container()
   cloudContainer.name = 'cloudContainer'
@@ -17,6 +23,4 @@ export function preparePIXIApp (PIXIApp) {
   objectContainer.name = 'objectContainer'
 
   PIXIApp.stage.addChild(cloudContainer, objectContainer)
-  console.log('cloudContainer + objectContainer added to stage')
-  
 }
