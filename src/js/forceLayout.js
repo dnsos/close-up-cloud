@@ -16,11 +16,18 @@ function forceLayout(data, options) {
     }
 
     options = Object.assign(defaults, options);
+
+    const tagCountList = data.map(tag => tag.tagCount)
+
+    const logScale = d3.scaleLog()
+        .base(5)
+        .domain(d3.extent(tagCountList))
+        .range([1000,10000])
     
     let nodes = Array.apply(null, Array(data.length)).map(function (_, i) {
         
-        let size = data[i].objectCount * 5;
-        let factorDistToCenter = 1-(size/(63));
+        let size = Math.sqrt(logScale(data[i].tagCount));
+        let factorDistToCenter = 1-(size/data.length);
         
         let x = options.canvasWidth/2;
         let y = options.canvasHeight/2;
