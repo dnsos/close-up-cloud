@@ -8,7 +8,7 @@ import { Rectangle } from 'pixi.js';
 export function spreadSelectedTag (tagContainer, PIXIApp) {
 
   // for development: use actual textures?
-  const renderTextures = store.state.helpers.renderTextures
+  const renderCloseups = store.state.helpers.renderCloseups
 
   // hide tag title for events
   const tagTitle = tagContainer.children.find(child => child.text)
@@ -23,7 +23,7 @@ export function spreadSelectedTag (tagContainer, PIXIApp) {
     // reference data for current occurrence
     const occurrenceData = store.getters.selectedTag.occurrences.find(occurrence => occurrence.origin === occurrenceContainer.name)
 
-    if (renderTextures) {
+    if (renderCloseups) {
       // retrieve the number of depictions in current occurrence and generate a random index
       const noOfDepictions = occurrenceData.geometry.length
       const randomIndex = getRandomInt(noOfDepictions)
@@ -50,7 +50,7 @@ export function spreadSelectedTag (tagContainer, PIXIApp) {
     }
 
     // for development: if textures are not rendered, adds a tint to display sprites
-    occurrenceContainer.children[0].tint = renderTextures ? null : 0x00ffff
+    occurrenceContainer.children[0].tint = (renderCloseups === true) ? 0xffffff : 0x00ffff
 
     if(store.state.activeView === 'tag') {
 

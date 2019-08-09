@@ -12,7 +12,7 @@ import { getRandomInt } from './utils'
 export function appendCloseups (tag, PIXIApp) {
 
   // for development: use actual textures?
-  const renderTextures = store.state.helpers.renderTextures
+  const renderCloseups = store.state.helpers.renderCloseups
 
   // get coordinates and dimensions from force layout
   const positioning = store.state.cloud.positioning.find(el => el.title === tag.title)
@@ -38,38 +38,32 @@ export function appendCloseups (tag, PIXIApp) {
     occurrenceContainer.width = positioning.width
     occurrenceContainer.height = positioning.height
 
-    let imageTexture = null // texture that will render image texture to sprite
+    // retrieve the number of depictions in current occurrence and generate a random index
+    const noOfDepictions = occurrence.geometry.length
+    const randomIndex = getRandomInt(noOfDepictions)
+
+    // retrieve coordinates and dimensions in origin image
+    // divided by two because 50% scaled resources are used
+    const frame = new Rectangle(
+      occurrence.geometry[randomIndex].x/2,
+      occurrence.geometry[randomIndex].y/2,
+      occurrence.geometry[randomIndex].width/2,
+      occurrence.geometry[randomIndex].width/2)
+    
+    // access corresponding resource and load its original texture
+    const originalTexture = PIXIApp.loader.resources[occurrence.origin].texture
+
+    // clone original texture to avoid cropping original
+    const clonedTexture = originalTexture.clone()
+
+    // crop cloned texture using previously generated frame
+    clonedTexture.frame = frame
+
     const whiteTexture = Texture.WHITE // texture that will fill all currently not displayed sprites
-
-    if (renderTextures) {
-      // retrieve the number of depictions in current occurrence and generate a random index
-      const noOfDepictions = occurrence.geometry.length
-      const randomIndex = getRandomInt(noOfDepictions)
-
-      // retrieve coordinates and dimensions in origin image
-      // divided by two because 50% scaled resources are used
-      const frame = new Rectangle(
-        occurrence.geometry[randomIndex].x/2,
-        occurrence.geometry[randomIndex].y/2,
-        occurrence.geometry[randomIndex].width/2,
-        occurrence.geometry[randomIndex].width/2)
-      
-      // access corresponding resource and load its original texture
-      const originalTexture = PIXIApp.loader.resources[occurrence.origin].texture
-
-      // clone original texture to avoid cropping original
-      const clonedTexture = originalTexture.clone()
-
-      // crop cloned texture using previously generated frame
-      clonedTexture.frame = frame
-
-      // assign cropped texture to imageTexture
-      imageTexture = clonedTexture
-    }
 
     // determine which texture should be rendered
     const renderedTexture = (index === tag.occurrences.length - 1)
-                            ? (renderTextures ? imageTexture : whiteTexture)
+                            ? ((renderCloseups === true) ? clonedTexture : whiteTexture)
                             : whiteTexture
     
     // create sprite from texture to be rendered
@@ -80,7 +74,7 @@ export function appendCloseups (tag, PIXIApp) {
     sprite.height = positioning.height
 
     // for development: if textures are not rendered, adds a tint to display sprites
-    sprite.tint = renderTextures ? null : 0xff0000
+    sprite.tint = (renderCloseups === true) ? 0xffffff : 0xff0000
 
     // only add in Cloud view
     if (store.state.activeView === 'cloud') {

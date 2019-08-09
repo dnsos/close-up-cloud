@@ -33,7 +33,7 @@ export default new Vuex.Store({
       height: 0
     },
     helpers: {
-      renderTextures: false
+      renderCloseups: false
     }
   },
   getters: {
