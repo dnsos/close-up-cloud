@@ -17,7 +17,8 @@ export default {
         width: 800,
         height: 600,
         antialias: true,
-        transparent: true,
+        transparent: false,
+        backgroundColor: 0xffffff,
         resolution: 1
       })
     }

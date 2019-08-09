@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" :data-theme="[ inverted ? 'dark' : 'light']">
     <grid-header class="grid-area" />
     <router-view class="grid-area" />
     <grid-footer class="grid-area" />
@@ -15,6 +15,11 @@ export default {
   components: {
     'grid-header': Header,
     'grid-footer': Footer
+  },
+  computed: {
+    inverted: function () {
+      return this.$store.state.inverted
+    }
   }
 }
 </script>
@@ -23,17 +28,25 @@ export default {
 /* BASICS
 ----------------------------------------------------- */
 :root {
-  --color-primary: black;
-  --color-grey-76: #3e3e3e;
-  --color-grey-54: #757575;
-  --color-grey-31: #b1b1b1;
-  --color-grey-20: #cccccc;
-  --color-grey-09: #e7e7e7;
-  --color-grey-04: #f5f5f5;
-  --color-grey-02: #f9f9f9;
   --font-size: 16px;
   --font-family-primary: 'Overpass', sans-serif;
   --grid-spacing: 2.5rem;
+}
+
+:root {
+  --color-primary-100: hsl(0, 0%, 0%);
+  --color-primary-75: hsl(0, 0%, 25%);
+  --color-primary-50: hsl(0, 0%, 50%);
+  --color-primary-25: hsl(0, 0%, 75%);
+  --color-primary-0: hsl(0, 0%, 100%);
+}
+
+[data-theme="dark"] {
+  --color-primary-100: hsl(0, 0%, 100%);
+  --color-primary-75: hsl(0, 0%, 75%);
+  --color-primary-50: hsl(0, 0%, 50%);
+  --color-primary-25: hsl(0, 0%, 25%);
+  --color-primary-0: hsl(0, 0%, 0%);
 }
 
 html {
@@ -41,13 +54,14 @@ html {
 }
 
 body {
+  height: 100vh;
+  overflow: hidden;
   line-height: 1.6;
   font-family: var(--font-family-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: var(--font-size);
   font-weight: 600;
-  color: var(--color-primary);
   * {
     box-sizing: border-box;
   }
@@ -77,16 +91,30 @@ body {
   .grid-footer { grid-area: f; }
   .grid-header, .grid-footer {
     padding: calc(var(--grid-spacing)/4);
+    >* { align-self: center; }
   }
+  .grid-header, .grid-home, .grid-viz, .grid-info, .grid-footer {
+    transition: background-color 2s ease-in-out, color 2s ease-in-out;
+  }
+
+  .columns-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    >:nth-child(1) { text-align: left; }
+    >:nth-child(2) { text-align: center; }
+    >:nth-child(3) { text-align: right; }
+    }
 }
 
 /* TYPOGRAPHY
 ----------------------------------------------------- */
-a {
-  color: inherit;
-  text-decoration: none;
-  &.router-link-active {
-    color: white;
+button {
+  color: var(--color-primary-0);
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  &:focus {
+    outline: .1rem dotted var(--color-primary-0);
   }
 }
 </style>
