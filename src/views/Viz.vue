@@ -1,5 +1,6 @@
 <template>
   <main class="grid-viz">
+    <div id="d3force" style="float: left; width: 640px; height: 640px;" />
     <pixi-renderer />
   </main>
 </template>
@@ -10,18 +11,6 @@ import PixiRenderer from '@/components/PixiRenderer.vue'
 
 export default {
   name: 'grid-viz',
-  provide: function () {
-    // initial settings for PIXI
-    return {
-      PIXIApp: new PIXI.Application({
-        width: 800,
-        height: 600,
-        antialias: true,
-        transparent: true,
-        resolution: 1
-      })
-    }
-  },
   components: {
     'pixi-renderer': PixiRenderer
   },
@@ -31,8 +20,8 @@ export default {
   methods: {},
   created: function () {
     // check if WebGL is available
-    const type = !PIXI.utils.isWebGLSupported() ? 'canvas' : 'WebGL'
-    PIXI.utils.sayHello(type) 
+    /*const type = !PIXI.utils.isWebGLSupported() ? 'canvas' : 'WebGL'
+    PIXI.utils.sayHello(type) */
   }
 }
 </script>

@@ -1,22 +1,20 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import objects from './assets/data/objects.json'
-import mockupData from './assets/mockupData.json'
+import objects from './assets/data/objects-label-metadata.json'
 
-import resources from './assets/resources.json'
+//import resources from './assets/resources.json'
 import forceLayout from './js/forceLayout.js';
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    objects: mockupData,
-    resources: resources, // points to image files with a scale factor of 0.5
-    views: ['cloud', 'tag', 'detail'],
+    objects: objects,//objects.slice(0, 1),
+    views: ['cloud', 'tag', 'detail'], //viz views
     activeView: 'cloud',
-    cloud: {
-      coordinates: null
+    clouds: {
+      overview: null
     },
     selection: {
       tag: {
@@ -63,7 +61,7 @@ export default new Vuex.Store({
           const tagGeometry = tagData ? tagData.geometry : null
 
           // tagGeometry is not 'null', return the element
-          if (tagGeometry != null) {
+          if (tagGeometry !== null) {
             return {
               origin: object.id,
               geometry: tagGeometry
@@ -103,8 +101,9 @@ export default new Vuex.Store({
     }
   },
   mutations: {
-    defineForceLayout: (state, payload) => {
-      state.cloud.coordinates = payload
+    computeForceLayout: (state, payload) => {
+      state.clouds.overview = payload
+      //console.log('computeForceLayout layout:', payload);
     },
     setActiveTag: (state, payload) => {
       state.selection.tag.active = payload
@@ -132,8 +131,9 @@ export default new Vuex.Store({
     handleSetView: ({ commit }, payload) => {
       commit('setView', payload)
     },
-    handleDefineForceLayout: ({ commit }, payload) => {
-      commit('defineForceLayout', forceLayout(payload))
+    computeForceLayout({ commit }, payload) {
+      //console.log('computeForceLayout taglist:', payload);
+      commit('computeForceLayout', forceLayout(payload))
     }
   }
 })

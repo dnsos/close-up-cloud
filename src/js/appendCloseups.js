@@ -7,23 +7,44 @@ import {
   Text
 } from 'pixi.js'
 import { mockupSettings, textStyle } from './variables'
-import { getRandomInt } from './utils'
 
-export function appendCloseups (properties, PIXIApp) {
-  // get coordinates from force layout
-  const position = store.state.cloud.coordinates.find(el => el.title === properties.title)
-
+export function createCloseupBox(properties) {
+  
   // container for storing sprite, text etc. in
   const tagContainer = new Container()
   tagContainer.name = properties.title
-  tagContainer.x = position.x
-  tagContainer.y = position.y
+  tagContainer.x = properties.x
+  tagContainer.y = properties.y
 
-  const occurrencesContainer = new Container()
-  occurrencesContainer.name = 'occurrencesContainer'
+  const whiteTexture = Texture.WHITE
+  let sprite = new Sprite(whiteTexture)
+  sprite.x = 0
+  sprite.y = 0
+  sprite.width = properties.size
+  sprite.height = properties.size
+
+  // only for debugging
+  sprite.tint = 0xff0000
+  sprite.alpha = 0.5
+  tagContainer.addChild(sprite)
+
+  // create text for tag title
+  const tagTitle = new Text(properties.title + ' (' + properties.tagCount + ')', textStyle)
+  tagTitle.alpha = 0.1
+  tagTitle.name = properties.title
+  tagTitle.y = 0;//Math.sqrt(mockupSettings.dimensionsUnit * properties.tagCount)
+  tagContainer.addChild(tagTitle)
+  
+  // return container for appending to a parent
+  return tagContainer
+
+  //console.log('appendCloseups', tagContainer.x, tagContainer.y)
+
+  //const occurrencesContainer = new Container()
+  //occurrencesContainer.name = 'occurrencesContainer'
 
   // create container for each tag origin
-  for (const [index, occurrence] of properties.occurrences.entries()) {
+  /*for (const [index, occurrence] of properties.occurrences.entries()) {
     
     // container to hold all occurrences of tag from iterated origin
     const occurrenceContainer = new Container()
@@ -44,7 +65,7 @@ export function appendCloseups (properties, PIXIApp) {
     // create texture from crop of origin image
     const imageTexture = new Texture(resource, crop)
     imageTexture.updateUvs() // https://pixijs.download/dev/docs/PIXI.Texture.html#updateUvs
-    */
+    * /
 
     const whiteTexture = Texture.WHITE
 
@@ -85,16 +106,6 @@ export function appendCloseups (properties, PIXIApp) {
     occurrenceContainer.addChild(sprite)
     occurrencesContainer.addChild(occurrenceContainer)
     tagContainer.addChild(occurrencesContainer)
-  }
-
-  // create text for tag title
-  const tagTitle = new Text(properties.title + ' (' + properties.tagCount + ')', textStyle)
-  tagTitle.alpha = 0
-  tagTitle.name = properties.title
-  tagTitle.y = Math.sqrt(mockupSettings.dimensionsUnit * properties.tagCount)
-  tagContainer.addChild(tagTitle)
-  
-  // return container for appending to a parent
-  return tagContainer
+  }*/
   
 }

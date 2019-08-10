@@ -10,21 +10,21 @@ import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
 import { mapGetters } from 'vuex'
 import { preparePIXIApp } from '../js/preparePIXIApp'
-import { appendCloseups } from '../js/appendCloseups'
+import { createCloseupBox } from '../js/appendCloseups'
 import { hideUnselectedTags } from '../js/hideUnselectedTags'
 import { spreadSelectedTag } from '../js/spreadSelectedTag'
 import { appendObject } from '../js/appendObject'
 
 export default {
   name: 'pixi-renderer',
-  inject: ['PIXIApp'],
+  //inject: ['PIXIApp'],
   data: function () {
     return {
       loading: true
     }
   },
   computed: {
-    ...mapState(['resources', 'activeView', 'cloud', 'selection']),
+    ...mapState(['activeView', 'clouds', 'selection']),
     ...mapGetters(['taglist']),
     hoveredTag: function () {
       return this.$store.state.selection.tag.hovered
@@ -39,7 +39,7 @@ export default {
       const cloudContainer = this.PIXIApp.stage.children.find(child => child.name === 'cloudContainer')
 
       for (const tag of this.taglist) { cloudContainer.addChild(appendCloseups(tag, this.PIXIApp)) }
-      console.log(this.PIXIApp.stage)
+      //console.log(this.PIXIApp.stage)
 
     }
   },
@@ -77,28 +77,58 @@ export default {
     }
   },
   mounted: function () {
-    this.$store.dispatch('handleDefineForceLayout', this.taglist)
+    
 
-    const initialCanvasSize = {
-      width: this.$refs.rendererWrapper.offsetWidth,
-      height: this.$refs.rendererWrapper.offsetHeight
+    this.loading = false
+
+    const PIXIApp = new PIXI.Application({
+      width: 640,
+      height: 640,
+      antialias: true,
+      transparent: true,
+      resolution: 1
+    })
+    //PIXIApp.renderer.autoResize = true
+    //this.$store.commit('updateCanvasSize', initialCanvasSize)
+    //PIXIApp.renderer.resize(store.state.canvas.width, store.state.canvas.height)
+
+    // append PIXI.Application to wrapper
+    this.$refs.rendererWrapper.appendChild(PIXIApp.view)
+
+    // create root containers for cloud/tag views and object view
+    const cloudContainer = new PIXI.Container()
+    const objectContainer = new PIXI.Container()
+    cloudContainer.name = 'cloudContainer'
+    objectContainer.name = 'objectContainer'
+
+    PIXIApp.stage.addChild(cloudContainer, objectContainer)
+
+    this.$store.dispatch('computeForceLayout', this.taglist);
+
+    for (const tag of this.taglist) { 
+      // get coordinates from force layout
+      const tagWithPositionData = this.$store.state.clouds.overview.find(el => el.title === tag.title)
+      cloudContainer.addChild(createCloseupBox(tagWithPositionData)) 
     }
-    this.$store.commit('updateCanvasSize', initialCanvasSize)
 
-    // prepare PIXI
-    preparePIXIApp(this.PIXIApp)
+    /*var ticker = new PIXI.Ticker();
+    ticker.add(() => {
+      console.log('HI');
+        //renderer.render(stage);
+    }, PIXI.UPDATE_PRIORITY.LOW);
+    ticker.start();*/
 
     // load images into the texture cache
-    console.time('Resource loading completeted in:')
-    this.PIXIApp.loader
+    //console.time('Resource loading completeted in:')
+    /*this.PIXIApp.loader
       .add(this.resources)
       .on('progress', handleProgress)
-      .load(this.handleLoaded)
+      .load(this.handleLoaded)*/
 
-    function handleProgress(loader, resource) {
+    //function handleProgress(loader, resource) {
       //console.log('loading: ' + resource.name)
       //console.log('progress: ' + loader.progress + '%')
-    }
+    //}
   }
 }
 </script>
