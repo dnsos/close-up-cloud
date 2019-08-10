@@ -14,6 +14,8 @@ import { createCloseupBox } from '../js/appendCloseups'
 import { hideUnselectedTags } from '../js/hideUnselectedTags'
 import { spreadSelectedTag } from '../js/spreadSelectedTag'
 import { appendObject } from '../js/appendObject'
+import forceLayout from '../js/forceLayout.js';
+import { sanitizeLabel } from '../js/utils.js'
 
 export default {
   name: 'pixi-renderer',
@@ -77,13 +79,12 @@ export default {
     }
   },
   mounted: function () {
-    
 
-    this.loading = false
+    const wrap = this.$refs.rendererWrapper;
 
     const PIXIApp = new PIXI.Application({
-      width: 640,
-      height: 640,
+      width: wrap.offsetWidth,
+      height: wrap.offsetHeight,
       antialias: true,
       transparent: true,
       resolution: 1
@@ -93,7 +94,7 @@ export default {
     //PIXIApp.renderer.resize(store.state.canvas.width, store.state.canvas.height)
 
     // append PIXI.Application to wrapper
-    this.$refs.rendererWrapper.appendChild(PIXIApp.view)
+    wrap.appendChild(PIXIApp.view)
 
     // create root containers for cloud/tag views and object view
     const cloudContainer = new PIXI.Container()
@@ -102,14 +103,82 @@ export default {
     objectContainer.name = 'objectContainer'
 
     PIXIApp.stage.addChild(cloudContainer, objectContainer)
+    console.log(this.taglist);
+    //this.$store.dispatch('computeForceLayout', this.taglist);
 
-    this.$store.dispatch('computeForceLayout', this.taglist);
+    const layout = forceLayout(this.taglist, {
+      canvasWidth: wrap.offsetWidth,
+      canvasHeight: wrap.offsetHeight
+    })
+
+    //const resources = [];
+    const loader = new PIXI.Loader();
+
+    const labelBoxes = {};
 
     for (const tag of this.taglist) { 
+
+      const labelSant = sanitizeLabel(tag.title);
+
       // get coordinates from force layout
-      const tagWithPositionData = this.$store.state.clouds.overview.find(el => el.title === tag.title)
-      cloudContainer.addChild(createCloseupBox(tagWithPositionData)) 
+      //const tagWithPositionData = this.$store.state.clouds.overview.find(el => el.title === tag.title)
+      const tagWithPositionData = layout.find(el => el.title === tag.title)
+
+      //load every first tag image
+      const firstOcc = tag.occurrences[0];
+      const filename = firstOcc.origin;
+      const top = firstOcc.geometry[0].x;
+      const left = firstOcc.geometry[0].y;
+      const uid = `${filename}-${labelSant}-${top}-${left}`;
+      const thumbName = `${uid}.png`;
+
+
+      const box = createCloseupBox(tagWithPositionData)
+
+      labelBoxes[labelSant] = box;
+      cloudContainer.addChild(box) 
+
+      loader.add(uid, `out/${filename}/${thumbName}`);
     }
+
+    loader.load((loader, resources) => {
+      // resources is an object where the key is the name of the resource loaded and the value is the resource object.
+      // They have a couple default properties:
+      // - `url`: The URL that the resource was loaded from
+      // - `error`: The error that happened when trying to load (if any)
+      // - `data`: The raw data that was loaded
+      // also may contain other properties based on the middleware that runs.
+      /*sprites.bunny = new PIXI.TilingSprite(resources.bunny.texture);
+      sprites.spaceship = new PIXI.TilingSprite(resources.spaceship.texture);
+      sprites.scoreFont = new PIXI.TilingSprite(resources.scoreFont.texture);*/
+
+      
+    this.loading = false
+
+      for(let key in resources) {
+
+        const labelSant = key.split('-')[1];
+
+        if(labelBoxes[labelSant]) {
+          //console.log(labelSant, labelBoxes[labelSant].children[0].texture = );
+          //console.log(resources[key].texture);
+
+          //let sprite = new PIXI.Sprite(resources[key].texture) //whiy u no work?!
+          /*sprite.x = 0
+          sprite.y = 0
+          sprite.width = 128;//properties.size
+          sprite.height = 128;//properties.size
+          PIXIApp.stage.addChild(sprite)*/
+
+          labelBoxes[labelSant].children[0].texture = PIXI.Texture.from('https://pixijs.io/examples/examples/assets/bunny.png');
+
+          //labelBoxes[labelSant].children[0].setTexture(resources[key].texture);
+        } else {
+          console.log('-')
+        }
+      }
+
+  });
 
     /*var ticker = new PIXI.Ticker();
     ticker.add(() => {

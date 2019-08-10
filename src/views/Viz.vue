@@ -1,6 +1,6 @@
 <template>
   <main class="grid-viz">
-    <div id="d3force" style="float: left; width: 640px; height: 640px;" />
+    <div id="d3force" style="position: absolute; transform-origin: top left;transform: scale(0.25);border: 8px solid #eee" />
     <pixi-renderer />
   </main>
 </template>

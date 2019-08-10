@@ -16,8 +16,9 @@ export class ForceLayout {
         this.options = Object.assign({
             rectPadding: 5,
             ticks: 400,
-            canvasWidth: 640,
-            canvasHeight: 640
+            minSize: 16,
+            canvasWidth: 1280,
+            canvasHeight: 800
         }, options);
 
         this.data = data;   //taglist data
@@ -59,7 +60,7 @@ export class ForceLayout {
         
         let simulation = d3.forceSimulation(this.nodes)
             .velocityDecay(0.15)
-            .force("x", d3.forceX().strength(0.00125))
+            .force("x", d3.forceX().strength(0.01))
             .force("y", d3.forceY().strength(0.01))
             .force("collide", collisionForce)
             .force("center", d3.forceCenter(options.canvasWidth/2, options.canvasHeight/2))
@@ -81,21 +82,56 @@ export class ForceLayout {
 
         const { data, options } = this;
 
-        this.nodes = data.map(function (_, i) {
+        let largest = data.map(_ => _.objectCount)
+        largest = Math.max(...largest)
+        console.log(largest)
+        
+
+        const dataByCount = data.sort((a, b) => b.objectCount - a.objectCount);
+
+
+        let angle = 0;
+        let dist = 20;
+
+
+        let totalRad = 0;
+        let spiralDist = 50;
+        const length = dataByCount.length;
+
+
+        this.nodes = dataByCount.map(function (_, i) {
+
+            let tagAmount = dataByCount[i].objectCount;
+            let size = Math.sqrt(tagAmount)*options.minSize;
+
+            spiralDist += size/8;
+            const itemRadius = size/2;
             
-            let tagAmount = data[i].objectCount;
-            let size = Math.sqrt(tagAmount*100);
-            let factorDistToCenter = 1;
+            const hypothenuse = Math.hypot(size, itemRadius);
+            const rad = Math.sin(itemRadius/hypothenuse);
+
+            totalRad += rad;
+            
+            
+            //let factorDistToCenter = (tagAmount/largest);
+            //console.log(tagAmount, factorDistToCenter);
             
             let x = options.canvasWidth/2;
             let y = options.canvasHeight/2;
+            x += Math.sin(totalRad) * spiralDist;
+            y += Math.cos(totalRad) * spiralDist;
             
-            let angle = Math.random()*Math.PI*2;
-            let dist = 100*factorDistToCenter;
+            const aspect = options.canvasWidth / options.canvasHeight;
+            x *= aspect;
+
+            totalRad += rad;
+            //let angle = Math.random()*Math.PI*2;
+            //angle += Math.PI/16;
+            //dist += 5;//factorDistToCenter*options.minSize;
         
             return {
-                x: x + Math.sin(angle)*dist,
-                y: y + Math.cos(angle)*dist,
+                x: x,
+                y: y,
                 size: size + options.rectPadding
             }
         });

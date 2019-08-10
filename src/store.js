@@ -10,7 +10,7 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    objects: objects,//objects.slice(0, 1),
+    objects: objects,//.slice(0, 1),
     views: ['cloud', 'tag', 'detail'], //viz views
     activeView: 'cloud',
     clouds: {
