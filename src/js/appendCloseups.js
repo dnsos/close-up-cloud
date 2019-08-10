@@ -1,39 +1,77 @@
+import * as PIXI from 'pixi.js'
 import store from '../store'
-import {
-  Container,
-  Sprite,
-  Texture,
-  Rectangle,
-  Text
-} from 'pixi.js'
 import { textStyle } from './variables'
-import { getRandomInt } from './utils'
 
-export function appendCloseups (tag, PIXIApp) {
+export function createCloseupBox(properties) {
+  
+  // container for storing sprite, text etc. in
+  const tagContainer = new PIXI.Container()
+  tagContainer.name = properties.title
+  tagContainer.x = properties.x
+  tagContainer.y = properties.y
 
-  // for development: use actual textures?
-  const renderCloseups = store.state.helpers.renderCloseups
+  const whiteTexture = PIXI.Texture.WHITE
 
-  // get coordinates and dimensions from force layout
-  const positioning = store.state.cloud.positioning.find(el => el.title === tag.title)
+  // placeholder sprite
+  let sprite = new PIXI.Sprite(whiteTexture)
+  sprite.x = 0
+  sprite.y = 0
+  sprite.width = properties.size
+  sprite.height = properties.size
+  sprite.alpha = 0.8
+  tagContainer.addChild(sprite)
 
-  // container for storing everything related to tag instance
-  const tagContainer = new Container()
-  tagContainer.name = tag.title
+  // create text for tag title
+  const textContent = properties.tagCount + ' ' + properties.title + '\n' + 'in ' + properties.objectCount + ' Objekten'
+  const tagTitle = new PIXI.Text(textContent, textStyle)
+  tagTitle.name = properties.title
+  tagTitle.x = 5
 
-  // TODO: exchange x and y with correct force layout values
-  tagContainer.x = Math.random() * (store.state.canvas.width * 0.8)
-  tagContainer.y = Math.random() * (store.state.canvas.height * 0.8)
+  const txtBG = new PIXI.Sprite(PIXI.Texture.WHITE);
+  txtBG.width = tagTitle.width + 10;
+  txtBG.height = tagTitle.height;
 
-  // main container that stores all occurrences of tag (image data)
-  const occurrencesContainer = new Container()
-  occurrencesContainer.name = 'occurrencesContainer'
+  
+  const textBox = new PIXI.Container();
+  textBox.alpha = 0
+  textBox.x = 5
+  textBox.y = 5
+  textBox.addChild(txtBG, tagTitle);
 
-  // iterate all origins of tag 
-  for (const [index, occurrence] of tag.occurrences.entries()) {
+  tagContainer.addChild(textBox)
+  
+
+  // add interactivity
+  sprite.interactive = true;
+  sprite.buttonMode = true;
+
+  // add events
+  sprite.on('pointerover', () => {
+    textBox.alpha = 1
+    sprite.alpha = 1
+  })
+  sprite.on('pointerout', () => {
+    textBox.alpha = 0
+    sprite.alpha = 0.8
+  })
+  sprite.on('pointertap', () => {
+    store.dispatch('handleSetView', 'tag')
+    store.dispatch('handleSetActiveTag', tag.title)
+  })
+  
+  // return container for appending to a parent
+  return tagContainer
+
+  //console.log('appendCloseups', tagContainer.x, tagContainer.y)
+
+  //const occurrencesContainer = new PIXI.Container()
+  //occurrencesContainer.name = 'occurrencesContainer'
+
+  // create container for each tag origin
+  /*for (const [index, occurrence] of properties.occurrences.entries()) {
     
     // container to hold image data (sprite)
-    const occurrenceContainer = new Container()
+    const occurrenceContainer = new PIXI.Container()
     occurrenceContainer.name = occurrence.origin
     occurrenceContainer.width = positioning.width
     occurrenceContainer.height = positioning.height
@@ -44,7 +82,7 @@ export function appendCloseups (tag, PIXIApp) {
 
     // retrieve coordinates and dimensions in origin image
     // divided by two because 50% scaled resources are used
-    const frame = new Rectangle(
+    const frame = new PIXI.Rectangle(
       occurrence.geometry[randomIndex].x/2,
       occurrence.geometry[randomIndex].y/2,
       occurrence.geometry[randomIndex].width/2,
@@ -59,7 +97,7 @@ export function appendCloseups (tag, PIXIApp) {
     // crop cloned texture using previously generated frame
     clonedTexture.frame = frame
 
-    const whiteTexture = Texture.WHITE // texture that will fill all currently not displayed sprites
+    const whiteTexture = PIXI.Texture.WHITE // texture that will fill all currently not displayed sprites
 
     // determine which texture should be rendered
     const renderedTexture = (index === tag.occurrences.length - 1)
@@ -67,7 +105,7 @@ export function appendCloseups (tag, PIXIApp) {
                             : whiteTexture
     
     // create sprite from texture to be rendered
-    let sprite = new Sprite(renderedTexture)
+    let sprite = new PIXI.Sprite(renderedTexture)
     sprite.x = 0
     sprite.y = 0
     sprite.width = positioning.width
@@ -82,34 +120,14 @@ export function appendCloseups (tag, PIXIApp) {
       // add interactivity
       occurrenceContainer.interactive = (index === tag.occurrences.length - 1) ? true : false
       occurrenceContainer.buttonMode = (index === tag.occurrences.length - 1) ? true : false
-
-      // add events
-      occurrenceContainer.on('pointerover', () => {
-        tagTitle.alpha = 1
-      })
-      occurrenceContainer.on('pointerout', () => {
-        tagTitle.alpha = 0
-      })
-      occurrenceContainer.on('pointertap', () => {
-        store.dispatch('handleSetView', 'tag')
-        store.dispatch('handleSetActiveTag', tag.title)
-      })
     }
 
     // add children to respective containers
     occurrenceContainer.addChild(sprite)
     occurrencesContainer.addChild(occurrenceContainer)
     tagContainer.addChild(occurrencesContainer)
-  }
 
-  // create and add text for tag title
-  const textContent = tag.tagCount + ' ' + tag.title + '\n' + 'in ' + tag.objectCount + ' Objekten'
-  const tagTitle = new Text(textContent, textStyle)
-  tagTitle.alpha = 0
-  tagTitle.name = tag.title
-  tagTitle.y = -30
-  tagContainer.addChild(tagTitle)
-  
-  // return container for appending to a parent
-  return tagContainer
+  }
+    */
+
 }

@@ -1,22 +1,18 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import data from './assets/data/objects-label-metadata.json'
-
-import resources from './assets/resources.json'
-import forceLayout from './js/forceLayout.js'
+import objects from './assets/data/objects-label-metadata.json'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
     inverted: false,
-    objects: data,
-    resources: resources, // points to image files with a scale factor of 0.5
-    views: ['cloud', 'tag', 'detail'],
+    objects: objects,//.slice(0, 1),
+    views: ['cloud', 'tag', 'detail'], //viz views
     activeView: 'cloud',
-    cloud: {
-      positioning: null
+    clouds: {
+      overview: null
     },
     selection: {
       tag: {
@@ -44,7 +40,7 @@ export default new Vuex.Store({
       // create list of all tags
       state.objects.map((object) => {
         object.tags.map((tag) => {
-          uncleanedTaglist.push(tag.title) 
+          if(tag.title !== 'Frame') uncleanedTaglist.push(tag.title) 
         })
       })
 
@@ -68,7 +64,7 @@ export default new Vuex.Store({
           const tagGeometry = tagData ? tagData.geometry : null
 
           // tagGeometry is not 'null', return the element
-          if (tagGeometry != null) {
+          if (tagGeometry !== null) {
             return {
               origin: object.id,
               geometry: tagGeometry
@@ -111,9 +107,10 @@ export default new Vuex.Store({
     toggleMode: (state) => {
       state.inverted = !state.inverted
     },
-    defineForceLayout: (state, payload) => {
+    /*defineForceLayout: (state, payload) => {
+      //console.log('computeForceLayout layout:', payload);
       state.cloud.positioning = payload
-    },
+    },*/
     setActiveTag: (state, payload) => {
       state.selection.tag.active = payload
     },
@@ -140,8 +137,9 @@ export default new Vuex.Store({
     handleSetView: ({ commit }, payload) => {
       commit('setView', payload)
     },
-    handleDefineForceLayout: ({ commit }, payload) => {
-      commit('defineForceLayout', forceLayout(payload))
-    }
+    /*computeForceLayout({ commit }, payload) {
+      //console.log('computeForceLayout taglist:', payload);
+      commit('computeForceLayout', forceLayout(payload))
+    }*/
   }
 })

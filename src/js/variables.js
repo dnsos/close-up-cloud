@@ -1,5 +1,7 @@
 import { TextStyle } from 'pixi.js'
 
+export const publicDataUrl = '/assets/data/objects-label-metadata.json';
+
 export const mockupSettings = {
   dimensionsUnit: 500
 }
@@ -10,7 +12,7 @@ export const durations = {
 
 export const textStyle = new TextStyle({
   fontFamily: "\"Overpass\", sans-serif",
-  fontSize: 12,
+  fontSize: 14,
   fontWeight: 400,
   dropShadow: false,
   dropShadowAngle: 0,

@@ -1,8 +1,8 @@
 .DS_Store
 node_modules
 /dist
-/public/assets/img/original
-/public/assets/img/resized
+/public/assets/images/*
+!/public/assets/images/.gitkeep
 
 # local env files
 .env.local
