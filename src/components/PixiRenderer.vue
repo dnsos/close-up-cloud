@@ -83,13 +83,19 @@ export default {
     const wrap = this.$refs.rendererWrapper;
 
     const PIXIApp = new PIXI.Application({
-      width: wrap.offsetWidth,
-      height: wrap.offsetHeight,
+      width: wrap.clientWidth,
+      height: wrap.clientHeight,
       antialias: true,
       transparent: true,
       resolution: 1
     })
-    //PIXIApp.renderer.autoResize = true
+
+    PIXIApp.renderer.autoResize = true;
+    window.addEventListener('resize', () => {
+      PIXIApp.renderer.resize(wrap.clientWidth, wrap.clientHeight);
+    });
+
+
     //this.$store.commit('updateCanvasSize', initialCanvasSize)
     //PIXIApp.renderer.resize(store.state.canvas.width, store.state.canvas.height)
 
@@ -107,8 +113,8 @@ export default {
     //this.$store.dispatch('computeForceLayout', this.taglist);
 
     const layout = forceLayout(this.taglist, {
-      canvasWidth: wrap.offsetWidth,
-      canvasHeight: wrap.offsetHeight
+      canvasWidth: wrap.clientWidth,
+      canvasHeight: wrap.clientHeight
     })
 
     //const resources = [];
@@ -127,10 +133,10 @@ export default {
       //load every first tag image
       const firstOcc = tag.occurrences[0];
       const filename = firstOcc.origin;
-      const top = firstOcc.geometry[0].x;
-      const left = firstOcc.geometry[0].y;
+      const top = firstOcc.geometry[0].y;
+      const left = firstOcc.geometry[0].x;
       const uid = `${filename}-${labelSant}-${top}-${left}`;
-      const thumbName = `${uid}.png`;
+      const thumbName = `${uid}.jpg`;
 
 
       const box = createCloseupBox(tagWithPositionData)
@@ -138,7 +144,7 @@ export default {
       labelBoxes[labelSant] = box;
       cloudContainer.addChild(box) 
 
-      loader.add(uid, `out/${filename}/${thumbName}`);
+      loader.add(uid, `assets/images/thumb/${filename}/${thumbName}`);
     }
 
     loader.load((loader, resources) => {
@@ -155,26 +161,27 @@ export default {
       
     this.loading = false
 
+    const tex = PIXI.Texture.from('https://pixijs.io/examples/examples/assets/bunny.png');
+
       for(let key in resources) {
 
+        const res = resources[key];
         const labelSant = key.split('-')[1];
+        const placeholder = labelBoxes[labelSant] ? labelBoxes[labelSant].children[0] : null;
 
-        if(labelBoxes[labelSant]) {
-          //console.log(labelSant, labelBoxes[labelSant].children[0].texture = );
-          //console.log(resources[key].texture);
+        if(res.error) {
+          console.error(res.error, res.url);
+          if(placeholder) {
+            placeholder.tint = 0xff0000;
+            placeholder.alpha = 0.5;
+          }
+          continue;
+        } 
 
-          //let sprite = new PIXI.Sprite(resources[key].texture) //whiy u no work?!
-          /*sprite.x = 0
-          sprite.y = 0
-          sprite.width = 128;//properties.size
-          sprite.height = 128;//properties.size
-          PIXIApp.stage.addChild(sprite)*/
-
-          labelBoxes[labelSant].children[0].texture = PIXI.Texture.from('https://pixijs.io/examples/examples/assets/bunny.png');
-
-          //labelBoxes[labelSant].children[0].setTexture(resources[key].texture);
+        if(placeholder) {
+          placeholder.texture = resources[key].texture;
         } else {
-          console.log('-')
+          console.warn('No PIXI Container found for Tag ', key)
         }
       }
 

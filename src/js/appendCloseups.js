@@ -25,15 +25,15 @@ export function createCloseupBox(properties) {
   sprite.width = properties.size
   sprite.height = properties.size
   //sprite.tint = 0xff0000
-  sprite.alpha = 0.5
+  sprite.alpha = 1
   tagContainer.addChild(sprite)
 
   // create text for tag title
-  /*const tagTitle = new Text(properties.title + ' (' + properties.tagCount + ')', textStyle)
-  tagTitle.alpha = 0.1
+  const tagTitle = new Text(properties.title + ' (' + properties.tagCount + ')', textStyle)
+  tagTitle.alpha = 0.66
   tagTitle.name = properties.title
   tagTitle.y = 0;//Math.sqrt(mockupSettings.dimensionsUnit * properties.tagCount)
-  tagContainer.addChild(tagTitle)*/
+  tagContainer.addChild(tagTitle)
   
   // return container for appending to a parent
   return tagContainer

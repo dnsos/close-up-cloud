@@ -39,7 +39,7 @@ export default new Vuex.Store({
       // create list of all tags
       state.objects.map((object) => {
         object.tags.map((tag) => {
-          uncleanedTaglist.push(tag.title) 
+          if(tag.title !== 'Frame') uncleanedTaglist.push(tag.title) 
         })
       })
 

@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 
 const dataPath = '../src/assets/data/';
-const csvFile = '20190605_CloseUpCloud-Auswahl146.csv';
-const jsonFile = 'labelbox-export-2019-08-05T14_59_09.192Z.json';
+const csvFile = 'src/20190605_CloseUpCloud-Auswahl146.csv';
+const jsonFile = 'src/labelbox-export-2019-08-10T15_14_43.595Z.json';
 const outFile = 'objects-label-metadata.json';
 
 const csvContent = fs.readFileSync(path.resolve(__dirname, dataPath, csvFile), {encoding: 'utf8'});

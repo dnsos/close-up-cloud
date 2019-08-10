@@ -16,7 +16,7 @@ export class ForceLayout {
         this.options = Object.assign({
             rectPadding: 5,
             ticks: 400,
-            minSize: 16,
+            minSize: 8,
             canvasWidth: 1280,
             canvasHeight: 800
         }, options);
@@ -63,7 +63,7 @@ export class ForceLayout {
             .force("x", d3.forceX().strength(0.01))
             .force("y", d3.forceY().strength(0.01))
             .force("collide", collisionForce)
-            .force("center", d3.forceCenter(options.canvasWidth/2, options.canvasHeight/2))
+            .force("center", d3.forceCenter(options.canvasWidth/2, options.canvasHeight/2.5))
             
         simulation
             .on("tick", () => {
@@ -82,39 +82,27 @@ export class ForceLayout {
 
         const { data, options } = this;
 
-        let largest = data.map(_ => _.objectCount)
-        largest = Math.max(...largest)
-        console.log(largest)
-        
+        let largest = data.map(_ => _.tagCount)
+        largest = Math.max(...largest)        
 
-        const dataByCount = data.sort((a, b) => b.objectCount - a.objectCount);
-
-
-        let angle = 0;
-        let dist = 20;
-
-
-        let totalRad = 0;
+        let totalRad = Math.random()*Math.PI*2;
         let spiralDist = 50;
-        const length = dataByCount.length;
 
+        const dataByCount = data.sort((a, b) => b.tagCount - a.tagCount);
+        const length = dataByCount.length;
 
         this.nodes = dataByCount.map(function (_, i) {
 
-            let tagAmount = dataByCount[i].objectCount;
-            let size = Math.sqrt(tagAmount)*options.minSize;
+            let tagCount = dataByCount[i].tagCount;
+            let size = Math.sqrt(tagCount)*options.minSize;
 
-            spiralDist += size/8;
+            spiralDist += size/2;
             const itemRadius = size/2;
             
             const hypothenuse = Math.hypot(size, itemRadius);
             const rad = Math.sin(itemRadius/hypothenuse);
 
             totalRad += rad;
-            
-            
-            //let factorDistToCenter = (tagAmount/largest);
-            //console.log(tagAmount, factorDistToCenter);
             
             let x = options.canvasWidth/2;
             let y = options.canvasHeight/2;
@@ -125,9 +113,6 @@ export class ForceLayout {
             x *= aspect;
 
             totalRad += rad;
-            //let angle = Math.random()*Math.PI*2;
-            //angle += Math.PI/16;
-            //dist += 5;//factorDistToCenter*options.minSize;
         
             return {
                 x: x,
@@ -151,6 +136,7 @@ export class ForceLayout {
 
             layoutData.push({
                 title: data[i].title,
+                tagCount: data[i].tagCount,
                 x: d.x,
                 y: d.y,
                 size: d.size - options.rectPadding
