@@ -11,7 +11,7 @@ export function spreadSelectedTag (tagContainer, PIXIApp) {
   const renderCloseups = store.state.helpers.renderCloseups
 
   // hide tag title for events
-  const tagTitle = tagContainer.children.find(child => child.text)
+  const tagTitle = tagContainer.children.find(child => child.isTextContainer)
   tagTitle.visible= false
 
   // reference container with occurrences

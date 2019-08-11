@@ -1,7 +1,7 @@
 <template>
   <div class="renderer__wrapper" ref="rendererWrapper">
     <!-- canvas will be auto-injected by PIXI -->
-    <div v-if="loading" class="loading-message">Bilder werden geladen ...</div>
+    <div v-if="isLoadingImages" class="loading-message">Bilder werden geladen ...</div>
   </div>
 </template>
 
@@ -23,10 +23,9 @@ PixiPlugin.registerPIXI(PIXI)
 
 export default {
   name: 'pixi-renderer',
-  //inject: ['PIXIApp'],
   data: function () {
     return {
-      loading: true
+      isLoadingImages: true
     }
   },
   computed: {
@@ -36,17 +35,17 @@ export default {
       return this.$store.state.selection.tag.hovered
     }
   },
-  methods: {
+  /*methods: {
     handleLoaded: function () {
 
       console.timeEnd('Resource loading completeted in:')
-      this.loading = false
+      this.isLoadingImages = false
 
       const cloudContainer = this.PIXIApp.stage.children.find(child => child.name === 'cloudContainer')
       for (const tag of this.taglist) { cloudContainer.addChild(appendCloseups(tag, this.PIXIApp)) }
 
     }
-  },
+  },*/
   watch: {
     inverted: function (newValue, previousValue) {
 
@@ -83,7 +82,7 @@ export default {
       }
 
     },
-    hoveredTag: function (newTag, previousTag) {
+    /*hoveredTag: function (newTag, previousTag) {
       
       const cloudContainer = this.PIXIApp.stage.children.find(child => child.name === 'cloudContainer')
       const hoveredContainer = cloudContainer.children.find(child => child.name === newTag)
@@ -93,11 +92,13 @@ export default {
         tagElement.alpha = 1
       } else {
         console.log('No hovered tag') 
-      }*/
+      }*-/
 
-    }
+    }*/
   },
   mounted: function () {
+
+    //console.clear();
 
     const wrap = this.$refs.rendererWrapper;
 
@@ -117,6 +118,13 @@ export default {
       PIXIApp.renderer.resize(wrap.clientWidth, wrap.clientHeight);
     });
 
+
+
+
+
+
+    
+
     // init negative filter (tween between alpha values)
     let colorMatrix = new PIXI.filters.ColorMatrixFilter()
     colorMatrix.negative()
@@ -133,13 +141,17 @@ export default {
     objectContainer.name = 'objectContainer'
 
     PIXIApp.stage.addChild(cloudContainer, objectContainer)
-    //console.log('taglist', this.taglist);
+    
     //this.$store.dispatch('computeForceLayout', this.taglist);
+
 
     const layout = forceLayout(this.taglist, {
       canvasWidth: wrap.clientWidth,
       canvasHeight: wrap.clientHeight
     })
+
+    console.log('taglist', this.taglist);
+    console.log('layout', layout);
 
     const loader = new PIXI.Loader();
 
@@ -160,7 +172,7 @@ export default {
       const uid = `${filename}-${labelSant}-${top}-${left}`;
       const thumbName = `${uid}.jpg`;
 
-
+      //console.log(tagWithPositionData)
       const box = createCloseupBox(tagWithPositionData)
 
       labelBoxes[labelSant] = box;
@@ -171,7 +183,7 @@ export default {
 
     loader.load((loader, resources) => {
 
-      this.loading = false
+      this.isLoadingImages = false
       //const tex = PIXI.Texture.from('https://pixijs.io/examples/examples/assets/bunny.png');
 
       for(let key in resources) {

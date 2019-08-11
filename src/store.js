@@ -1,17 +1,17 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-
-import objects from './assets/data/objects-label-metadata.json'
+import { publicDataUrl } from './js/variables'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
     inverted: false,
-    objects: objects,//.slice(0, 1),
     views: ['cloud', 'tag', 'detail'], //viz views
     activeView: 'cloud',
-    clouds: {
+    data: [],
+    taglist: [],
+    clouds: {   
       overview: null
     },
     selection: {
@@ -33,14 +33,53 @@ export default new Vuex.Store({
     }
   },
   getters: {
+    tag: (state) => (title) => {
+      return state.taglist.find(tag => tag.title === title)
+    },
     taglist: (state) => {
+      return state.taglist;
+    },
+    selectedTag: (state, getters) => {
+      return getters.taglist.find(tag => tag.title === state.selection.tag.active)
+    }
+  },
+  mutations: {
+
+    setData: (state, data) => {
+      state.data = data
+    },
+
+    toggleMode: (state) => {
+      state.inverted = !state.inverted
+    },
+    /*defineForceLayout: (state, payload) => {
+      //console.log('computeForceLayout layout:', payload);
+      state.cloud.positioning = payload
+    },*/
+    setActiveTag: (state, payload) => {
+      state.selection.tag.active = payload
+    },
+    setHoveredTag: (state, payload) => {
+      state.selection.tag.hovered = payload
+    },
+    setActiveObject: (state, payload) => {
+      state.selection.object.active = payload
+    },
+    setView: (state, payload) => {
+      state.activeView = payload
+    },
+    updateCanvasSize: (state, payload) => {
+      state.canvas = payload
+    },
+
+    buildTaglist: (state, payload) => {
       
       const uncleanedTaglist = []
 
       // create list of all tags
-      state.objects.map((object) => {
+      state.data.map((object) => {
         object.tags.map((tag) => {
-          if(tag.title !== 'Frame') uncleanedTaglist.push(tag.title) 
+          uncleanedTaglist.push(tag.title) 
         })
       })
 
@@ -50,30 +89,22 @@ export default new Vuex.Store({
       uniqueTaglist.splice(uniqueTaglist.indexOf('Frame'), 1)
 
       // loop through all unique tags
-      const data = uniqueTaglist.map((tagString) => {
+      state.taglist = uniqueTaglist.map((tagString) => {
 
         // loop through all occurrences
-        const occurrences = state.objects.map((object) => {
+        const occurrences = state.data.map((object) => {
 
           // find tagData wherever it matches the current tagString
           const tagData = object.tags.find((tag) => {
             return tag.title === tagString 
           })
 
-          // if 'find' returns 'null', create a 'null' geometry object
-          const tagGeometry = tagData ? tagData.geometry : null
-
-          // tagGeometry is not 'null', return the element
-          if (tagGeometry !== null) {
-            return {
+          if(!tagData) return;
+          
+          return {
               origin: object.id,
-              geometry: tagGeometry
-            }
+              geometry: tagData.geometry
           }
-          // else return nothing
-          else {
-            return
-          }  
         })
 
         // filter occurrences that are defined
@@ -96,35 +127,6 @@ export default new Vuex.Store({
           tagCount: tagCount.reduce((accumulator, currentValue) => accumulator + currentValue) // sum up tagCount
         }
       })
-
-      return data
-    },
-    selectedTag: (state, getters) => {
-      return getters.taglist.find(tag => tag.title === state.selection.tag.active)
-    }
-  },
-  mutations: {
-    toggleMode: (state) => {
-      state.inverted = !state.inverted
-    },
-    /*defineForceLayout: (state, payload) => {
-      //console.log('computeForceLayout layout:', payload);
-      state.cloud.positioning = payload
-    },*/
-    setActiveTag: (state, payload) => {
-      state.selection.tag.active = payload
-    },
-    setHoveredTag: (state, payload) => {
-      state.selection.tag.hovered = payload
-    },
-    setActiveObject: (state, payload) => {
-      state.selection.object.active = payload
-    },
-    setView: (state, payload) => {
-      state.activeView = payload
-    },
-    updateCanvasSize: (state, payload) => {
-      state.canvas = payload
     }
   },
   actions: {
@@ -141,5 +143,22 @@ export default new Vuex.Store({
       //console.log('computeForceLayout taglist:', payload);
       commit('computeForceLayout', forceLayout(payload))
     }*/
+
+    async fetchData({dispatch, commit}) {
+
+      console.log(`fetching ${publicDataUrl} ...`);
+
+      return window.fetch(publicDataUrl)
+        .then(response => response.json())
+        .then(data => {
+          commit('setData', data);
+          commit('buildTaglist');
+
+          return data;
+        })
+        .catch((error) => {
+            console.error('Fetch Data Error', arguments);
+        })
+    }
   }
 })

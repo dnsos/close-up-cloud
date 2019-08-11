@@ -1,7 +1,7 @@
 <template>
   <main class="grid-viz">
-    <div id="d3force" style="position: absolute; transform-origin: top left;transform: scale(0.25);border: 8px solid #eee" />
-    <pixi-renderer />
+    <div id="d3debug" />
+    <pixi-renderer v-if="hasFetched" />
   </main>
 </template>
 
@@ -14,15 +14,18 @@ export default {
   components: {
     'pixi-renderer': PixiRenderer
   },
-  /*data: function () {
-    return {}
+  data: function () {
+    return {
+      hasFetched: false
+    }
   },
-  methods: {},
-  created: function () {
-    // check if WebGL is available
-    const type = !PIXI.utils.isWebGLSupported() ? 'canvas' : 'WebGL'
-    PIXI.utils.sayHello(type)
-  }*/
+  mounted: function() {
+    
+    this.$store.dispatch('fetchData').then((data) => {
+      this.hasFetched = true;
+      console.log("data fetched", data)
+    });
+  }
 }
 </script>
 
@@ -31,5 +34,11 @@ export default {
   width: 100%;
   height: max-content;
   display: flex;
+}
+#d3debug {
+  position: absolute; 
+  transform-origin: top left;
+  transform: scale(0.25);
+  border: 8px solid #eee;
 }
 </style>

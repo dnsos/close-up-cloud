@@ -3,6 +3,8 @@ import store from '../store'
 import { textStyle } from './variables'
 
 export function createCloseupBox(properties) {
+
+  const tag = store.getters.tag(properties.title);
   
   // container for storing sprite, text etc. in
   const tagContainer = new PIXI.Container()
@@ -22,9 +24,9 @@ export function createCloseupBox(properties) {
   tagContainer.addChild(sprite)
 
   // create text for tag title
-  const textContent = properties.tagCount + ' ' + properties.title + '\n' + 'in ' + properties.objectCount + ' Objekten'
+  const textContent = tag.tagCount + ' ' + tag.title + '\n' + 'in ' + tag.objectCount + ' Objekten'
   const tagTitle = new PIXI.Text(textContent, textStyle)
-  tagTitle.name = properties.title
+  tagTitle.name = tag.title
   tagTitle.x = 5
 
   const txtBG = new PIXI.Sprite(PIXI.Texture.WHITE);
@@ -33,6 +35,7 @@ export function createCloseupBox(properties) {
 
   
   const textBox = new PIXI.Container();
+  textBox.isTextContainer = true;
   textBox.alpha = 0
   textBox.x = 5
   textBox.y = 5
@@ -52,7 +55,7 @@ export function createCloseupBox(properties) {
   })
   sprite.on('pointerout', () => {
     textBox.alpha = 0
-    sprite.alpha = 0.8
+    sprite.alpha = 0.95
   })
   sprite.on('pointertap', () => {
     store.dispatch('handleSetView', 'tag')

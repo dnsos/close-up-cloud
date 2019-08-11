@@ -2,11 +2,7 @@ import * as d3 from 'd3';
 
 export default function forceLayout(data, options) {
 
-    const fl = new ForceLayout(data, options)
-        .calculate()
-        .addPositionToData();
-
-    return fl.layoutData;
+    return new ForceLayout(data, options).calculate().layoutData;
 }
 
 export class ForceLayout {
@@ -30,9 +26,12 @@ export class ForceLayout {
 
     calculate() {
         
-        return this
+        this
             .initNodes()
-            .initD3();
+            .initD3()
+            .extractLayoutData();
+
+        return this;
     }
 
     initD3() {
@@ -53,7 +52,7 @@ export class ForceLayout {
         let collisionForce = rectCollide()
             .size(function (d) { return [d.size, d.size] })
         
-        this.svg = d3.select('#d3force')
+        this.svg = d3.select('#d3debug')
             .append('svg')
             .attr('width', options.canvasWidth)
             .attr('height', options.canvasHeight)
@@ -81,8 +80,6 @@ export class ForceLayout {
                 this.rects
                     .attr("x", d => d.x)
                     .attr("y", d => d.y)
-                    //.attr('width', d => d.size - options.rectPadding) 
-                    //.attr('height', d => d.size - options.rectPadding) 
             })
             .tick(options.ticks);
 
@@ -93,14 +90,15 @@ export class ForceLayout {
 
         const { data, options } = this;
 
-        let largest = data.map(_ => _.tagCount)
-        largest = Math.max(...largest)        
+        let largest = data.map(tag => tag.tagCount)
+        largest = Math.max(...largest)
 
         let totalRad = Math.random()*Math.PI*2;
         let spiralDist = 50;
 
         const dataByCount = data.sort((a, b) => b.tagCount - a.tagCount);
         const length = dataByCount.length;
+
 
         this.nodes = dataByCount.map(function (_, i) {
 
@@ -135,34 +133,22 @@ export class ForceLayout {
         return this;
     }
 
-    addPositionToData() {
+    extractLayoutData() {
 
         const { data, rects, options } = this;
-
-        //console.log(':(((', data);
 
         const layoutData = [];
 
         rects.each(function(d, i) {
-
             layoutData.push({
                 title: data[i].title,
-                tagCount: data[i].tagCount,
-                objectCount: data[i].objectCount,
                 x: d.x,
                 y: d.y,
                 size: d.size - options.rectPadding
             })
-
-            /*data[i] = Object.assign(data[i], {
-                x: d.x,
-                y: d.y,
-                size: d.size - options.rectPadding
-            });*/
         })
 
         this.layoutData = layoutData;
-        //console.log(':)))', this.layoutData);
 
         return this;
     }
