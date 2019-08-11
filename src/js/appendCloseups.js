@@ -1,30 +1,34 @@
 import * as PIXI from 'pixi.js'
+//import 'pixi-layers'
 import store from '../store'
 import { textStyle } from './variables'
+import { getRandomInt } from './utils'
 
 export function createCloseupBox(title) {
 
   const position = store.getters.positionInCloud('overview', title);
   const tag = store.getters.tag(title);
   
-  // container for storing sprite, text etc. in
   const tagContainer = new PIXI.Container()
   tagContainer.name = tag.title
   tagContainer.x = position.x
   tagContainer.y = position.y
 
-  const whiteTexture = PIXI.Texture.WHITE
+  //trying to build layers ...
+  //const infoLayer = new PIXI.display.Group(1, false);
+  //const thumbLayer = new PIXI.display.Group(0, true);
+  //let thumbIndex = 0;
+  //thumbLayer.on('add', sprite => sprite.zOrder = thumbIndex--)
+  //tagContainer.addChild(new PIXI.display.Layer(infoLayer));
+  //tagContainer.addChild(new PIXI.display.Layer(thumbLayer));
 
-  // placeholder sprite
-  let sprite = new PIXI.Sprite(whiteTexture)
-  sprite.x = 0
-  sprite.y = 0
-  sprite.width = position.size
-  sprite.height = position.size
-  sprite.alpha = 0.8
-  tagContainer.addChild(sprite)
-
-  // create text for tag title
+  // create tag title
+  const textBox = new PIXI.Container();
+  textBox.alpha = 0
+  textBox.x = 5
+  textBox.y = 5
+  //textBox.parentLayer = infoLayer;
+  
   const textContent = tag.tagCount + ' ' + tag.title + '\n' + 'in ' + tag.objectCount + ' Objekten'
   const tagTitle = new PIXI.Text(textContent, textStyle)
   tagTitle.name = tag.title
@@ -33,55 +37,43 @@ export function createCloseupBox(title) {
   const txtBG = new PIXI.Sprite(PIXI.Texture.WHITE);
   txtBG.width = tagTitle.width + 10;
   txtBG.height = tagTitle.height;
-
-  
-  const textBox = new PIXI.Container();
-  textBox.isTextContainer = true;
-  textBox.alpha = 0
-  textBox.x = 5
-  textBox.y = 5
   textBox.addChild(txtBG, tagTitle);
 
+  const occurrencesContainer = new PIXI.Container()
+  occurrencesContainer.name = 'occurrencesContainer'
+
+  tagContainer.addChild(occurrencesContainer)
   tagContainer.addChild(textBox)
-  
 
   // add interactivity
-  sprite.interactive = true;
-  sprite.buttonMode = true;
+  occurrencesContainer.interactive = true;
+  occurrencesContainer.buttonMode = true;
 
   // add events
-  sprite.on('pointerover', () => {
+  occurrencesContainer.on('pointerover', () => {
     textBox.alpha = 1
-    sprite.alpha = 1
   })
-  sprite.on('pointerout', () => {
+  occurrencesContainer.on('pointerout', () => {
     textBox.alpha = 0
-    sprite.alpha = 0.95
   })
-  sprite.on('pointertap', () => {
+  occurrencesContainer.on('pointertap', () => {
     store.dispatch('handleSetView', 'tag')
     store.dispatch('handleSetActiveTag', tag.title)
   })
-  
-  // return container for appending to a parent
-  return tagContainer
-
-  //console.log('appendCloseups', tagContainer.x, tagContainer.y)
-
-  //const occurrencesContainer = new PIXI.Container()
-  //occurrencesContainer.name = 'occurrencesContainer'
 
   // create container for each tag origin
-  /*for (const [index, occurrence] of properties.occurrences.entries()) {
+  for (const [index, occurrence] of tag.occurrences.entries()) {
     
+    //@todo needed?
     // container to hold image data (sprite)
-    const occurrenceContainer = new PIXI.Container()
+    /*const occurrenceContainer = new PIXI.Container() 
     occurrenceContainer.name = occurrence.origin
-    occurrenceContainer.width = positioning.width
-    occurrenceContainer.height = positioning.height
+    occurrenceContainer.width = position.size
+    occurrenceContainer.height = position.size*/
+    //occurrenceContainer.parentGroup = thumbLayer;
 
     // retrieve the number of depictions in current occurrence and generate a random index
-    const noOfDepictions = occurrence.geometry.length
+    /*const noOfDepictions = occurrence.geometry.length
     const randomIndex = getRandomInt(noOfDepictions)
 
     // retrieve coordinates and dimensions in origin image
@@ -101,37 +93,35 @@ export function createCloseupBox(title) {
     // crop cloned texture using previously generated frame
     clonedTexture.frame = frame
 
-    const whiteTexture = PIXI.Texture.WHITE // texture that will fill all currently not displayed sprites
-
     // determine which texture should be rendered
     const renderedTexture = (index === tag.occurrences.length - 1)
                             ? ((renderCloseups === true) ? clonedTexture : whiteTexture)
-                            : whiteTexture
+                            : whiteTexture*/
     
     // create sprite from texture to be rendered
-    let sprite = new PIXI.Sprite(renderedTexture)
+    let sprite = new PIXI.Sprite(PIXI.Texture.WHITE)
     sprite.x = 0
     sprite.y = 0
-    sprite.width = positioning.width
-    sprite.height = positioning.height
+    sprite.width = position.size
+    sprite.height = position.size
 
     // for development: if textures are not rendered, adds a tint to display sprites
-    sprite.tint = (renderCloseups === true) ? 0xffffff : 0xff0000
+    //sprite.tint = (renderCloseups === true) ? 0xffffff : 0xff0000
+    //random tint
+    sprite.tint = '0x' + Math.floor(Math.random()*16777215).toString(16);
 
     // only add in Cloud view
-    if (store.state.activeView === 'cloud') {
+    /*if (store.state.activeView === 'cloud') {
 
       // add interactivity
       occurrenceContainer.interactive = (index === tag.occurrences.length - 1) ? true : false
       occurrenceContainer.buttonMode = (index === tag.occurrences.length - 1) ? true : false
-    }
+    }*/
 
     // add children to respective containers
-    occurrenceContainer.addChild(sprite)
-    occurrencesContainer.addChild(occurrenceContainer)
-    tagContainer.addChild(occurrencesContainer)
-
+    //occurrenceContainer.addChild(sprite)
+    occurrencesContainer.addChild(sprite)
   }
-    */
 
+  return tagContainer
 }

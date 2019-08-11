@@ -158,22 +158,27 @@ export default {
 
         const res = resources[key];
         const labelSant = key.split('-')[1];
-        const placeholder = labelBoxes[labelSant] ? labelBoxes[labelSant].children[0] : null;
+        const tagContainer = labelBoxes[labelSant] ? labelBoxes[labelSant] : null;
 
         if(res.error) {
           console.error(res.error, res.url);
-          if(placeholder) {
-            placeholder.tint = 0xff0000;
-            placeholder.alpha = 0.5;
+          if(tagContainer) {
+            tagContainer.tint = 0xff0000;
+            tagContainer.alpha = 0.5;
           }
           continue;
-        } 
-
-        if(placeholder) {
-          placeholder.texture = resources[key].texture;
-        } else {
-          console.warn('No PIXI Container found for Tag ', key)
         }
+
+        if(!tagContainer) {
+          console.error('No PIXI Container found for Tag ', key)
+          return;
+        }
+
+        //apply the texture to the last tag sprite (uppermost)
+        const occurrences = tagContainer.children.find(child => child.name === 'occurrencesContainer')
+        const last = occurrences.children.length-1;
+        occurrences.children[last].texture = resources[key].texture;
+        occurrences.children[last].tint = 0xffffff;
       }
     });
   }
