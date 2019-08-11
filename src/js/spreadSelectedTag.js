@@ -4,15 +4,20 @@ import { mockupSettings, durations } from './variables'
 import { scaleLinear } from 'd3'
 import { TimelineMax } from 'gsap/TweenMax'
 import { Rectangle } from 'pixi.js';
+import { getOccurrenceUID } from '../js/utils.js'
 
-export function spreadSelectedTag (tagContainer, PIXIApp) {
+export function spreadSelectedTag (tagContainer) {
 
   // for development: use actual textures?
-  const renderCloseups = store.state.helpers.renderCloseups
+  //const renderCloseups = store.state.helpers.renderCloseups
 
   // hide tag title for events
-  const tagTitle = tagContainer.children.find(child => child.isTextContainer)
-  tagTitle.visible= false
+  const tagTitle = tagContainer.children.find(child => child.name === 'textBox')
+  tagTitle.visible = false
+
+  //center container
+  tagContainer.x = 0;
+  tagContainer.y = 0;
 
   // reference container with occurrences
   const occurrencesContainer = tagContainer.children.find(child => child.name === 'occurrencesContainer')
@@ -20,37 +25,13 @@ export function spreadSelectedTag (tagContainer, PIXIApp) {
   // assign an image texture to each occurrenceContainer
   occurrencesContainer.children.map((occurrenceContainer, index) => {
 
-    // reference data for current occurrence
+    //@todo better loading on demand
     const occurrenceData = store.getters.selectedTag.occurrences.find(occurrence => occurrence.origin === occurrenceContainer.name)
-
-    if (renderCloseups) {
-      // retrieve the number of depictions in current occurrence and generate a random index
-      const noOfDepictions = occurrenceData.geometry.length
-      const randomIndex = getRandomInt(noOfDepictions)
-
-      // retrieve coordinates and dimensions in origin image
-      // divided by two because 50% scaled resources are used
-      const frame = new Rectangle(
-        occurrenceData.geometry[randomIndex].x/2,
-        occurrenceData.geometry[randomIndex].y/2,
-        occurrenceData.geometry[randomIndex].width/2,
-        occurrenceData.geometry[randomIndex].width/2)
-
-      // access corresponding resource and load its original texture
-      const originalTexture = PIXIApp.loader.resources[occurrenceContainer.name].texture 
-
-      // clone texture
-      const clonedTexture = originalTexture.clone()
-
-      // crop to frame
-      clonedTexture.frame = frame
+    const uid = getOccurrenceUID(tagContainer.name, occurrenceData)
+    const thumbName = `${uid}.jpg`;
       
-      // update texture
-      occurrenceContainer.children[0].texture = clonedTexture
-    }
-
-    // for development: if textures are not rendered, adds a tint to display sprites
-    occurrenceContainer.children[0].tint = (renderCloseups === true) ? 0xffffff : 0x00ffff
+    occurrenceContainer.texture = PIXI.Texture.from(`assets/images/thumb/${occurrenceData.origin}/${thumbName}`);
+    occurrenceContainer.tint = 0xffffff;
 
     if(store.state.activeView === 'tag') {
 
@@ -65,24 +46,25 @@ export function spreadSelectedTag (tagContainer, PIXIApp) {
         
       })
       occurrenceContainer.on('pointertap', () => {
+        console.log('objectContainer tap!');
         store.dispatch('handleSetView', 'object')
         store.dispatch('handleSetActiveObject', occurrenceContainer.name)
       })
     }
 
     // get distances from selected tagContainer
-    const distToLeft = -tagContainer.x
-    const distToRight = store.state.canvas.width - tagContainer.x
-    const distToTop = -tagContainer.y
-    const distToBottom = store.state.canvas.height - tagContainer.y 
+    const distToLeft = -store.state.canvas.width/3
+    const distToRight = store.state.canvas.width/3
+    const distToTop = -store.state.canvas.height/3
+    const distToBottom = store.state.canvas.height/3
 
     // scales for mapping Math.random() value to distances from selected tagContainer
     const xScale = scaleLinear()
       .domain([0, 1])
-      .range([distToLeft/2, distToRight/2])
+      .range([distToLeft, distToRight])
     const yScale = scaleLinear()
       .domain([0, 1])
-      .range([distToTop/2, distToBottom/2])
+      .range([distToTop, distToBottom])
 
     // updated coordinates
     const updatedCoordinates = {

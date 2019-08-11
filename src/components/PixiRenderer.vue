@@ -15,7 +15,7 @@ import { hideUnselectedTags } from '../js/hideUnselectedTags'
 import { spreadSelectedTag } from '../js/spreadSelectedTag'
 import { appendObject } from '../js/appendObject'
 import { durations } from '../js/variables'
-import { sanitizeLabel } from '../js/utils.js'
+import { sanitizeLabel, getOccurrenceUID } from '../js/utils.js'
 
 PixiPlugin.registerPIXI(PIXI)
 
@@ -44,8 +44,6 @@ export default {
       new TimelineMax()
         .add( TweenMax.to(cloudContainer, 0.5, {x: width/2, y: height/2}) )
         .play()
-      //cloudContainer.x = width/2;
-      //cloudContainer.y = height/2;
     }
   },
   watch: {
@@ -71,10 +69,10 @@ export default {
 
       // from Cloud to Tag view
       if (newView === 'tag' && previousView === 'cloud') {
-        const selectedTag = cloudContainer.children.find(child => child.name === this.selection.tag.active)
+        const tagContainer = cloudContainer.children.find(child => child.name === this.selection.tag.active)
         const unselectedTags = cloudContainer.children.filter(child => child.name != this.selection.tag.active)
         hideUnselectedTags(unselectedTags)
-        spreadSelectedTag(selectedTag, this.PIXIApp)
+        spreadSelectedTag(tagContainer)
       }
       
       // from Tag to Object view
@@ -128,6 +126,7 @@ export default {
       });
     }
 
+    //@todo make loading more general, load more on demand
     const loader = new PIXI.Loader();
     const labelBoxes = {};
 
@@ -138,14 +137,10 @@ export default {
       //store labelBoxes to update images upon loaded
       labelBoxes[labelSant] = createCloseupBox(tag.title)
       cloudContainer.addChild(labelBoxes[labelSant]) 
-      
-      //add every first tag image to loader
-      const firstOcc = tag.occurrences[0];
-      const filename = firstOcc.origin;
-      const top = firstOcc.geometry[0].y;
-      const left = firstOcc.geometry[0].x;
-      const uid = `${filename}-${labelSant}-${top}-${left}`;
+
+      const uid = getOccurrenceUID(tag.title, tag.occurrences[0])
       const thumbName = `${uid}.jpg`;
+      const filename = tag.occurrences[0].origin;
       loader.add(uid, `assets/images/thumb/${filename}/${thumbName}`);
     }
 

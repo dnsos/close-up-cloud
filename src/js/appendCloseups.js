@@ -24,6 +24,7 @@ export function createCloseupBox(title) {
 
   // create tag title
   const textBox = new PIXI.Container();
+  textBox.name = 'textBox'
   textBox.alpha = 0
   textBox.x = 5
   textBox.y = 5
@@ -57,6 +58,7 @@ export function createCloseupBox(title) {
     textBox.alpha = 0
   })
   occurrencesContainer.on('pointertap', () => {
+    console.log('tagContainer tap!');
     store.dispatch('handleSetView', 'tag')
     store.dispatch('handleSetActiveTag', tag.title)
   })
@@ -64,50 +66,15 @@ export function createCloseupBox(title) {
   // create container for each tag origin
   for (const [index, occurrence] of tag.occurrences.entries()) {
     
-    //@todo needed?
-    // container to hold image data (sprite)
-    /*const occurrenceContainer = new PIXI.Container() 
-    occurrenceContainer.name = occurrence.origin
-    occurrenceContainer.width = position.size
-    occurrenceContainer.height = position.size*/
-    //occurrenceContainer.parentGroup = thumbLayer;
-
-    // retrieve the number of depictions in current occurrence and generate a random index
-    /*const noOfDepictions = occurrence.geometry.length
-    const randomIndex = getRandomInt(noOfDepictions)
-
-    // retrieve coordinates and dimensions in origin image
-    // divided by two because 50% scaled resources are used
-    const frame = new PIXI.Rectangle(
-      occurrence.geometry[randomIndex].x/2,
-      occurrence.geometry[randomIndex].y/2,
-      occurrence.geometry[randomIndex].width/2,
-      occurrence.geometry[randomIndex].width/2)
-    
-    // access corresponding resource and load its original texture
-    const originalTexture = PIXIApp.loader.resources[occurrence.origin].texture
-
-    // clone original texture to avoid cropping original
-    const clonedTexture = originalTexture.clone()
-
-    // crop cloned texture using previously generated frame
-    clonedTexture.frame = frame
-
-    // determine which texture should be rendered
-    const renderedTexture = (index === tag.occurrences.length - 1)
-                            ? ((renderCloseups === true) ? clonedTexture : whiteTexture)
-                            : whiteTexture*/
-    
     // create sprite from texture to be rendered
     let sprite = new PIXI.Sprite(PIXI.Texture.WHITE)
+    sprite.name = occurrence.origin
     sprite.x = 0
     sprite.y = 0
     sprite.width = position.size
     sprite.height = position.size
 
-    // for development: if textures are not rendered, adds a tint to display sprites
-    //sprite.tint = (renderCloseups === true) ? 0xffffff : 0xff0000
-    //random tint
+    // for development: adds a random tint that will be removed on load
     sprite.tint = '0x' + Math.floor(Math.random()*16777215).toString(16);
 
     // only add in Cloud view
