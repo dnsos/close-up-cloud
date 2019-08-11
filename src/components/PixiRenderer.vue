@@ -22,6 +22,8 @@ PixiPlugin.registerPIXI(PIXI)
 export default {
   name: 'pixi-renderer',
   PIXIApp: null,
+  cloudContainer: null,
+  objectContainer: null,
   data: function () {
     return {
       isLoadingImages: true
@@ -39,10 +41,15 @@ export default {
       this.PIXIApp.renderer.resize(width, height);
       this.$store.dispatch('updateCanvasSize', {width, height});
 
-      //@todo need to store these references somewhere
-      const cloudContainer = this.PIXIApp.stage.children.find(child => child.name === 'cloudContainer')
+      //instantly set initial center
+      if(this.cloudContainer.x === 0) {
+        this.cloudContainer.x = width/2;
+        this.cloudContainer.y = height/2;
+        return;
+      }
+
       new TimelineMax()
-        .add( TweenMax.to(cloudContainer, 0.5, {x: width/2, y: height/2}) )
+        .add( TweenMax.to(this.cloudContainer, 0.5, {x: width/2, y: height/2}) )
         .play()
     }
   },
@@ -63,22 +70,18 @@ export default {
     },
     activeView: function (newView, previousView) {
 
-      // references to main containers
-      const cloudContainer = this.PIXIApp.stage.children.find(child => child.name === 'cloudContainer')
-      const objectContainer = this.PIXIApp.stage.children.find(child => child.name === 'objectContainer')
-
       // from Cloud to Tag view
       if (newView === 'tag' && previousView === 'cloud') {
-        const tagContainer = cloudContainer.children.find(child => child.name === this.selection.tag.active)
-        const unselectedTags = cloudContainer.children.filter(child => child.name != this.selection.tag.active)
+        const tagContainer = this.cloudContainer.children.find(child => child.name === this.selection.tag.active)
+        const unselectedTags = this.cloudContainer.children.filter(child => child.name != this.selection.tag.active)
         hideUnselectedTags(unselectedTags)
         spreadSelectedTag(tagContainer)
       }
       
       // from Tag to Object view
       else if (newView === 'object' && previousView === 'tag') {
-        cloudContainer.visible = false
-        objectContainer.addChild(appendObject(this.selection.object.active, this.PIXIApp))
+        this.cloudContainer.visible = false
+        this.objectContainer.addChild(appendObject(this.selection.object.active, this.PIXIApp))
       }
 
     }
@@ -108,11 +111,14 @@ export default {
     wrap.appendChild(PIXIApp.view)
 
     // create root containers for cloud and object view
-    const cloudContainer = new PIXI.Container()
-    const objectContainer = new PIXI.Container()
-    cloudContainer.name = 'cloudContainer'    
-    objectContainer.name = 'objectContainer'
-    PIXIApp.stage.addChild(cloudContainer, objectContainer)
+    this.cloudContainer = new PIXI.Container()
+    this.cloudContainer.name = 'cloudContainer'
+    this.cloudContainer.x = this.canvas.width/2;
+    this.cloudContainer.y = this.canvas.height/2;
+
+    this.objectContainer = new PIXI.Container()
+    this.objectContainer.name = 'objectContainer'
+    PIXIApp.stage.addChild(this.cloudContainer, this.objectContainer)
 
     //handle resize
     PIXIApp.renderer.autoResize = true;
@@ -136,7 +142,7 @@ export default {
 
       //store labelBoxes to update images upon loaded
       labelBoxes[labelSant] = createCloseupBox(tag.title)
-      cloudContainer.addChild(labelBoxes[labelSant]) 
+      this.cloudContainer.addChild(labelBoxes[labelSant]) 
 
       const uid = getOccurrenceUID(tag.title, tag.occurrences[0])
       const thumbName = `${uid}.jpg`;
