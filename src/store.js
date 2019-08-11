@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import forceLayout from './js/forceLayout.js';
 import { publicDataUrl } from './js/variables'
 
 Vue.use(Vuex)
@@ -41,21 +42,22 @@ export default new Vuex.Store({
     },
     selectedTag: (state, getters) => {
       return getters.taglist.find(tag => tag.title === state.selection.tag.active)
+    },
+    //@todo we need a more general identifier than title
+    positionInCloud: (state) => (cloud, title) => {
+      return state.clouds[cloud].find(el => el.title === title)
     }
   },
   mutations: {
-
     setData: (state, data) => {
       state.data = data
     },
-
     toggleMode: (state) => {
       state.inverted = !state.inverted
     },
-    /*defineForceLayout: (state, payload) => {
-      //console.log('computeForceLayout layout:', payload);
-      state.cloud.positioning = payload
-    },*/
+    setForceLayout: (state, payload) => {
+      state.clouds[payload.key] = payload.data
+    },
     setActiveTag: (state, payload) => {
       state.selection.tag.active = payload
     },
@@ -71,7 +73,6 @@ export default new Vuex.Store({
     updateCanvasSize: (state, payload) => {
       state.canvas = payload
     },
-
     buildTaglist: (state, payload) => {
       
       const uncleanedTaglist = []
@@ -139,21 +140,26 @@ export default new Vuex.Store({
     handleSetView: ({ commit }, payload) => {
       commit('setView', payload)
     },
-    /*computeForceLayout({ commit }, payload) {
-      //console.log('computeForceLayout taglist:', payload);
-      commit('computeForceLayout', forceLayout(payload))
-    }*/
-
+    updateCanvasSize: ({ commit }, payload) => {
+      commit('updateCanvasSize', payload)
+    },
+    computeForceLayout({ commit, state }, payload) {
+      console.log('computeForceLayout:', payload);
+      commit('setForceLayout', {
+        key: payload.key,
+        data: forceLayout(payload.data, {
+          canvasWidth: state.canvas.width,
+          canvasHeight: state.canvas.height
+        })
+      })
+    },
     async fetchData({dispatch, commit}) {
-
       console.log(`fetching ${publicDataUrl} ...`);
-
       return window.fetch(publicDataUrl)
         .then(response => response.json())
         .then(data => {
           commit('setData', data);
           commit('buildTaglist');
-
           return data;
         })
         .catch((error) => {

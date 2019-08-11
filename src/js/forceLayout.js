@@ -1,8 +1,9 @@
 import * as d3 from 'd3';
 
 export default function forceLayout(data, options) {
-
-    return new ForceLayout(data, options).calculate().layoutData;
+    return new ForceLayout(data, options)
+        .calculate()
+        .getLayoutData();
 }
 
 export class ForceLayout {
@@ -21,7 +22,6 @@ export class ForceLayout {
         this.nodes = [];    //x-y-size representations of data
         this.rects = [];    //d3 rects
         this.svg = null;    //d3 svg
-        this.layoutData = [];    //calculated
     }
 
     calculate() {
@@ -29,7 +29,7 @@ export class ForceLayout {
         this
             .initNodes()
             .initD3()
-            .extractLayoutData();
+            .getLayoutData();
 
         return this;
     }
@@ -125,7 +125,7 @@ export class ForceLayout {
         return this;
     }
 
-    extractLayoutData() {
+    getLayoutData() {
 
         const { data, rects, options } = this;
 
@@ -140,9 +140,7 @@ export class ForceLayout {
             })
         })
 
-        this.layoutData = layoutData;
-
-        return this;
+        return layoutData;
     }
 }
 

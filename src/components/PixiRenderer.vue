@@ -1,6 +1,5 @@
 <template>
   <div class="renderer__wrapper" ref="rendererWrapper">
-    <!-- canvas will be auto-injected by PIXI -->
     <div v-if="isLoadingImages" class="loading-message">Bilder werden geladen ...</div>
   </div>
 </template>
@@ -16,7 +15,6 @@ import { hideUnselectedTags } from '../js/hideUnselectedTags'
 import { spreadSelectedTag } from '../js/spreadSelectedTag'
 import { appendObject } from '../js/appendObject'
 import { durations } from '../js/variables'
-import forceLayout from '../js/forceLayout.js';
 import { sanitizeLabel } from '../js/utils.js'
 
 PixiPlugin.registerPIXI(PIXI)
@@ -36,15 +34,6 @@ export default {
     }
   },
   /*methods: {
-    handleLoaded: function () {
-
-      console.timeEnd('Resource loading completeted in:')
-      this.isLoadingImages = false
-
-      const cloudContainer = this.PIXIApp.stage.children.find(child => child.name === 'cloudContainer')
-      for (const tag of this.taglist) { cloudContainer.addChild(appendCloseups(tag, this.PIXIApp)) }
-
-    }
   },*/
   watch: {
     inverted: function (newValue, previousValue) {
@@ -81,20 +70,7 @@ export default {
         objectContainer.addChild(appendObject(this.selection.object.active, this.PIXIApp))
       }
 
-    },
-    /*hoveredTag: function (newTag, previousTag) {
-      
-      const cloudContainer = this.PIXIApp.stage.children.find(child => child.name === 'cloudContainer')
-      const hoveredContainer = cloudContainer.children.find(child => child.name === newTag)
-
-      /*if (hoveredContainer) {
-        const tagElement = hoveredContainer.children.find(child => child.text)
-        tagElement.alpha = 1
-      } else {
-        console.log('No hovered tag') 
-      }*-/
-
-    }*/
+    }
   },
   mounted: function () {
 
@@ -103,8 +79,8 @@ export default {
     const wrap = this.$refs.rendererWrapper;
 
     const PIXIApp = new PIXI.Application({
-      width: wrap.clientWidth,
-      height: wrap.clientHeight,
+      width: 1280,
+      height: 800,
       antialias: true,
       transparent: false,
       backgroundColor: 0xffffff,
@@ -114,16 +90,15 @@ export default {
 
     //handle resize
     PIXIApp.renderer.autoResize = true;
-    window.addEventListener('resize', () => {
+    window.addEventListener('resize', handleResize);
+    const handleResize = function() {
       PIXIApp.renderer.resize(wrap.clientWidth, wrap.clientHeight);
-    });
-
-
-
-
-
-
-    
+      this.$store.dispatch('updateCanvasSize', {
+        width: wrap.clientWidth, 
+        height: wrap.clientHeight
+      })
+    }.bind(this);
+    handleResize(); //set initial canvas size
 
     // init negative filter (tween between alpha values)
     let colorMatrix = new PIXI.filters.ColorMatrixFilter()
@@ -142,42 +117,31 @@ export default {
 
     PIXIApp.stage.addChild(cloudContainer, objectContainer)
     
-    //this.$store.dispatch('computeForceLayout', this.taglist);
-
-
-    const layout = forceLayout(this.taglist, {
-      canvasWidth: wrap.clientWidth,
-      canvasHeight: wrap.clientHeight
-    })
-
-    console.log('taglist', this.taglist);
-    console.log('layout', layout);
+    if(!this.$store.state.clouds.overview) {
+      this.$store.dispatch('computeForceLayout', {
+        key: 'overview',
+        data: this.taglist
+      });
+    }
 
     const loader = new PIXI.Loader();
-
     const labelBoxes = {};
 
     for (const tag of this.taglist) { 
 
       const labelSant = sanitizeLabel(tag.title);
 
-      // get coordinates from force layout
-      const tagWithPositionData = layout.find(el => el.title === tag.title)
-
-      //load every first tag image
+      //store labelBoxes to update images upon loaded
+      labelBoxes[labelSant] = createCloseupBox(tag.title)
+      cloudContainer.addChild(labelBoxes[labelSant]) 
+      
+      //add every first tag image to loader
       const firstOcc = tag.occurrences[0];
       const filename = firstOcc.origin;
       const top = firstOcc.geometry[0].y;
       const left = firstOcc.geometry[0].x;
       const uid = `${filename}-${labelSant}-${top}-${left}`;
       const thumbName = `${uid}.jpg`;
-
-      //console.log(tagWithPositionData)
-      const box = createCloseupBox(tagWithPositionData)
-
-      labelBoxes[labelSant] = box;
-      cloudContainer.addChild(box) 
-
       loader.add(uid, `assets/images/thumb/${filename}/${thumbName}`);
     }
 
@@ -207,8 +171,7 @@ export default {
           console.warn('No PIXI Container found for Tag ', key)
         }
       }
-
-  });
+    });
 
     /*var ticker = new PIXI.Ticker();
     ticker.add(() => {

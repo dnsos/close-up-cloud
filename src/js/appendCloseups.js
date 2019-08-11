@@ -2,15 +2,16 @@ import * as PIXI from 'pixi.js'
 import store from '../store'
 import { textStyle } from './variables'
 
-export function createCloseupBox(properties) {
+export function createCloseupBox(title) {
 
-  const tag = store.getters.tag(properties.title);
+  const position = store.getters.positionInCloud('overview', title);
+  const tag = store.getters.tag(title);
   
   // container for storing sprite, text etc. in
   const tagContainer = new PIXI.Container()
-  tagContainer.name = properties.title
-  tagContainer.x = properties.x
-  tagContainer.y = properties.y
+  tagContainer.name = tag.title
+  tagContainer.x = position.x
+  tagContainer.y = position.y
 
   const whiteTexture = PIXI.Texture.WHITE
 
@@ -18,8 +19,8 @@ export function createCloseupBox(properties) {
   let sprite = new PIXI.Sprite(whiteTexture)
   sprite.x = 0
   sprite.y = 0
-  sprite.width = properties.size
-  sprite.height = properties.size
+  sprite.width = position.size
+  sprite.height = position.size
   sprite.alpha = 0.8
   tagContainer.addChild(sprite)
 
