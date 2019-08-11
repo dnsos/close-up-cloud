@@ -12,7 +12,7 @@ export class ForceLayout {
         this.options = Object.assign({
             rectPadding: 5,
             ticks: 400,
-            minSize: 8,
+            scaleFactor: 0.75,
             canvasWidth: 1280,
             canvasHeight: 800
         }, options);
@@ -38,17 +38,6 @@ export class ForceLayout {
 
         const options = this.options;
 
-        //@todo implement log
-        /*const tagCountList = data.map(tag => tag.tagCount)
-        const logScale = d3.scaleLog()
-            .base(5)
-            .domain(d3.extent(tagCountList))
-            .range([1000,10000])
-        
-        let nodes = Array.apply(null, Array(data.length)).map(function (_, i) {
-            
-        let size = Math.sqrt(logScale(data[i].tagCount));*/
-
         let collisionForce = rectCollide()
             .size(function (d) { return [d.size, d.size] })
         
@@ -73,7 +62,7 @@ export class ForceLayout {
             .force("x", d3.forceX().strength(0.01))
             .force("y", d3.forceY().strength(0.01))
             .force("collide", collisionForce)
-            .force("center", d3.forceCenter(options.canvasWidth/2, options.canvasHeight/2.5))
+            .force("center", d3.forceCenter(options.canvasWidth/2, options.canvasHeight/2))
             
         simulation
             .on("tick", () => {
@@ -90,20 +79,23 @@ export class ForceLayout {
 
         const { data, options } = this;
 
-        let largest = data.map(tag => tag.tagCount)
-        largest = Math.max(...largest)
+        const tagCountList = data.map(tag => tag.tagCount)
+        const logScale = d3.scaleLog()
+            .base(5)
+            .domain(d3.extent(tagCountList))
+            .range([1000,10000])
 
         let totalRad = Math.random()*Math.PI*2;
         let spiralDist = 50;
 
+        //@todo we need a more general scaling factor than hard-coded tagCount
         const dataByCount = data.sort((a, b) => b.tagCount - a.tagCount);
         const length = dataByCount.length;
 
-
         this.nodes = dataByCount.map(function (_, i) {
 
-            let tagCount = dataByCount[i].tagCount;
-            let size = Math.sqrt(tagCount)*options.minSize;
+            //let size = Math.sqrt(dataByCount[i].tagCount)*options.scaleFactor; //scale linear by area
+            let size = Math.sqrt(logScale(data[i].tagCount))*options.scaleFactor //scale by d3.scaleLog
 
             spiralDist += size/2;
             const itemRadius = size/2;
