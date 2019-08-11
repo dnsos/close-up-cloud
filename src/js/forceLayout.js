@@ -134,8 +134,8 @@ export class ForceLayout {
         rects.each(function(d, i) {
             layoutData.push({
                 title: data[i].title,
-                x: d.x,
-                y: d.y,
+                x: d.x - (options.canvasWidth/2), //let's give back coords centered around 0, 0
+                y: d.y - (options.canvasHeight/2),
                 size: d.size - options.rectPadding
             })
         })

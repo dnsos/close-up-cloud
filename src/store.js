@@ -37,11 +37,8 @@ export default new Vuex.Store({
     tag: (state) => (title) => {
       return state.taglist.find(tag => tag.title === title)
     },
-    taglist: (state) => {
-      return state.taglist;
-    },
     selectedTag: (state, getters) => {
-      return getters.taglist.find(tag => tag.title === state.selection.tag.active)
+      return state.taglist.find(tag => tag.title === state.selection.tag.active)
     },
     //@todo we need a more general identifier than title
     positionInCloud: (state) => (cloud, title) => {

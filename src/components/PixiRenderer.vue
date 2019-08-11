@@ -21,20 +21,33 @@ PixiPlugin.registerPIXI(PIXI)
 
 export default {
   name: 'pixi-renderer',
+  PIXIApp: null,
   data: function () {
     return {
       isLoadingImages: true
     }
   },
   computed: {
-    ...mapState(['activeView', 'clouds', 'selection', 'inverted']),
-    ...mapGetters(['taglist']),
+    ...mapState(['activeView', 'canvas', 'clouds', 'taglist', 'selection', 'inverted']),
     hoveredTag: function () {
       return this.$store.state.selection.tag.hovered
     }
   },
-  /*methods: {
-  },*/
+  methods: {
+    handleResize() {
+      const { clientWidth: width, clientHeight: height } = this.$refs.rendererWrapper;
+      this.PIXIApp.renderer.resize(width, height);
+      this.$store.dispatch('updateCanvasSize', {width, height});
+
+      //@todo need to store these references somewhere
+      const cloudContainer = this.PIXIApp.stage.children.find(child => child.name === 'cloudContainer')
+      new TimelineMax()
+        .add( TweenMax.to(cloudContainer, 0.5, {x: width/2, y: height/2}) )
+        .play()
+      //cloudContainer.x = width/2;
+      //cloudContainer.y = height/2;
+    }
+  },
   watch: {
     inverted: function (newValue, previousValue) {
 
@@ -75,10 +88,7 @@ export default {
   mounted: function () {
 
     //console.clear();
-
-    const wrap = this.$refs.rendererWrapper;
-
-    const PIXIApp = new PIXI.Application({
+    this.PIXIApp = new PIXI.Application({
       width: 1280,
       height: 800,
       antialias: true,
@@ -86,19 +96,9 @@ export default {
       backgroundColor: 0xffffff,
       resolution: 1
     })
-    this.PIXIApp = PIXIApp;
 
-    //handle resize
-    PIXIApp.renderer.autoResize = true;
-    window.addEventListener('resize', handleResize);
-    const handleResize = function() {
-      PIXIApp.renderer.resize(wrap.clientWidth, wrap.clientHeight);
-      this.$store.dispatch('updateCanvasSize', {
-        width: wrap.clientWidth, 
-        height: wrap.clientHeight
-      })
-    }.bind(this);
-    handleResize(); //set initial canvas size
+    const wrap = this.$refs.rendererWrapper;
+    const PIXIApp = this.PIXIApp;
 
     // init negative filter (tween between alpha values)
     let colorMatrix = new PIXI.filters.ColorMatrixFilter()
@@ -109,13 +109,17 @@ export default {
     // append PIXI.Application to wrapper
     wrap.appendChild(PIXIApp.view)
 
-    // create root containers for cloud/tag views and object view
+    // create root containers for cloud and object view
     const cloudContainer = new PIXI.Container()
     const objectContainer = new PIXI.Container()
-    cloudContainer.name = 'cloudContainer'
+    cloudContainer.name = 'cloudContainer'    
     objectContainer.name = 'objectContainer'
-
     PIXIApp.stage.addChild(cloudContainer, objectContainer)
+
+    //handle resize
+    PIXIApp.renderer.autoResize = true;
+    window.addEventListener('resize', this.handleResize);
+    this.handleResize();
     
     if(!this.$store.state.clouds.overview) {
       this.$store.dispatch('computeForceLayout', {
@@ -172,13 +176,6 @@ export default {
         }
       }
     });
-
-    /*var ticker = new PIXI.Ticker();
-    ticker.add(() => {
-      console.log('HI');
-        //renderer.render(stage);
-    }, PIXI.UPDATE_PRIORITY.LOW);
-    ticker.start();*/
   }
 }
 </script>
