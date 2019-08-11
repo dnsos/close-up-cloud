@@ -8,9 +8,6 @@ import { getOccurrenceUID } from '../js/utils.js'
 
 export function spreadSelectedTag (tagContainer) {
 
-  // for development: use actual textures?
-  //const renderCloseups = store.state.helpers.renderCloseups
-
   // hide tag title for events
   const tagTitle = tagContainer.children.find(child => child.name === 'textBox')
   tagTitle.visible = false
@@ -46,11 +43,28 @@ export function spreadSelectedTag (tagContainer) {
         
       })
       occurrenceContainer.on('pointertap', () => {
+        if(store.state.activeView !== 'tag') return;
         console.log('objectContainer tap!');
         store.dispatch('handleSetView', 'object')
         store.dispatch('handleSetActiveObject', occurrenceContainer.name)
       })
     }
+
+    /**
+     * 1) create force layout:
+     * this.$store.dispatch('computeForceLayout', {
+     *   key: 'tagtitle', //will be stored in state.clouds.tagtitle
+     *   data: //array of occurences that follows the taglist
+     * });
+     * data format like:
+     *   [{
+     *     title: <this is basically the occurence id>,
+     *     tagCount: <this is basically the size factor>
+     *   }, ...]
+     *
+     * 2) read the position from store
+     * const position = store.getters.positionInCloud('tagtitle', <occurence id>);
+     */
 
     // get distances from selected tagContainer
     const distToLeft = -store.state.canvas.width/3

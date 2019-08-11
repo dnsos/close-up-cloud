@@ -125,6 +125,8 @@ export default new Vuex.Store({
           tagCount: tagCount.reduce((accumulator, currentValue) => accumulator + currentValue) // sum up tagCount
         }
       })
+
+      console.log('taglist:', state.taglist);
     }
   },
   actions: {

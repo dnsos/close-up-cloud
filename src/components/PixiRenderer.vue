@@ -10,10 +10,10 @@ import { TimelineMax, TweenMax } from 'gsap/TweenMax'
 import PixiPlugin from 'gsap/PixiPlugin'
 import { mapState } from 'vuex'
 import { mapGetters } from 'vuex'
-import { createCloseupBox } from '../js/appendCloseups'
 import { hideUnselectedTags } from '../js/hideUnselectedTags'
 import { spreadSelectedTag } from '../js/spreadSelectedTag'
-import { appendObject } from '../js/appendObject'
+import { createCloseupBox } from '../js/createCloseupBox'
+import { createDetail } from '../js/createDetail'
 import { durations } from '../js/variables'
 import { sanitizeLabel, getOccurrenceUID } from '../js/utils.js'
 
@@ -56,7 +56,7 @@ export default {
   watch: {
     inverted: function (newValue, previousValue) {
 
-      // timeline that inverts all PIXI related objects; TODO: make backgroundColor work
+      // timeline that inverts all PIXI related objects; TODO: make backgroundColor work //use css?
       let tl = new TimelineMax()
       if (newValue === true) {
         tl.add( TweenMax.to(this.PIXIApp.stage.filters[0], durations.invert, { pixi: { alpha: 1 } }) )
@@ -81,7 +81,7 @@ export default {
       // from Tag to Object view
       else if (newView === 'object' && previousView === 'tag') {
         this.cloudContainer.visible = false
-        this.objectContainer.addChild(appendObject(this.selection.object.active, this.PIXIApp))
+        this.objectContainer.addChild(createDetail(this.selection.object.active))
       }
 
     }
@@ -89,7 +89,7 @@ export default {
   mounted: function () {
 
     //console.clear();
-    this.PIXIApp = new PIXI.Application({
+    const PIXIApp = this.PIXIApp = new PIXI.Application({
       width: 1280,
       height: 800,
       antialias: true,
@@ -99,7 +99,6 @@ export default {
     })
 
     const wrap = this.$refs.rendererWrapper;
-    const PIXIApp = this.PIXIApp;
 
     // init negative filter (tween between alpha values)
     let colorMatrix = new PIXI.filters.ColorMatrixFilter()
@@ -132,7 +131,7 @@ export default {
       });
     }
 
-    //@todo make loading more general, load more on demand
+    //@todo exclude, make loading more general, load more on demand
     const loader = new PIXI.Loader();
     const labelBoxes = {};
 

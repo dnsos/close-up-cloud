@@ -4,6 +4,7 @@ import store from '../store'
 import { textStyle } from './variables'
 import { getRandomInt } from './utils'
 
+//ex appendCloseups
 export function createCloseupBox(title) {
 
   const position = store.getters.positionInCloud('overview', title);
@@ -58,6 +59,7 @@ export function createCloseupBox(title) {
     textBox.alpha = 0
   })
   occurrencesContainer.on('pointertap', () => {
+    if(store.state.activeView !== 'cloud') return;
     console.log('tagContainer tap!');
     store.dispatch('handleSetView', 'tag')
     store.dispatch('handleSetActiveTag', tag.title)
@@ -77,16 +79,7 @@ export function createCloseupBox(title) {
     // for development: adds a random tint that will be removed on load
     sprite.tint = '0x' + Math.floor(Math.random()*16777215).toString(16);
 
-    // only add in Cloud view
-    /*if (store.state.activeView === 'cloud') {
-
-      // add interactivity
-      occurrenceContainer.interactive = (index === tag.occurrences.length - 1) ? true : false
-      occurrenceContainer.buttonMode = (index === tag.occurrences.length - 1) ? true : false
-    }*/
-
     // add children to respective containers
-    //occurrenceContainer.addChild(sprite)
     occurrencesContainer.addChild(sprite)
   }
 
