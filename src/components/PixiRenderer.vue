@@ -124,10 +124,19 @@ export default {
     window.addEventListener('resize', this.handleResize);
     this.handleResize();
     
+    //create cloud overview force layout
     if(!this.$store.state.clouds.overview) {
+      
+      const forceInput = this.taglist.map(tag => {
+        return { 
+          id: tag.title, 
+          weight: tag.tagCount 
+        };
+      });
+
       this.$store.dispatch('computeForceLayout', {
         key: 'overview',
-        data: this.taglist
+        data: forceInput
       });
     }
 

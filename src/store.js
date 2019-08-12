@@ -40,9 +40,8 @@ export default new Vuex.Store({
     selectedTag: (state, getters) => {
       return state.taglist.find(tag => tag.title === state.selection.tag.active)
     },
-    //@todo we need a more general identifier than title
-    positionInCloud: (state) => (cloud, title) => {
-      return state.clouds[cloud].find(el => el.title === title)
+    positionInCloud: (state) => (cloud, id) => {
+      return state.clouds[cloud].find(el => el.id === id)
     }
   },
   mutations: {
@@ -93,9 +92,7 @@ export default new Vuex.Store({
         const occurrences = state.data.map((object) => {
 
           // find tagData wherever it matches the current tagString
-          const tagData = object.tags.find((tag) => {
-            return tag.title === tagString 
-          })
+          const tagData = object.tags.find(tag => tag.title === tagString)
 
           if(!tagData) return;
           

@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 
 export default function forceLayout(data, options) {
+    
     return new ForceLayout(data, options)
         .calculate()
         .getLayoutData();
@@ -8,6 +9,11 @@ export default function forceLayout(data, options) {
 
 export class ForceLayout {
 
+    /**
+     * constructor
+     * @param {Array} data a list of {id, weight}
+     * @param {Object} options 
+     */
     constructor(data, options) {
 
         this.options = Object.assign({
@@ -79,26 +85,24 @@ export class ForceLayout {
 
         const { data, options } = this;
 
-        const tagCountList = data.map(tag => tag.tagCount)
+        const weightList = data.map(tag => tag.weight)
         const logScale = d3.scaleLog()
             .base(5)
-            .domain(d3.extent(tagCountList))
+            .domain(d3.extent(weightList))
             .range([1000,10000])
 
         let totalRad = Math.random()*Math.PI*2;
         let spiralDist = 50;
 
-        //@todo we need a more general scaling factor than hard-coded tagCount
-        const dataByCount = data.sort((a, b) => b.tagCount - a.tagCount);
-        const length = dataByCount.length;
+        const dataByWeight = data.sort((a, b) => b.weight - a.weight);
 
-        this.nodes = dataByCount.map(function (_, i) {
+        this.nodes = dataByWeight.map(function (_, i) {
 
-            //let size = Math.sqrt(dataByCount[i].tagCount)*options.scaleFactor; //scale linear by area
-            let size = Math.sqrt(logScale(data[i].tagCount))*options.scaleFactor //scale by d3.scaleLog
+            //let size = Math.sqrt(dataByCount[i].weight)*options.scaleFactor; //scale linear by area
+            let size = Math.sqrt(logScale(data[i].weight))*options.scaleFactor //scale by d3.scaleLog
 
-            spiralDist += size/2;
             const itemRadius = size/2;
+            spiralDist += size/2;
             
             const hypothenuse = Math.hypot(size, itemRadius);
             const rad = Math.sin(itemRadius/hypothenuse);
@@ -133,7 +137,7 @@ export class ForceLayout {
 
         rects.each(function(d, i) {
             layoutData.push({
-                title: data[i].title,
+                id: data[i].id,
                 x: d.x - (options.canvasWidth/2), //let's give back coords centered around 0, 0
                 y: d.y - (options.canvasHeight/2),
                 size: d.size - options.rectPadding
