@@ -62,7 +62,7 @@ export function createCloseupBox(title) {
     if(store.state.activeView !== 'cloud') return;
     console.log('tagContainer tap!');
     store.dispatch('handleSetView', 'tag')
-    store.dispatch('handleSetActiveTag', tag.title)
+    store.dispatch('handleSetActiveTag', tag)
   })
 
   // create container for each tag origin

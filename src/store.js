@@ -17,8 +17,8 @@ export default new Vuex.Store({
     },
     selection: {
       tag: {
-        hovered: '',
-        active: ''
+        hovered: null,
+        active: null
       },
       object: {
         hovered: '',
@@ -37,8 +37,11 @@ export default new Vuex.Store({
     tag: (state) => (title) => {
       return state.taglist.find(tag => tag.title === title)
     },
-    selectedTag: (state, getters) => {
-      return state.taglist.find(tag => tag.title === state.selection.tag.active)
+    cloud: (state) => (cloud) => {
+      return state.clouds[cloud];
+    },
+    findOccurenceInActiveTag: (state) => (objectID) => {
+      return state.selection.tag.active.occurrences.find(occurrence => occurrence.origin === objectID)
     },
     positionInCloud: (state) => (cloud, id) => {
       return state.clouds[cloud].find(el => el.id === id)

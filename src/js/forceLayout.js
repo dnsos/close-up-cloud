@@ -19,7 +19,7 @@ export class ForceLayout {
         this.options = Object.assign({
             rectPadding: 5,
             ticks: 400,
-            scaleFactor: 0.75,
+            scaleFactor: 8,
             canvasWidth: 1280,
             canvasHeight: 800
         }, options);
@@ -98,8 +98,8 @@ export class ForceLayout {
 
         this.nodes = dataByWeight.map(function (_, i) {
 
-            //let size = Math.sqrt(dataByCount[i].weight)*options.scaleFactor; //scale linear by area
-            let size = Math.sqrt(logScale(data[i].weight))*options.scaleFactor //scale by d3.scaleLog
+            let size = Math.sqrt(dataByWeight[i].weight)*options.scaleFactor; //scale linear by area
+            //let size = Math.sqrt(logScale(data[i].weight))*options.scaleFactor //scale logy by area
 
             const itemRadius = size/2;
             spiralDist += size/2;

@@ -70,10 +70,11 @@ export default {
     },
     activeView: function (newView, previousView) {
 
+      //@todo router stuff
       // from Cloud to Tag view
       if (newView === 'tag' && previousView === 'cloud') {
-        const tagContainer = this.cloudContainer.children.find(child => child.name === this.selection.tag.active)
-        const unselectedTags = this.cloudContainer.children.filter(child => child.name != this.selection.tag.active)
+        const tagContainer = this.cloudContainer.children.find(child => child.name === this.selection.tag.active.title)
+        const unselectedTags = this.cloudContainer.children.filter(child => child.name != this.selection.tag.active.title)
         hideUnselectedTags(unselectedTags)
         spreadSelectedTag(tagContainer)
       }
@@ -88,7 +89,7 @@ export default {
   },
   mounted: function () {
 
-    //console.clear();
+    console.clear();
     const PIXIApp = this.PIXIApp = new PIXI.Application({
       width: 1280,
       height: 800,
@@ -142,15 +143,16 @@ export default {
 
     //@todo exclude, make loading more general, load more on demand
     const loader = new PIXI.Loader();
-    const labelBoxes = {};
+    
+    //store tagContainer to update images upon loaded
+    const tagContainer = {};
 
     for (const tag of this.taglist) { 
 
       const labelSant = sanitizeLabel(tag.title);
 
-      //store labelBoxes to update images upon loaded
-      labelBoxes[labelSant] = createCloseupBox(tag.title)
-      this.cloudContainer.addChild(labelBoxes[labelSant]) 
+      tagContainer[labelSant] = createCloseupBox(tag.title)
+      this.cloudContainer.addChild(tagContainer[labelSant]) 
 
       const uid = getOccurrenceUID(tag.title, tag.occurrences[0])
       const thumbName = `${uid}.jpg`;
@@ -167,24 +169,24 @@ export default {
 
         const res = resources[key];
         const labelSant = key.split('-')[1];
-        const tagContainer = labelBoxes[labelSant] ? labelBoxes[labelSant] : null;
+        const container = tagContainer[labelSant] ? tagContainer[labelSant] : null;
 
         if(res.error) {
           console.error(res.error, res.url);
-          if(tagContainer) {
-            tagContainer.tint = 0xff0000;
-            tagContainer.alpha = 0.5;
+          if(container) {
+            container.tint = 0xff0000;
+            container.alpha = 0.5;
           }
           continue;
         }
 
-        if(!tagContainer) {
+        if(!container) {
           console.error('No PIXI Container found for Tag ', key)
           return;
         }
 
         //apply the texture to the last tag sprite (uppermost)
-        const occurrences = tagContainer.children.find(child => child.name === 'occurrencesContainer')
+        const occurrences = container.children.find(child => child.name === 'occurrencesContainer')
         const last = occurrences.children.length-1;
         occurrences.children[last].texture = resources[key].texture;
         occurrences.children[last].tint = 0xffffff;
