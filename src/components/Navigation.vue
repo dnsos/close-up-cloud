@@ -22,7 +22,7 @@ nav {
     text-decoration: none;
     transition: color .2s ease-in;
     &.router-link-active {
-      color: var(--color-primary-0);
+      color: var(--color-primary-100);
     }
   }
 }

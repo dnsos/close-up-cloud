@@ -1,5 +1,5 @@
 <template>
-  <header class="grid-header columns-3">
+  <header class="grid-area__header grid-3-columns">
     <span>Close-Up Cloud</span>
     <span></span>
     <Navigation />
@@ -18,8 +18,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.grid-header {
-  color: var(--color-primary-0);
-  background-color: var(--color-primary-100);
+.grid-area__header {
+  color: var(--color-primary-100);
+  background-color: var(--color-primary-0);
 }
 </style>

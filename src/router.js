@@ -13,7 +13,7 @@ export default new Router({
     },
     {
       path: '/viz',
-      name: 'grid-viz',
+      name: 'viz',
       component: () => import('./views/Viz.vue')
     },
     {

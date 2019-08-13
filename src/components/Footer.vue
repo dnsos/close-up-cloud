@@ -1,10 +1,12 @@
 <template>
-  <footer class="grid-footer columns-3">
-    <span>Entdecken</span>
-    <div>
-      <button class="button__toggle-mode" @click="toggleMode()">Farben umkehren</button>
+  <footer class="grid-area__footer">
+    <div class="footer__content grid-3-columns">
+      <span>Entdecken</span>
+      <div>
+        <button class="button__toggle-mode" @click="toggleMode()">Farben umkehren</button>
+      </div>
+      <span>Info</span>
     </div>
-    <span>Info</span>
   </footer>
 </template>
 
@@ -20,8 +22,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.grid-footer {
-  color: var(--color-primary-0);
-  background-color: var(--color-primary-100);
+.grid-area__footer {
+  color: var(--color-primary-100);
+  background-color: var(--color-primary-0);
 }
 </style>

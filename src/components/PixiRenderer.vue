@@ -56,14 +56,12 @@ export default {
   watch: {
     inverted: function (newValue, previousValue) {
 
-      // timeline that inverts all PIXI related objects; TODO: make backgroundColor work //use css?
+      // timeline that inverts all PIXI related objects
       let tl = new TimelineMax()
       if (newValue === true) {
-        tl.add( TweenMax.to(this.PIXIApp.stage.filters[0], durations.invert, { pixi: { alpha: 1 } }) )
-        //tl.add( TweenMax.to(this.PIXIApp.renderer, durations.invert, { pixi: { backgroundColor: 0x292929 } }) )
+        tl.add( TweenMax.to(this.PIXIApp.stage.filters[0], durations.invert, { pixi: { alpha: 1 }, ease: Power1.easeInOut }) )
       } else {
-        tl.add( TweenMax.to(this.PIXIApp.stage.filters[0], durations.invert, { pixi: { alpha: 0 } }) )
-        //tl.add( TweenMax.to(this.PIXIApp.renderer, durations.invert, { pixi: { backgroundColor: 0xffffff } }) )
+        tl.add( TweenMax.to(this.PIXIApp.stage.filters[0], durations.invert, { pixi: { alpha: 0 }, ease: Power1.easeInOut }) )
       }
       tl.play()
 
@@ -94,8 +92,7 @@ export default {
       width: 1280,
       height: 800,
       antialias: true,
-      transparent: false,
-      backgroundColor: 0xffffff,
+      transparent: true,
       resolution: 1
     })
 
@@ -200,6 +197,8 @@ export default {
 .renderer__wrapper {
   width: 100%;
   height: 100%;
+  background-color: var(--color-primary-0);
+  transition: background-color 2s ease-in-out;
 }
 
 .loading-message {
