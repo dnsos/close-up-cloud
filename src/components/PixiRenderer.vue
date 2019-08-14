@@ -6,6 +6,7 @@
 
 <script>
 import * as PIXI from 'pixi.js'
+import { Viewport } from 'pixi-viewport'
 import { TimelineMax, TweenMax } from 'gsap/TweenMax'
 import PixiPlugin from 'gsap/PixiPlugin'
 import { mapState } from 'vuex'
@@ -113,9 +114,20 @@ export default {
     this.cloudContainer.x = this.canvas.width/2;
     this.cloudContainer.y = this.canvas.height/2;
 
-    this.objectContainer = new PIXI.Container()
+    // objectContainer created by pixi-viewport for zoom/pan etc.
+    this.objectContainer = new Viewport({
+      worldWidth: this.canvas.width,
+      worldHeight: this.canvas.height,
+      interaction: PIXIApp.renderer.plugins.interaction
+    })
     this.objectContainer.name = 'objectContainer'
-    PIXIApp.stage.addChild(this.cloudContainer, this.objectContainer)
+    this.objectContainer
+      .drag()
+      .pinch()
+      .wheel()
+      .decelerate()
+
+    PIXIApp.stage.addChild(this.objectContainer, this.cloudContainer)
 
     //handle resize
     PIXIApp.renderer.autoResize = true;

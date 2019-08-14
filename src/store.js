@@ -45,6 +45,9 @@ export default new Vuex.Store({
     },
     positionInCloud: (state) => (cloud, id) => {
       return state.clouds[cloud].find(el => el.id === id)
+    },
+    object: (state) => (objectID) => {
+      return state.data.find(object => object.id === objectID)
     }
   },
   mutations: {
