@@ -11,13 +11,13 @@ export function sanitizeLabel(label) {
 	return label.replace(/[\s.,/()-]/g, '');
 }
 
-//@todo this only ever handles the first geometry ...
-export function getOccurrenceUID(tagTitle, occurrence) {
+//@todo easier parameters
+export function getOccurrenceUID(tagTitle, occurrence, geometry) {
   
   const labelSant = sanitizeLabel(tagTitle);      
   const filename = occurrence.origin;
-  const top = occurrence.geometry[0].y;
-  const left = occurrence.geometry[0].x;
+  const top = geometry.y;
+  const left = geometry.x;
   const uid = `${filename}-${labelSant}-${top}-${left}`;
 
   return uid;

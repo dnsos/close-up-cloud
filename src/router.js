@@ -13,8 +13,15 @@ export default new Router({
     },
     {
       path: '/viz',
-      name: 'viz',
       component: () => import('./views/Viz.vue')
+    },
+    {
+      path: '/viz2',
+      component: () => import('./views/Viz2.vue')
+    },
+    {
+      path: '/viz2/tag/:id',
+      component: () => import('./views/Viz2.vue')
     },
     {
       path: '/info',
