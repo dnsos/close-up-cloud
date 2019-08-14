@@ -1,6 +1,6 @@
 <template>
   <div class="tag">
-    <h3>hello this is {{tag.title}}</h3>
+    <h3>hello {{tag.title}}</h3>
     <VizObject v-for="occurrence in tag.occurrences" :occurrence="occurrence" :tag="tag" :key="occurrence.origin" />
   </div>
   

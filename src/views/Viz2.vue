@@ -1,10 +1,10 @@
 <template>
   <div class="view__viz grid__viz">
-    <Header />
+    <!--Header /-->
     <main class="grid-area__main">
       <VizRenderer v-if="hasFetched" />
     </main>
-    <Footer />
+    <!--Footer /-->
   </div>
 </template>
 

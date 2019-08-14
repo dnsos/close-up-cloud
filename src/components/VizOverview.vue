@@ -15,6 +15,7 @@ export default {
     name: 'viz-renderer',
     components: { VizTag },
     computed: mapState(['taglist']),
+    cloudContainer: null,
     data: () => {
         return { 
             loaded: false 
@@ -27,6 +28,5 @@ export default {
 
 <style scoped lang="scss">
 .overview {
-    overflow: scroll;
 }
 </style>
