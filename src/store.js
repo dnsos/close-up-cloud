@@ -12,6 +12,7 @@ export default new Vuex.Store({
     activeView: 'cloud',
     data: [],
     taglist: [],
+    PIXIApp: null,
     clouds: {   
       overview: null
     },
@@ -38,12 +39,14 @@ export default new Vuex.Store({
       return state.taglist.find(tag => tag.title === title)
     },
     cloud: (state) => (cloud) => {
+      if(!state.clouds[cloud]) throw new Error(`there is no cloud named ${cloud}`)
       return state.clouds[cloud];
     },
     findOccurenceInActiveTag: (state) => (objectID) => {
       return state.selection.tag.active.occurrences.find(occurrence => occurrence.origin === objectID)
     },
     positionInCloud: (state) => (cloud, id) => {
+      if(!state.clouds[cloud]) throw new Error(`there is no cloud named ${cloud}`)
       return state.clouds[cloud].find(el => el.id === id)
     },
     object: (state) => (objectID) => {
@@ -54,10 +57,14 @@ export default new Vuex.Store({
     setData: (state, data) => {
       state.data = data
     },
+    setPIXIApp: (state, payload) => {
+      state.PIXIApp = payload
+    },
     toggleMode: (state) => {
       state.inverted = !state.inverted
     },
     setForceLayout: (state, payload) => {
+      console.log('setForceLayout:', payload);
       state.clouds[payload.key] = payload.data
     },
     setActiveTag: (state, payload) => {
@@ -142,7 +149,8 @@ export default new Vuex.Store({
     handleSetView: ({ commit }, payload) => {
       commit('setView', payload)
     },
-    updateCanvasSize: ({ commit }, payload) => {
+    updateCanvasSize: ({ commit, state }, payload) => {
+      state.PIXIApp.renderer.resize(payload.width, payload.height);
       commit('updateCanvasSize', payload)
     },
     computeForceLayout({ commit, state }, payload) {

@@ -47,11 +47,12 @@ export class ForceLayout {
         let collisionForce = rectCollide()
             .size(function (d) { return [d.size, d.size] })
         
-        this.svg = d3.select('#d3debug')
+        this.svg = d3.select('body')
             .append('svg')
+            //.attr('id', 'd3debug')
             .attr('width', options.canvasWidth)
             .attr('height', options.canvasHeight)
-        
+
         this.rects = this.svg
             .selectAll('rect')
             .data(this.nodes)
@@ -115,7 +116,7 @@ export class ForceLayout {
             y += Math.cos(totalRad) * spiralDist;
             
             const aspect = options.canvasWidth / options.canvasHeight;
-            x *= aspect;
+            //x *= aspect;
 
             totalRad += rad;
         

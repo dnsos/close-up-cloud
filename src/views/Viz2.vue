@@ -33,7 +33,7 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
 .grid__viz {
   width: 100%;
   height: 100%;
