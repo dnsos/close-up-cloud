@@ -1,9 +1,14 @@
 <template>
+  
   <div class="obj" ref="cutout">
-    <h4>occurrence {{occurrence.origin}}</h4>
+    <router-link :to="`/viz/object/${occurrence.origin}`">
+      occurrence {{occurrence.origin}}
+    </router-link>
+  </div>
+    
     <!--VizCutout v-for="(geometry, i) in occurrence.geometry" :occurrence="occurrence" :geometry="geometry" :tag="tag" :key="i" /-->
     <!--VizCutout :occurrence="occurrence" :geometry="occurrence[0].geometry" :tag="tag" /-->
-  </div>
+  
 </template>
 
 <script>
@@ -64,6 +69,12 @@ export default {
     padding: 16px;
     margin: 16px;
     border: 1px solid #999;
-    background-size: cover;
+}
+
+.tile {
+  width: 64px;
+  height: 64px;
+  background-size: cover;
+  display: inline-block;
 }
 </style>

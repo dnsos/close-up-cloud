@@ -59,6 +59,9 @@ export default {
     },
     mounted: function() {
 
+    },
+    beforeDestroy: function () {
+        this.PIXIApp.stage.removeChild(this.cloudContainer)
     }
 }
 </script>

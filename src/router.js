@@ -4,6 +4,7 @@ import Home from './views/Home.vue'
 import Viz from './views/Viz.vue'
 import VizOverview from './components/VizOverview.vue'
 import VizTag from './components/VizTag.vue'
+import VizDetail from './components/VizDetail.vue'
 
 Vue.use(Router)
 
@@ -29,6 +30,14 @@ export default new Router({
         {
           path: 'tag/:id',
           component: VizTag
+        },
+        {
+          path: 'object',
+          redirect: '/viz'
+        },
+        {
+          path: 'object/:id',
+          component: VizDetail
         }
       ]
     },

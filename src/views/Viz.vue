@@ -4,7 +4,7 @@
     <main class="grid-area__main">
       <VizRenderer v-if="hasFetched" />
     </main>
-    <Footer />
+    <!--Footer /-->
   </div>
 </template>
 
@@ -33,6 +33,12 @@ export default {
 </script>
 
 <style lang="scss">
+
+html,
+body {
+  overflow: hidden;
+}
+
 .grid__viz {
   width: 100%;
   height: 100%;

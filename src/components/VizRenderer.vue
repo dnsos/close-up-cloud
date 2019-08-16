@@ -1,12 +1,11 @@
 <template>
   <div class="renderer__wrapper" ref="rendererWrapper">
-
     <div class="vizhtml">
-      hello this is a single renderer
-      <!--VizOverview /-->
+      <router-link :to="`/viz`">
+        hello this is a single renderer
+      </router-link>
       <router-view />
     </div>
-
   </div>
   
 </template>
@@ -74,7 +73,7 @@ export default {
 .vizhtml {
     position: fixed;
     right: 0;
-    width: 20%;
+    width: 320px;
     height: 90vh;
     //transform: scale(0.25);
     transform-origin: top right;

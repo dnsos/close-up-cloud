@@ -26,6 +26,8 @@ export default {
         //in case we get no tag prop passed down, try to fetch it from the store
         if(this.$route.params.id) {
           return this.$store.getters.tag(this.$route.params.id)
+        } else {
+          console.warning('initialized VizTag without id')
         }
       }
     }
@@ -98,6 +100,9 @@ export default {
     }
   },
   mounted: function() {
+  },
+  beforeDestroy: function () {
+      this.PIXIApp.stage.removeChild(this.tagContainer)
   }
 }
 </script>
