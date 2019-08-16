@@ -82,8 +82,10 @@ export default {
                 const textureHeight = texture.baseTexture.height
                 const textureWidth = texture.baseTexture.width
                 const sprite = this.sprite = new PIXI.Sprite(texture)
+                sprite.alpha = 0;
                 
                 this.viewport.addChild(sprite) 
+                TweenLite.to(sprite, 1, {alpha: 1});
 
                 sprite.anchor.set(0.5)
                 sprite.position.set(this.canvas.width/2, this.canvas.height/2)                

@@ -4,6 +4,7 @@
 
 <script>
 import * as PIXI from 'pixi.js'
+import { TweenLite } from 'gsap/TweenMax'
 import { sanitizeLabel, getOccurrenceUID } from '../js/utils.js'
 
 export default {
@@ -19,6 +20,7 @@ export default {
     //sprite.name = this.occurrence.origin
     sprite.x = 0//position.x
     sprite.y = 0//position.y
+    sprite.alpha = 0
 
     //inherit size
     sprite.width = this.$parent.occurrenceContainer._width
@@ -37,6 +39,8 @@ export default {
   mounted: function() {
     // add children to respective containers
     this.$parent.occurrenceContainer.addChild(this.sprite)
+
+    TweenLite.to(this.sprite, 1, {alpha: 1});
 
     //htmlviz
     const uid = getOccurrenceUID(this.tag.title, this.occurrence, this.geometry)

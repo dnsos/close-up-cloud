@@ -22,7 +22,7 @@ export default {
   occurrenceContainer: null,
   beforeMount: function() {
     
-    console.log("hello this is an occurrence", this.position)
+    console.log("hello this is an occurrence")
     const position = this.position
 
     const occurrenceContainer = this.occurrenceContainer = new PIXI.Container()

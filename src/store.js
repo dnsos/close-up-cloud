@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import forceLayout from './js/forceLayout.js';
 import { publicDataUrl } from './js/variables'
+import { maxHeaderSize } from 'http';
 
 Vue.use(Vuex)
 
@@ -39,6 +40,9 @@ export default new Vuex.Store({
     tag: (state) => (title) => {
       return state.taglist.find(tag => tag.title === title)
     },
+    maxTagCount: (state) => (title) => {
+      return Math.max( ...state.taglist.map(tag => tag.tagCount))
+    },
     cloud: (state) => (cloud) => {
       if(!state.clouds[cloud]) throw new Error(`there is no cloud named ${cloud}`)
       return state.clouds[cloud];
@@ -49,6 +53,11 @@ export default new Vuex.Store({
     positionInCloud: (state) => (cloud, id) => {
       if(!state.clouds[cloud]) throw new Error(`there is no cloud named ${cloud}`)
       return state.clouds[cloud].find(el => el.id === id)
+    },
+    weightBySizeInCloud: (state) => (cloud, id) => {
+      if(!state.clouds[cloud]) throw new Error(`there is no cloud named ${cloud}`)
+      const maxSize = Math.max(...state.clouds[cloud].map(d => d.size));
+      return state.clouds[cloud].find(el => el.id === id).size / maxSize;
     },
     object: (state) => (objectID) => {
       return state.data.find(object => object.id === objectID)

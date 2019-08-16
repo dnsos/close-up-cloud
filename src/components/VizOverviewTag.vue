@@ -2,7 +2,13 @@
   <div class="tag">
     <router-link :to="`/viz/tag/${tag.title}`">Overview Tag {{tag.title}}</router-link>
 
-    <VizOccurrence :occurrence="occurrencesWithPositions[0]" :position="occurrencesWithPositions[0].position" :tag="tag" />
+    <VizOccurrence v-for="(occurrence, i) in renderOccurrences" 
+      :occurrence="occurrence" 
+      :position="occurrence.position" 
+      :tag="tag" 
+      :key="tag.title + occurrence.origin + i" />    
+
+    <!--VizOccurrence :occurrence="occurrencesWithPositions[0]" :position="occurrencesWithPositions[0].position" :tag="tag" /-->
   </div>
   
 </template>
@@ -10,6 +16,7 @@
 <script>
 import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
+import { TimelineMax, TweenMax } from 'gsap/TweenMax'
 import VizOccurrence from './VizOccurrence.vue'
 
 export default {
@@ -20,14 +27,16 @@ export default {
       required: true
     }
   },
-  data: () => {
+  data: function() {
     return {
-      isSpread: false
+      appendTimeout: null,
+      renderIndex: 0,
+      renderOccurrences: []
     }
   },
   computed: {
     ...mapState(['PIXIApp', 'canvas', 'activeView']),
-    occurrencesWithPositions: function() {
+    /*occurrencesWithPositions: function() {
       return this.tag.occurrences.map((occurrence) => {
         const position = this.$store.getters.positionInCloud('overview', this.tag.title);
         occurrence.position = {
@@ -37,7 +46,7 @@ export default {
         }
         return occurrence;
       })
-    }
+    }*/
   },
   components: { VizOccurrence },
   tagContainer: null,
@@ -71,16 +80,13 @@ export default {
     })
 
 
-    //@todo render sprites on cutout level
+    //@debug adds a sprite and random tint that will be removed on load
     /*let sprite = new PIXI.Sprite(PIXI.Texture.WHITE)
+    sprite.tint = '0x' + Math.floor(Math.random()*16777215).toString(16);
     sprite.x = 0
     sprite.y = 0
     sprite.width = position.size
     sprite.height = position.size
-
-    // for development: adds a random tint that will be removed on load
-    sprite.tint = '0x' + Math.floor(Math.random()*16777215).toString(16);
-
     // add sprite
     tagContainer.addChild(sprite)*/
   },
@@ -88,9 +94,35 @@ export default {
     
     //@todo make mounting bullet proof
     this.$parent.cloudContainer.addChild(this.tagContainer);
+    
+
+    const appendOccurrance = () => {
+      const occ = this.tag.occurrences[this.renderIndex];
+      const position = this.$store.getters.positionInCloud('overview', this.tag.title);
+      const maxTagCount = this.$store.getters.maxTagCount();
+      const tag = this.$store.getters.tag(this.tag.title);
+      occ.position = {
+        x: 0, y: 0, //positioned by this.tagContainer
+        size: position.size
+      }
+
+      const renderOcc =  this.renderOccurrences.map(d => d);
+      renderOcc.push(occ)
+      this.renderOccurrences = renderOcc;
+      this.renderIndex++;
+
+      //@todo make infinite loop
+      if(this.renderIndex < this.tag.occurrences.length) {
+        this.appendTimeout = window.setTimeout(appendOccurrance, 8000 + ((-0.5 + Math.random())*2000));
+      }
+    }
+
+    appendOccurrance();
   },
   beforeDestroy: function () {
       this.$parent.cloudContainer.removeChild(this.tagContainer)
+
+      window.clearTimeout(this.appendTimeout);
   }
 }
 </script>
