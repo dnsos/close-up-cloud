@@ -1,6 +1,9 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home.vue'
+import Viz from './views/Viz.vue'
+import VizOverview from './components/VizOverview.vue'
+import VizTag from './components/VizTag.vue'
 
 Vue.use(Router)
 
@@ -13,15 +16,25 @@ export default new Router({
     },
     {
       path: '/viz',
-      component: () => import('./views/Viz.vue')
+      component: Viz,
+      children: [
+        {
+          path: '',
+          component: VizOverview
+        },
+        {
+          path: 'tag',
+          redirect: '/viz'
+        },
+        {
+          path: 'tag/:id',
+          component: VizTag
+        }
+      ]
     },
     {
-      path: '/viz2',
-      component: () => import('./views/Viz2.vue')
-    },
-    {
-      path: '/viz2/tag/:id',
-      component: () => import('./views/Viz2.vue')
+      path: '/viz/tag/:id',
+      component: Viz
     },
     {
       path: '/info',

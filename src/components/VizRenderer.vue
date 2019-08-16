@@ -3,7 +3,8 @@
 
     <div class="vizhtml">
       hello this is a single renderer
-      <VizOverview />
+      <!--VizOverview /-->
+      <router-view />
     </div>
 
   </div>
@@ -13,17 +14,22 @@
 <script>
 import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
-import VizOverview from '@/components/VizOverview.vue'
+//import VizOverview from '@/components/VizOverview.vue'
 
 export default {
   name: 'viz-renderer',
   props: ['bus'],
-  components: { VizOverview },
+  //components: { VizOverview },
   computed: mapState(['canvas', 'taglist']),
+  watch: {
+    $route(to, from) {
+      //console.log('viz route changed', to, from);
+    }
+  },
   methods: {
     handleResize() {
       const { clientWidth: width, clientHeight: height } = this.$refs.rendererWrapper;
-      this.$store.dispatch('updateCanvasSize', {width, height});      
+      this.$store.dispatch('updateCanvasSize', {width, height});
     },
       load() {
       },
@@ -60,26 +66,21 @@ export default {
     window.addEventListener('resize', this.handleResize);
     this.handleResize();
 
-  },
-  methods: {
-    handleResize() {
-      const { clientWidth: width, clientHeight: height } = this.$refs.rendererWrapper;
-      this.PIXIApp.renderer.resize(width, height);
-      this.$store.dispatch('updateCanvasSize', {width, height});
-    }
-  },
+  }
 }
 </script>
 
 <style scoped lang="scss">
 .vizhtml {
-    position: absolute;
+    position: fixed;
     right: 0;
     width: 20%;
+    height: 90vh;
     //transform: scale(0.25);
     transform-origin: top right;
     overflow: auto;
     padding: 8px;
+    overflow: auto;
 }
 .renderer__wrapper {
   width: 100%;

@@ -1,7 +1,7 @@
 <template>
     <div class="overview">
     
-        hello this is an overview
+        <router-link :to="`/viz/`">hello this is an overview</router-link>
     
         <VizTag v-for="tag in taglist" :tag="tag" :key="tag.title" />
     
@@ -25,31 +25,11 @@ export default {
         }
     },
     watch: {
-        canvas(newval, oldval) {
-            //if(this.cloudContainer.x === 0) {
-                this.cloudContainer.x = newval.width/2;
-                this.cloudContainer.y = newval.height/2;
-            //    return;
-            //}
-            //new TimelineMax()
-            //    .add( TweenMax.to(this.cloudContainer, 0.5, {x: width/2, y: height/2}) )
-            //    .play()
-        }
     },
     methods: {
-    },
-    beforeMount: function() {
-        console.log("hello this is a overview")
+        initForceLayout() {
 
-        // create containers for tag cloud
-        if(!this.cloudContainer) {
-            this.cloudContainer = new PIXI.Container()
-            this.cloudContainer.name = 'cloudContainer'
-            this.PIXIApp.stage.addChild(this.cloudContainer);
-        }
-
-        //create cloud overview force layout
-        if (!this.$store.state.clouds.overview) {
+            if(this.$store.state.clouds.overview) return;
 
             const forceInput = this.taglist.map(tag => {
                 return {
@@ -63,6 +43,19 @@ export default {
                 data: forceInput
             });
         }
+    },
+    beforeMount: function() {
+        console.log("hello this is a overview")
+
+        // create container for tag cloud
+        if(!this.cloudContainer) {
+            this.cloudContainer = new PIXI.Container()
+            this.cloudContainer.name = 'cloudContainer'
+            this.PIXIApp.stage.addChild(this.cloudContainer);
+        }
+
+        //create cloud overview force layout
+        this.initForceLayout();
     },
     mounted: function() {
 

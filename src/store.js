@@ -8,8 +8,8 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     inverted: false,
-    views: ['cloud', 'tag', 'detail'], //viz views
-    activeView: 'cloud',
+    views: ['overview', 'tag', 'detail'], //viz views
+    activeView: '',
     data: [],
     taglist: [],
     PIXIApp: null,
@@ -82,7 +82,7 @@ export default new Vuex.Store({
     updateCanvasSize: (state, payload) => {
       state.canvas = payload
     },
-    buildTaglist: (state, payload) => {
+    buildTaglist: (state) => {
       
       const uncleanedTaglist = []
 
@@ -136,7 +136,7 @@ export default new Vuex.Store({
         }
       })
 
-      console.log('taglist:', state.taglist);
+      console.log('built taglist:', state.taglist);
     }
   },
   actions: {
@@ -151,6 +151,8 @@ export default new Vuex.Store({
     },
     updateCanvasSize: ({ commit, state }, payload) => {
       state.PIXIApp.renderer.resize(payload.width, payload.height);
+      state.PIXIApp.stage.x = payload.width/2;
+      state.PIXIApp.stage.y = payload.height/2;
       commit('updateCanvasSize', payload)
     },
     computeForceLayout({ commit, state }, payload) {
@@ -163,17 +165,18 @@ export default new Vuex.Store({
         })
       })
     },
-    async fetchData({dispatch, commit}) {
+    async fetchData({commit}) {
       console.log(`fetching ${publicDataUrl} ...`);
       return window.fetch(publicDataUrl)
         .then(response => response.json())
         .then(data => {
+          console.log("data fetched", data)
           commit('setData', data);
           commit('buildTaglist');
           return data;
         })
         .catch((error) => {
-            console.error('Fetch Data Error', arguments);
+            console.error('Fetch Data Error', error);
         })
     }
   }

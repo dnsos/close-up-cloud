@@ -115,7 +115,7 @@ export class ForceLayout {
             x += Math.sin(totalRad) * spiralDist;
             y += Math.cos(totalRad) * spiralDist;
             
-            const aspect = options.canvasWidth / options.canvasHeight;
+            //const aspect = options.canvasWidth / options.canvasHeight;
             //x *= aspect;
 
             totalRad += rad;

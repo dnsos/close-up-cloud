@@ -1,11 +1,10 @@
 <template>
   <div class="view__viz grid__viz">
-    <grid-header />
+    <Header />
     <main class="grid-area__main">
-      <div id="d3debug" />
-      <pixi-renderer v-if="hasFetched" />
+      <VizRenderer v-if="hasFetched" />
     </main>
-    <grid-footer />
+    <Footer />
   </div>
 </template>
 
@@ -13,31 +12,27 @@
 import * as PIXI from 'pixi.js'
 import Header from '@/components/Header.vue'
 import Footer from '@/components/Footer.vue'
-import PixiRenderer from '@/components/PixiRenderer.vue'
+import VizRenderer from '@/components/VizRenderer.vue'
 
 export default {
   name: 'viz',
-  components: {
-    'grid-header': Header,
-    'grid-footer': Footer,
-    'pixi-renderer': PixiRenderer
-  },
+  components: { Header, VizRenderer, Footer },
   data: function () {
     return {
       hasFetched: false
     }
   },
   mounted: function() {
+    console.log('Hello this is a Viz')
     
     this.$store.dispatch('fetchData').then((data) => {
       this.hasFetched = true;
-      console.log("data fetched", data)
     });
   }
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
 .grid__viz {
   width: 100%;
   height: 100%;
