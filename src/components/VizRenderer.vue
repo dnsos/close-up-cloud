@@ -54,23 +54,21 @@ export default {
   },
   mounted: function() {
 
-    const PIXIApp = this.PIXIApp
-
     // append PIXI.Application to wrapper
     const wrap = this.$refs.rendererWrapper;
-    wrap.appendChild(PIXIApp.view)
+    wrap.appendChild(this.PIXIApp.view)
     
     //handle resize
-    PIXIApp.renderer.autoResize = true;
+    this.PIXIApp.renderer.autoResize = true;
     window.addEventListener('resize', this.handleResize);
     this.handleResize();
-
   }
 }
 </script>
 
 <style scoped lang="scss">
 .vizhtml {
+  display: none;  
     position: fixed;
     right: 0;
     width: 320px;

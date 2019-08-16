@@ -20,23 +20,18 @@ export default new Router({
       component: Viz,
       children: [
         {
+          name: 'overview',
           path: '',
           component: VizOverview
         },
         {
-          path: 'tag',
-          redirect: '/viz'
-        },
-        {
+          name: 'tag',
           path: 'tag/:id',
           component: VizTag
         },
         {
-          path: 'object',
-          redirect: '/viz'
-        },
-        {
-          path: 'object/:id',
+          name: 'detail',
+          path: 'detail/:id',
           component: VizDetail
         }
       ]
@@ -49,6 +44,10 @@ export default new Router({
       path: '/info',
       name: 'info',
       component: () => import('./views/Info.vue')
+    },
+    {
+      path: '*',
+      redirect: '/'
     }
   ]
 })

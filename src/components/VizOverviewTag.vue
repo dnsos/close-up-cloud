@@ -1,14 +1,10 @@
 <template>
   <div class="tag">
-    <router-link :to="`/viz/tag/${tag.title}`">Tag {{tag.title}}</router-link>
+    <router-link :to="`/viz/tag/${tag.title}`">Overview Tag {{tag.title}}</router-link>
 
-    <VizOccurrence v-for="(occurrence, i) in occurrencesWithPositions" 
-      :occurrence="occurrence" 
-      :position="occurrence.position" 
-      :tag="tag" 
-      :key="tag.title + occurrence.origin + i" />    
-
+    <VizOccurrence :occurrence="occurrencesWithPositions[0]" :position="occurrencesWithPositions[0].position" :tag="tag" />
   </div>
+  
 </template>
 
 <script>
@@ -21,9 +17,7 @@ export default {
   props: {
     tag: {
       type: Object,
-      default: function() {
-        return this.$store.getters.tag(this.$route.params.id)
-      }
+      required: true
     }
   },
   data: () => {
@@ -35,7 +29,12 @@ export default {
     ...mapState(['PIXIApp', 'canvas', 'activeView']),
     occurrencesWithPositions: function() {
       return this.tag.occurrences.map((occurrence) => {
-        occurrence.position = this.$store.getters.positionInCloud(this.tag.title, occurrence.origin);
+        const position = this.$store.getters.positionInCloud('overview', this.tag.title);
+        occurrence.position = {
+          x: 0,
+          y: 0,
+          size: position.size
+        }
         return occurrence;
       })
     }
@@ -43,41 +42,25 @@ export default {
   components: { VizOccurrence },
   tagContainer: null,
   methods: {
-    initForceLayout() {
-
-      //only ever compute once
-      if(this.$store.state.clouds[this.tag.title]) return;
-
-      const forceInput = this.tag.occurrences.map((occurrence) => {
-        return {
-          id: occurrence.origin, 
-          weight: occurrence.geometry.length
-        }
-      })
-      this.$store.dispatch('computeForceLayout', {
-          key: this.tag.title,
-          data: forceInput
-      });
-    }
+    
   },
   watch: {
-      canvas(newval, oldval) {
-          //center tagContainer
-          if(this.$router.currentRoute.name === 'tag') {
-            if(this.tagContainer) {
-                this.tagContainer.position.set(newval.width/2, newval.height/2)
-            }
-          }
-      }
   },
   beforeMount: function() {
+    console.log("hello this is an overview tag")
     
     const tagContainer = this.tagContainer = new PIXI.Container();
-    tagContainer.name = this.tag.title    
-    tagContainer.x = 0
-    tagContainer.y = 0
+    //tagContainer.name = this.tag.title
+    
+    //@todo get smarter
+    const position = this.$store.getters.positionInCloud('overview', this.tag.title);
 
-    this.initForceLayout();
+    console.log(this.tag.title, position)
+    
+    tagContainer.x = position.x
+    tagContainer.y = position.y
+    tagContainer.width = position.size
+    tagContainer.height = position.size
 
     // add interactivity
     tagContainer.interactive = true;
@@ -105,11 +88,8 @@ export default {
   },
   mounted: function() {
     
-    //center
     //@todo make mounting bullet proof
-    
-    this.tagContainer.position.set(this.canvas.width/2, this.canvas.height/2)
-    this.PIXIApp.stage.addChild(this.tagContainer);
+    this.$parent.cloudContainer.addChild(this.tagContainer);
   },
   beforeDestroy: function () {
       this.PIXIApp.stage.removeChild(this.tagContainer)

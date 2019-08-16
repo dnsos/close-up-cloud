@@ -3,7 +3,7 @@
     
         <router-link :to="`/viz/`">hello this is an overview</router-link>
     
-        <VizTag v-for="tag in taglist" :tag="tag" :key="tag.title" />
+        <VizOverviewTag v-for="tag in taglist" :tag="tag" :key="tag.title" />
     
     </div>
 </template>
@@ -11,12 +11,12 @@
 <script>
 import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
-import VizTag from './VizTag'
+import VizOverviewTag from './VizOverviewTag'
 
 export default {
     name: 'viz-renderer',
     props: ['bus'],
-    components: { VizTag },
+    components: { VizOverviewTag },
     computed: mapState(['PIXIApp', 'taglist', 'canvas']),
     cloudContainer: null,
     data: () => {
@@ -25,6 +25,12 @@ export default {
         }
     },
     watch: {
+        canvas(newval, oldval) {
+            //center overview cloud
+            if(this.cloudContainer) {
+                this.cloudContainer.position.set(newval.width/2, newval.height/2)
+            }
+        }
     },
     methods: {
         initForceLayout() {
@@ -51,7 +57,6 @@ export default {
         if(!this.cloudContainer) {
             this.cloudContainer = new PIXI.Container()
             this.cloudContainer.name = 'cloudContainer'
-            this.PIXIApp.stage.addChild(this.cloudContainer);
         }
 
         //create cloud overview force layout
@@ -59,6 +64,10 @@ export default {
     },
     mounted: function() {
 
+        //center
+        this.cloudContainer.position.set(this.canvas.width/2, this.canvas.height/2)
+
+        this.PIXIApp.stage.addChild(this.cloudContainer);
     },
     beforeDestroy: function () {
         this.PIXIApp.stage.removeChild(this.cloudContainer)
