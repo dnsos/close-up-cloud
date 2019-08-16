@@ -2,9 +2,9 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home.vue'
 import Viz from './views/Viz.vue'
-import VizOverview from './components/VizOverview.vue'
-import VizTag from './components/VizTag.vue'
-import VizDetail from './components/VizDetail.vue'
+import VizOverview from './views/VizOverview.vue'
+import VizTag from './views/VizTag.vue'
+import VizDetail from './views/VizDetail.vue'
 
 Vue.use(Router)
 

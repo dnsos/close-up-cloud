@@ -12,6 +12,7 @@
 
 <script>
 import * as PIXI from 'pixi.js'
+import { Viewport } from 'pixi-viewport'
 import { mapState } from 'vuex'
 //import VizOverview from '@/components/VizOverview.vue'
 
@@ -50,14 +51,33 @@ export default {
       resolution: 1
     })
 
+    this.viewport = new Viewport({
+        screenWidth: 1280,
+        screenHeight: 800,
+        worldWidth: 1280,
+        worldHeight: 1280,
+        interaction: this.PIXIApp.renderer.plugins.interaction
+    })
+
     this.$store.commit('setPIXIApp', this.PIXIApp);
+    this.$store.commit('setViewport', this.viewport);
   },
   mounted: function() {
 
-    // append PIXI.Application to wrapper
+    
+    
     const wrap = this.$refs.rendererWrapper;
     wrap.appendChild(this.PIXIApp.view)
+    this.PIXIApp.stage.addChild(this.viewport)
     
+    
+    this.viewport
+        .drag()
+        .pinch()
+        .wheel()
+        .decelerate()
+        //.clamp({ direction: 'all' })
+        
     //handle resize
     this.PIXIApp.renderer.autoResize = true;
     window.addEventListener('resize', this.handleResize);

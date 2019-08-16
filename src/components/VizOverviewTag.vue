@@ -54,8 +54,6 @@ export default {
     
     //@todo get smarter
     const position = this.$store.getters.positionInCloud('overview', this.tag.title);
-
-    console.log(this.tag.title, position)
     
     tagContainer.x = position.x
     tagContainer.y = position.y
@@ -92,7 +90,7 @@ export default {
     this.$parent.cloudContainer.addChild(this.tagContainer);
   },
   beforeDestroy: function () {
-      this.PIXIApp.stage.removeChild(this.tagContainer)
+      this.$parent.cloudContainer.removeChild(this.tagContainer)
   }
 }
 </script>

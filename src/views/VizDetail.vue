@@ -6,16 +6,15 @@
 
 <script>
 import * as PIXI from 'pixi.js'
-import { Viewport } from 'pixi-viewport'
 import { mapState } from 'vuex'
-import VizCutout from './VizCutout.vue'
+import VizCutout from '../components/VizCutout.vue'
 import { getOccurrenceUID } from '../js/utils.js'
 
 export default {
     name: 'viz-detail',
     objectViewport: null,
     sprite: null,
-    computed: mapState(['PIXIApp', 'canvas']),
+    computed: mapState(['PIXIApp', 'canvas', 'viewport']),
     props: {
         object: {
             //in case we get no object prop passed down, try to fetch it from the store
@@ -30,7 +29,7 @@ export default {
     },
     watch: {
         canvas(newval, oldval) {
-            this.objectViewport.resize(newval.width, newval.height);
+            
             
             //center detail image
             if(this.sprite) {
@@ -42,13 +41,13 @@ export default {
         console.log("hello this is a detail view")
 
         // objectViewport created by pixi-viewport for zoom/pan etc.
-        const objectViewport = this.objectViewport = new Viewport({
+        /*const objectViewport = this.objectViewport = new Viewport({
             screenWidth: this.canvas.width, //will be set on resize
             screenHeight: this.canvas.height,
             worldWidth: 1280,
             worldHeight: 1280,
             interaction: this.PIXIApp.renderer.plugins.interaction
-        })  
+        })*/  
 
 
         /*let sprite = objectViewport.addChild(new PIXI.Sprite(PIXI.Texture.WHITE))
@@ -84,35 +83,24 @@ export default {
                 const textureWidth = texture.baseTexture.width
                 const sprite = this.sprite = new PIXI.Sprite(texture)
                 
-                objectViewport.addChild(sprite) 
+                this.viewport.addChild(sprite) 
 
                 sprite.anchor.set(0.5)
                 sprite.position.set(this.canvas.width/2, this.canvas.height/2)                
 
                 const desiredHeight = this.canvas.height
                 const ratio = (desiredHeight / textureHeight)
-                objectViewport.setZoom(ratio, true)
+                this.viewport.setZoom(ratio, true)
 
             });
     },
     mounted: function () {
 
-        this.PIXIApp.stage.addChild(this.objectViewport)
-        
-        //this.sprite.position.set(this.canvas.width/2, this.canvas.height/2)
-
-        this.objectViewport
-            .drag()
-            .pinch()
-            .wheel()
-            .decelerate()
-            //.clamp({ direction: 'all' })
-
         //htmlviz
         this.$refs.detail.style.backgroundImage = `url(assets/images/thumb/${this.object.id}/${this.object.id}.jpg)`;
     },
     beforeDestroy: function () {
-        this.PIXIApp.stage.removeChild(this.objectViewport)
+        this.viewport.removeChild(this.sprite)
     }
 }
 </script>

@@ -11,13 +11,13 @@
 <script>
 import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
-import VizOverviewTag from './VizOverviewTag'
+import VizOverviewTag from '../components/VizOverviewTag'
 
 export default {
     name: 'viz-renderer',
     props: ['bus'],
     components: { VizOverviewTag },
-    computed: mapState(['PIXIApp', 'taglist', 'canvas']),
+    computed: mapState(['PIXIApp', 'taglist', 'canvas', 'viewport']),
     cloudContainer: null,
     data: () => {
         return {
@@ -67,10 +67,10 @@ export default {
         //center
         this.cloudContainer.position.set(this.canvas.width/2, this.canvas.height/2)
 
-        this.PIXIApp.stage.addChild(this.cloudContainer);
+        this.viewport.addChild(this.cloudContainer);
     },
     beforeDestroy: function () {
-        this.PIXIApp.stage.removeChild(this.cloudContainer)
+        this.viewport.removeChild(this.cloudContainer)
     }
 }
 </script>

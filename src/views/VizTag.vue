@@ -14,7 +14,7 @@
 <script>
 import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
-import VizOccurrence from './VizOccurrence.vue'
+import VizOccurrence from '../components/VizOccurrence.vue'
 
 export default {
   name: 'viz-tag',
@@ -32,7 +32,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(['PIXIApp', 'canvas', 'activeView']),
+    ...mapState(['PIXIApp', 'canvas', 'viewport']),
     occurrencesWithPositions: function() {
       return this.tag.occurrences.map((occurrence) => {
         occurrence.position = this.$store.getters.positionInCloud(this.tag.title, occurrence.origin);
@@ -109,10 +109,10 @@ export default {
     //@todo make mounting bullet proof
     
     this.tagContainer.position.set(this.canvas.width/2, this.canvas.height/2)
-    this.PIXIApp.stage.addChild(this.tagContainer);
+    this.viewport.addChild(this.tagContainer);
   },
   beforeDestroy: function () {
-      this.PIXIApp.stage.removeChild(this.tagContainer)
+      this.viewport.removeChild(this.tagContainer)
   }
 }
 </script>

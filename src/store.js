@@ -30,6 +30,7 @@ export default new Vuex.Store({
       width: 0,
       height: 0
     },
+    viewport: null,
     helpers: {
       renderCloseups: false
     }
@@ -59,6 +60,9 @@ export default new Vuex.Store({
     },
     setPIXIApp: (state, payload) => {
       state.PIXIApp = payload
+    },
+    setViewport: (state, payload) => {
+      state.viewport = payload
     },
     toggleMode: (state) => {
       state.inverted = !state.inverted
@@ -151,6 +155,7 @@ export default new Vuex.Store({
     },
     updateCanvasSize: ({ commit, state }, payload) => {
       state.PIXIApp.renderer.resize(payload.width, payload.height);
+      state.viewport.resize(payload.width, payload.height);
       commit('updateCanvasSize', payload)
     },
     computeForceLayout({ commit, state }, payload) {
