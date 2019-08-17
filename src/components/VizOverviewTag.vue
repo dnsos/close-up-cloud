@@ -35,18 +35,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(['PIXIApp', 'canvas', 'activeView']),
-    /*occurrencesWithPositions: function() {
-      return this.tag.occurrences.map((occurrence) => {
-        const position = this.$store.getters.positionInCloud('overview', this.tag.title);
-        occurrence.position = {
-          x: 0,
-          y: 0,
-          size: position.size
-        }
-        return occurrence;
-      })
-    }*/
+    ...mapState(['PIXIApp', 'canvas', 'activeView'])
   },
   components: { VizOccurrence },
   tagContainer: null,
@@ -59,11 +48,11 @@ export default {
     console.log("hello this is an overview tag")
     
     const tagContainer = this.tagContainer = new PIXI.Container();
-    //tagContainer.name = this.tag.title
+    
+    //@todo build layers and add text label
     
     //@todo get smarter
     const position = this.$store.getters.positionInCloud('overview', this.tag.title);
-    
     tagContainer.x = position.x
     tagContainer.y = position.y
     tagContainer.width = position.size
@@ -73,8 +62,11 @@ export default {
     tagContainer.interactive = true;
     tagContainer.buttonMode = true;
     tagContainer.on('pointertap', () => {
-      console.log(this.$router.currentRoute)
+      
+      //@todo better event prevent?
       if(this.$router.currentRoute.name !== 'overview') return;
+      if(this.$store.state.isDragging) return;
+
       console.log('tagContainer tap!');
       this.$router.push({ path: `/viz/tag/${this.tag.title}` })
     })
@@ -92,26 +84,25 @@ export default {
   },
   mounted: function() {
     
-    //@todo make mounting bullet proof
     this.$parent.cloudContainer.addChild(this.tagContainer);
     
-
+    //@todo make more general
     const appendOccurrance = () => {
       const occ = this.tag.occurrences[this.renderIndex];
       const position = this.$store.getters.positionInCloud('overview', this.tag.title);
-      const maxTagCount = this.$store.getters.maxTagCount();
-      const tag = this.$store.getters.tag(this.tag.title);
       occ.position = {
         x: 0, y: 0, //positioned by this.tagContainer
         size: position.size
       }
 
+      //clone renderOccurrences and add occ
       const renderOcc =  this.renderOccurrences.map(d => d);
       renderOcc.push(occ)
       this.renderOccurrences = renderOcc;
       this.renderIndex++;
 
       //@todo make infinite loop
+      //@todo remove or hide past sprites
       if(this.renderIndex < this.tag.occurrences.length) {
         this.appendTimeout = window.setTimeout(appendOccurrance, 8000 + ((-0.5 + Math.random())*2000));
       }
@@ -121,7 +112,6 @@ export default {
   },
   beforeDestroy: function () {
       this.$parent.cloudContainer.removeChild(this.tagContainer)
-
       window.clearTimeout(this.appendTimeout);
   }
 }

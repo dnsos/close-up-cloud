@@ -4,7 +4,7 @@
     <main class="grid-area__main">
       <VizRenderer v-if="hasFetched" />
     </main>
-    <!--Footer /-->
+    <Footer />
   </div>
 </template>
 

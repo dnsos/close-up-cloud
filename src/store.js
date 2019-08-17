@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import forceLayout from './js/forceLayout.js';
-import { publicDataUrl } from './js/variables'
+import { publicDataUrl } from './variables'
 import { maxHeaderSize } from 'http';
 
 Vue.use(Vuex)
@@ -9,15 +9,15 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     inverted: false,
-    views: ['overview', 'tag', 'detail'], //viz views
-    activeView: '',
+    //views: ['overview', 'tag', 'detail'], //viz views
+    //activeView: '',
     data: [],
     taglist: [],
     PIXIApp: null,
     clouds: {   
       overview: null
     },
-    selection: {
+    /*selection: {
       tag: {
         hovered: null,
         active: null
@@ -26,6 +26,9 @@ export default new Vuex.Store({
         hovered: '',
         active: ''
       }
+    },*/
+    input: {
+      isDragging: false
     },
     canvas: {
       width: 0,
@@ -40,28 +43,57 @@ export default new Vuex.Store({
     tag: (state) => (title) => {
       return state.taglist.find(tag => tag.title === title)
     },
-    maxTagCount: (state) => (title) => {
-      return Math.max( ...state.taglist.map(tag => tag.tagCount))
+    object: (state) => (objectID) => {
+      return state.data.find(object => object.id === objectID)
     },
+    /*maxTagCount: (state) => (title) => {
+      return Math.max( ...state.taglist.map(tag => tag.tagCount))
+    },*/
     cloud: (state) => (cloud) => {
       if(!state.clouds[cloud]) throw new Error(`there is no cloud named ${cloud}`)
       return state.clouds[cloud];
     },
-    findOccurenceInActiveTag: (state) => (objectID) => {
-      return state.selection.tag.active.occurrences.find(occurrence => occurrence.origin === objectID)
+    viewportZoom: (state) => (geometry) => {
+
+      let ratio = 1;
+      const padding = 120;
+
+      //@todo pay respect to canvas<>geometry ratio
+      if(geometry.width > geometry.height) {
+        ratio = ((state.canvas.width-padding) / geometry.width)
+      } else {
+        ratio = ((state.canvas.height-padding) / geometry.height)
+      }
+
+      return ratio;
     },
+    cloudBBox: (state) => (cloud) => {
+      if(!state.clouds[cloud]) throw new Error(`there is no cloud named ${cloud}`)
+      const c = state.clouds[cloud],
+      x = Math.min(...c.map(d => d.x)),
+      y = Math.min(...c.map(d => d.y)),
+      w = Math.max(...c.map(d => d.x+d.size)),
+      h = Math.max(...c.map(d => d.y+d.size));
+
+      return {
+        x: x,
+        y: y,
+        width: Math.abs(x - w),
+        height: Math.abs(y - h) 
+      }
+    },
+    /*findOccurenceInActiveTag: (state) => (objectID) => {
+      return state.selection.tag.active.occurrences.find(occurrence => occurrence.origin === objectID)
+    },*/
     positionInCloud: (state) => (cloud, id) => {
       if(!state.clouds[cloud]) throw new Error(`there is no cloud named ${cloud}`)
       return state.clouds[cloud].find(el => el.id === id)
     },
-    weightBySizeInCloud: (state) => (cloud, id) => {
+    /*weightBySizeInCloud: (state) => (cloud, id) => {
       if(!state.clouds[cloud]) throw new Error(`there is no cloud named ${cloud}`)
       const maxSize = Math.max(...state.clouds[cloud].map(d => d.size));
       return state.clouds[cloud].find(el => el.id === id).size / maxSize;
-    },
-    object: (state) => (objectID) => {
-      return state.data.find(object => object.id === objectID)
-    }
+    },*/
   },
   mutations: {
     setData: (state, data) => {
@@ -75,6 +107,12 @@ export default new Vuex.Store({
     },
     toggleMode: (state) => {
       state.inverted = !state.inverted
+    },
+    dragStart: (state) => {
+      state.isDragging = true
+    },
+    dragEnd: (state) => {
+      state.isDragging = false
     },
     setForceLayout: (state, payload) => {
       console.log('setForceLayout:', payload);

@@ -30,6 +30,12 @@ export default {
             if(this.cloudContainer) {
                 this.cloudContainer.position.set(newval.width/2, newval.height/2)
             }
+
+            //zoom to fit
+            const cloudBox = this.$store.getters.cloudBBox('overview');
+            const zoom = this.$store.getters.viewportZoom(cloudBox);
+            
+            this.viewport.setZoom(zoom, true)
         }
     },
     methods: {
@@ -64,8 +70,18 @@ export default {
     },
     mounted: function() {
 
-        //center
-        this.cloudContainer.position.set(this.canvas.width/2, this.canvas.height/2)
+        
+
+        //@todo on late mount watch:canvas is not triggered so this is duplicated here
+        if(this.canvas.height) {
+            //center
+            this.cloudContainer.position.set(this.canvas.width/2, this.canvas.height/2)
+
+            //zoom to fit
+            const cloudBox = this.$store.getters.cloudBBox('overview');
+            const zoom = this.$store.getters.viewportZoom(cloudBox);
+            this.viewport.setZoom(zoom, true)
+        }
 
         this.viewport.addChild(this.cloudContainer);
     },
@@ -76,5 +92,4 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.overview {}
 </style>

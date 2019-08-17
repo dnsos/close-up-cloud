@@ -8,7 +8,7 @@
 import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
 import VizCutout from '../components/VizCutout.vue'
-import { getOccurrenceUID } from '../js/utils.js'
+import { getOccurrenceUID } from '../utils.js'
 
 export default {
     name: 'viz-detail',

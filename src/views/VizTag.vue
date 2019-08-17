@@ -67,6 +67,11 @@ export default {
             if(this.tagContainer) {
                 this.tagContainer.position.set(newval.width/2, newval.height/2)
             }
+
+            //zoom to fit
+            const cloudBox = this.$store.getters.cloudBBox(this.tag.title);
+            const zoom = this.$store.getters.viewportZoom(cloudBox);            
+            this.viewport.setZoom(zoom, true)
           }
       }
   },
@@ -80,14 +85,15 @@ export default {
     this.initForceLayout();
 
     // add interactivity
-    tagContainer.interactive = true;
+    /*tagContainer.interactive = true;
     tagContainer.buttonMode = true;
     tagContainer.on('pointertap', () => {
       console.log(this.$router.currentRoute)
       if(this.$router.currentRoute.name !== 'overview') return;
+      if(this.$store.state.isDragging) return;
       console.log('tagContainer tap!');
       this.$router.push({ path: `/viz/tag/${this.tag.title}` })
-    })
+    })*/
 
 
     //@todo render sprites on cutout level
@@ -105,10 +111,20 @@ export default {
   },
   mounted: function() {
     
-    //center
-    //@todo make mounting bullet proof
     
-    this.tagContainer.position.set(this.canvas.width/2, this.canvas.height/2)
+    
+        //@todo on late mount watch:canvas is not triggered so this is duplicated here
+    if(this.canvas.height) {
+
+      //center
+      this.tagContainer.position.set(this.canvas.width/2, this.canvas.height/2)
+
+      //zoom to fit
+      const cloudBox = this.$store.getters.cloudBBox(this.tag.title);
+      const zoom = this.$store.getters.viewportZoom(cloudBox);
+      this.viewport.setZoom(zoom, true)
+    }
+
     this.viewport.addChild(this.tagContainer);
   },
   beforeDestroy: function () {

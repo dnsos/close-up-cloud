@@ -13,18 +13,21 @@
 <script>
 import * as PIXI from 'pixi.js'
 import { Viewport } from 'pixi-viewport'
+import { TweenLite } from 'gsap/TweenMax'
 import { mapState } from 'vuex'
-//import VizOverview from '@/components/VizOverview.vue'
+import { durations } from '../variables.js'
 
 export default {
   name: 'viz-renderer',
-  props: ['bus'],
-  //components: { VizOverview },
-  computed: mapState(['canvas', 'taglist']),
+  computed: mapState(['canvas', 'taglist', 'inverted']),
   watch: {
     $route(to, from) {
       //console.log('viz route changed', to, from);
-    }
+    },
+    inverted: function (newValue, previousValue) {
+      const targetAlpha = (newValue === true) ? 1 : 0;
+      TweenLite.to(this.PIXIApp.stage.filters[0], durations.invert, { alpha: targetAlpha, ease: Power1.easeInOut } )
+    },
   },
   methods: {
     handleResize() {
@@ -58,13 +61,23 @@ export default {
         worldHeight: 1280,
         interaction: this.PIXIApp.renderer.plugins.interaction
     })
+    .on('drag-start', () => {
+      this.$store.commit('dragStart')
+    })
+    .on('drag-end', () => {
+      this.$store.commit('dragEnd')
+    })
+
+    // init invert filter
+    const colorMatrix = new PIXI.filters.ColorMatrixFilter()
+    colorMatrix.negative()
+    colorMatrix.alpha = 0
+    this.PIXIApp.stage.filters = [colorMatrix]
 
     this.$store.commit('setPIXIApp', this.PIXIApp);
     this.$store.commit('setViewport', this.viewport);
   },
   mounted: function() {
-
-    
     
     const wrap = this.$refs.rendererWrapper;
     wrap.appendChild(this.PIXIApp.view)

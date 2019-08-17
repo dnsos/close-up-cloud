@@ -5,7 +5,7 @@
 <script>
 import * as PIXI from 'pixi.js'
 import { TweenLite } from 'gsap/TweenMax'
-import { sanitizeLabel, getOccurrenceUID } from '../js/utils.js'
+import { sanitizeLabel, getOccurrenceUID } from '../utils.js'
 
 export default {
   name: 'viz-cutout',

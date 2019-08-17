@@ -13,7 +13,7 @@
 <script>
 import * as PIXI from 'pixi.js'
 import VizCutout from './VizCutout.vue'
-import { getOccurrenceUID } from '../js/utils.js'
+import { getOccurrenceUID } from '../utils.js'
 
 export default {
   name: 'viz-occurrence',
@@ -63,6 +63,7 @@ export default {
     occurrenceContainer.buttonMode = true;
     occurrenceContainer.on('pointertap', () => {
       if(this.$router.currentRoute.name !== 'tag') return;
+      if(this.$store.state.isDragging) return;
       console.log('occurrenceContainer tap!');
       this.$router.push({ path: `/viz/detail/${this.occurrence.origin}` })
     })
