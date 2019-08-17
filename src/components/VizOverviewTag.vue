@@ -43,7 +43,36 @@ export default {
   components: { VizOccurrence },
   tagContainer: null,
   methods: {
-    
+    //@todo exclude, make more general
+    //pushes new occurences to be loaded over time
+    appendNext: function() {
+      const occ = this.tag.occurrences[this.renderIndex];
+      const position = this.$store.getters.positionInCloud('overview', this.tag.title);
+      occ.position = {
+        x: 0, y: 0, //positioned by this.tagContainer
+        size: position.size
+      }
+
+      //clone renderOccurrences and add occ
+      let renderStack = this.renderStack.map(d => d);
+      renderStack.push(occ)      
+      
+      //only keep last two occurences
+      if(renderStack.length > 2) {
+        renderStack = renderStack.slice(renderStack.length-2);
+      }
+
+      //update render array
+      this.renderStack = renderStack;
+
+      //prepare appending next occurence
+      if(this.tag.occurrences.length > 1) {
+        this.renderIndex++;
+        if(this.renderIndex === this.tag.occurrences.length) this.renderIndex = 0;
+
+        this.appendTimeout = window.setTimeout(this.appendNext, 6000 + ((-0.5 + Math.random())*2000));
+      }
+    }
   },
   watch: {
   },
@@ -88,39 +117,9 @@ export default {
   mounted: function() {
     
     this.$parent.cloudContainer.addChild(this.tagContainer);
-
-    //@todo make more general
-    //pushes new occurences to be loaded over time
-    const appendOccurrance = () => {
-      const occ = this.tag.occurrences[this.renderIndex];
-      const position = this.$store.getters.positionInCloud('overview', this.tag.title);
-      occ.position = {
-        x: 0, y: 0, //positioned by this.tagContainer
-        size: position.size
-      }
-
-      //clone renderOccurrences and add occ
-      let renderStack = this.renderStack.map(d => d);
-      renderStack.push(occ)      
-      
-      //only keep last two occurences
-      if(renderStack.length > 2) {
-        renderStack = renderStack.slice(renderStack.length-2);
-      }
-
-      //update render array
-      this.renderStack = renderStack;
-
-      //prepare appending next occurence
-      if(this.tag.occurrences.length > 1) {
-        this.renderIndex++;
-        if(this.renderIndex === this.tag.occurrences.length) this.renderIndex = 0;
-
-        this.appendTimeout = window.setTimeout(appendOccurrance, 8000 + ((-0.5 + Math.random())*2000));
-      }
-    }
-
-    appendOccurrance();
+    
+    //first append: mix it up a lil
+    window.setTimeout(this.appendNext, Math.random()*1000);
   },
   beforeDestroy: function () {
       this.$parent.cloudContainer.removeChild(this.tagContainer)

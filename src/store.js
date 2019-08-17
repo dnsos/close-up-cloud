@@ -58,12 +58,12 @@ export default new Vuex.Store({
       let ratio = 1;
       const padding = 120;
 
-      //@todo pay respect to canvas<>geometry ratio
-      if(geometry.width > geometry.height) {
-        ratio = ((state.canvas.width-padding) / geometry.width)
-      } else {
+      //@todo pay respect both width and height
+      //if(geometry.width > geometry.height) {
+        //ratio = ((state.canvas.width-padding) / geometry.width)
+      //} else {
         ratio = ((state.canvas.height-padding) / geometry.height)
-      }
+      //}
 
       return ratio;
     },

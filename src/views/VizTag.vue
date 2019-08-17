@@ -2,7 +2,7 @@
   <div class="tag">
     <router-link :to="`/viz/tag/${tag.title}`">Tag {{tag.title}}</router-link>
 
-    <VizOccurrence v-for="(occurrence, i) in occurrencesWithPositions" 
+    <VizOccurrenceShuffle v-for="(occurrence, i) in occurrencesWithPositions" 
       :occurrence="occurrence" 
       :position="occurrence.position" 
       :tag="tag" 
@@ -14,10 +14,12 @@
 <script>
 import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
-import VizOccurrence from '../components/VizOccurrence.vue'
+import VizOccurrenceShuffle from '../components/VizOccurrenceShuffle.vue'
 
+//@todo merge with other cloud view into one component?
 export default {
   name: 'viz-tag',
+  tagContainer: null,
   props: {
     tag: {
       type: Object,
@@ -40,8 +42,7 @@ export default {
       })
     }
   },
-  components: { VizOccurrence },
-  tagContainer: null,
+  components: { VizOccurrenceShuffle },
   methods: {
     initForceLayout() {
 

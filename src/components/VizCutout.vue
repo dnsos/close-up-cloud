@@ -40,7 +40,7 @@ export default {
     // add children to respective containers
     this.$parent.occurrenceContainer.addChild(this.sprite)
 
-    TweenLite.to(this.sprite, 1, {alpha: 1});
+    TweenLite.to(this.sprite, 1, {alpha: 1, ease: Power2.easeIn});
 
     //htmlviz
     const uid = getOccurrenceUID(this.tag.title, this.occurrence, this.geometry)
