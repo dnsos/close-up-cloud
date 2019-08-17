@@ -2,13 +2,16 @@
   <div class="tag">
     <router-link :to="`/viz/tag/${tag.title}`">Overview Tag {{tag.title}}</router-link>
 
-    <VizOccurrence v-for="(occurrence, i) in renderOccurrences" 
+    <VizOccurrence v-for="(occurrence) in renderStack" 
       :occurrence="occurrence" 
       :position="occurrence.position" 
       :tag="tag" 
-      :key="tag.title + occurrence.origin + i" />    
+      :key="tag.title + occurrence.origin" />
 
-    <!--VizOccurrence :occurrence="occurrencesWithPositions[0]" :position="occurrencesWithPositions[0].position" :tag="tag" /-->
+    <!-- @debug single occurence -->
+    <!--VizOccurrence :occurrence="renderOccurrences[0]" :position="renderOccurrences[0].position" 
+      :tag="tag" 
+      :key="tag.title + renderOccurrences[0].origin" /-->
   </div>
   
 </template>
@@ -30,8 +33,8 @@ export default {
   data: function() {
     return {
       appendTimeout: null,
-      renderIndex: 0,
-      renderOccurrences: []
+      renderIndex: 0, //index of next appended this.tag 
+      renderStack: [] //array of occurencies to be rendered
     }
   },
   computed: {
@@ -85,8 +88,9 @@ export default {
   mounted: function() {
     
     this.$parent.cloudContainer.addChild(this.tagContainer);
-    
+
     //@todo make more general
+    //pushes new occurences to be loaded over time
     const appendOccurrance = () => {
       const occ = this.tag.occurrences[this.renderIndex];
       const position = this.$store.getters.positionInCloud('overview', this.tag.title);
@@ -96,14 +100,22 @@ export default {
       }
 
       //clone renderOccurrences and add occ
-      const renderOcc =  this.renderOccurrences.map(d => d);
-      renderOcc.push(occ)
-      this.renderOccurrences = renderOcc;
-      this.renderIndex++;
+      let renderStack = this.renderStack.map(d => d);
+      renderStack.push(occ)      
+      
+      //only keep last two occurences
+      if(renderStack.length > 2) {
+        renderStack = renderStack.slice(renderStack.length-2);
+      }
 
-      //@todo make infinite loop
-      //@todo remove or hide past sprites
-      if(this.renderIndex < this.tag.occurrences.length) {
+      //update render array
+      this.renderStack = renderStack;
+
+      //prepare appending next occurence
+      if(this.tag.occurrences.length > 1) {
+        this.renderIndex++;
+        if(this.renderIndex === this.tag.occurrences.length) this.renderIndex = 0;
+
         this.appendTimeout = window.setTimeout(appendOccurrance, 8000 + ((-0.5 + Math.random())*2000));
       }
     }

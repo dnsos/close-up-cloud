@@ -19,10 +19,14 @@ import { durations } from '../variables.js'
 
 export default {
   name: 'viz-renderer',
+  PIXIApp: null,
+  viewport: null,
   computed: mapState(['canvas', 'taglist', 'inverted']),
   watch: {
     $route(to, from) {
       //console.log('viz route changed', to, from);
+      //@todo reset viewport to center
+      //this.viewport.ensureVisible(0, 0, width, height)
     },
     inverted: function (newValue, previousValue) {
       const targetAlpha = (newValue === true) ? 1 : 0;
@@ -32,6 +36,8 @@ export default {
   methods: {
     handleResize() {
       const { clientWidth: width, clientHeight: height } = this.$refs.rendererWrapper;
+      this.PIXIApp.renderer.resize(width, height);
+      this.viewport.resize(width, height);
       this.$store.dispatch('updateCanvasSize', {width, height});
     },
       load() {

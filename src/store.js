@@ -201,8 +201,6 @@ export default new Vuex.Store({
       commit('setView', payload)
     },
     updateCanvasSize: ({ commit, state }, payload) => {
-      state.PIXIApp.renderer.resize(payload.width, payload.height);
-      state.viewport.resize(payload.width, payload.height);
       commit('updateCanvasSize', payload)
     },
     computeForceLayout({ commit, state }, payload) {

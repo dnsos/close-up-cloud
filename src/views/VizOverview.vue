@@ -4,6 +4,9 @@
         <router-link :to="`/viz/`">hello this is an overview</router-link>
     
         <VizOverviewTag v-for="tag in taglist" :tag="tag" :key="tag.title" />
+
+        <!-- @debug single tag -->
+        <!--VizOverviewTag :tag="taglist.find(child => child.title === 'Ziege')" /-->
     
     </div>
 </template>

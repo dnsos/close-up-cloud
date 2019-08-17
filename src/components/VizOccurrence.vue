@@ -75,6 +75,9 @@ export default {
   mounted: function() {
     
     this.$parent.tagContainer.addChild(this.occurrenceContainer)
+  },
+  beforeDestroy: function () {
+      this.$parent.tagContainer.removeChild(this.occurrenceContainer)
   }
 }
 </script>
