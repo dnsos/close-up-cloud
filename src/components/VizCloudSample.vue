@@ -4,8 +4,7 @@
 
 <script>
 import * as PIXI from 'pixi.js'
-import { TweenLite } from 'gsap/TweenMax'
-import { getCutoutFilename } from '../utils.js'
+import { TweenLite, Power2 } from 'gsap/TweenMax'
 
 export default {
   name: 'viz-cutout',
@@ -30,9 +29,10 @@ export default {
     sprite.width = this.$parent.itemContainer._width
     sprite.height = this.$parent.itemContainer._height
 
-    let fileName = this.sample.origin;
+    const path = process.env.VUE_APP_URL_IMG;
+    const fileName = this.sample.origin;
     const thumbName = `${this.sample.id}.jpg`;
-    sprite.texture = PIXI.Texture.from(`assets/images/thumb/${fileName}/${thumbName}`);
+    sprite.texture = PIXI.Texture.from(`${path}/${fileName}/${thumbName}`);
 
     //@debug add a random tint that will be removed on load
     //sprite.tint = '0x' + Math.floor(Math.random()*16777215).toString(16);
@@ -48,7 +48,7 @@ export default {
     /*const uid = getOccurrenceUID(this.tag.title, this.occurrence, this.geometry)
     const thumbName = `${uid}.jpg`;
     const filename = this.occurrence.origin;
-    this.$refs.cutout.style.backgroundImage = `url(assets/images/thumb/${filename}/${thumbName})`;*/
+    this.$refs.cutout.style.backgroundImage = `url(${process.env.VUE_APP_URL_IMG}/${filename}/${thumbName})`;*/
   }
 }
 </script>

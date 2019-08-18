@@ -24,3 +24,119 @@ npm run test
 ```
 npm run lint
 ```
+
+## Vue Structure for Viz 
+
+### All Tags
+
+```
+<Viz> ................ Top Level View, load data
+    <VizRenderer> ........ PIXI 
+        <VizOverview> ........ Subroute of Viz, map data
+            <VizCloud> ........... Cloud Container, forceLayout
+                <VizCloudItem> ....... Position in Cloud
+                    <VizSample /> ........ Images
+                    <VizSample /> …
+                </VizCloudItem>
+                <VizCloudItem> …
+            </VizCloud>
+        </VizOverview>
+    </VizRenderer>
+</Viz>
+```
+
+### Tag View
+
+```
+<Viz> ................ Top Level View, load data
+    <VizRenderer> ........ PIXI 
+        <VizTag> ............. Subroute of Viz, map data
+            <VizCloud> ........... Cloud Container, forceLayout
+                <VizCloudItem> ........ Position in Cloud
+                    <VizSample /> ........ Images
+                    <VizSample /> …
+                </VizCloudItem>
+                <VizCloudItem> …
+            </VizCloud>
+        </VizTag>
+    </VizRenderer>
+</Viz>
+```
+
+### Viz Detail
+
+```
+<Viz> ................ Top Level View, load data
+    <VizRenderer> ........ PIXI 
+        <VizDetail /> ........ Subroute of Viz
+    </VizRenderer>
+</Viz>
+```
+
+## Input for Cloud
+
+### All Tags
+
+```
+items = [{
+    id: Blumenornamente,
+    weight: 20,
+    samples: [
+        {
+            origin: P1232,
+            x, y, size
+        },
+        {
+            origin: P1233,
+            x, y, size
+        }
+    ]
+},
+{
+    id: Kastanien,
+    weight: 10,
+    samples: [
+        {
+            origin: P1220,
+            x, y, size
+        },
+        {
+            origin: P1221,
+            x, y, size
+        }
+    ]
+}]
+```
+
+### Single Tag
+
+```
+items: [{
+    id: P1232,
+    weight: 5,
+    samples: [
+        {
+            origin: P1232,
+            x, y, size
+        },
+        {
+            origin: P1232,
+            x, y, size
+        },
+        {
+            origin: P1232,
+            x, y, size
+        }
+    ]
+},
+{
+    id: P1233,
+    weight 5,
+    samples: [
+        {
+            origin: P1233,
+            x, y, size
+        }
+    ]
+}]
+```

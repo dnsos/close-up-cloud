@@ -2,12 +2,11 @@
   <div class="overview">
     <router-link :to="`/viz/`">hello this is a tag overview</router-link>
 
-    <VizCloud :cloudname="`overview`" :items="cloudlist" />  
+    <VizCloud :cloudname="`overview`" :items="cloudlist" :subpath="`/viz/tag`" />  
   </div>
 </template>
 
 <script>
-import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
 import VizCloud from '../components/VizCloud'
 import { getCutoutUID } from '../utils.js'
@@ -29,7 +28,7 @@ export default {
             x: occ.geometry[0].x,
             y: occ.geometry[0].y
           }
-          //@todo I don't know how to make this more elegant
+          //@todo pass filename in a more elegant way
           sample.id = getCutoutUID(tag.title, sample);
           return sample;
         });

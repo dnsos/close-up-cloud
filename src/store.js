@@ -1,16 +1,13 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import forceLayout from './forceLayout.js';
-import { publicDataUrl } from './variables'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
     inverted: false,
-    //views: ['overview', 'tag', 'detail'], //viz views
-    //activeView: '',
-    data: [],
+    data: [], //original data
     taglist: [],
     input: {
       isDragging: false
@@ -21,9 +18,7 @@ export default new Vuex.Store({
     },
     PIXIApp: null,
     viewport: null,
-    clouds: {   
-      overview: null
-    },
+    clouds: {},
     /*selection: {
       tag: {
         hovered: null,
@@ -58,12 +53,7 @@ export default new Vuex.Store({
       const padding = 120;
 
       //@todo pay respect both width and height
-      //if(geometry.width > geometry.height) {
-        //ratio = ((state.canvas.width-padding) / geometry.width)
-      //} else {
-        ratio = ((state.canvas.height-padding) / geometry.height)
-      //}
-
+      ratio = ((state.canvas.height-padding) / geometry.height)
       return ratio;
     },
     cloudBBox: (state) => (cloud) => {
@@ -81,18 +71,10 @@ export default new Vuex.Store({
         height: Math.abs(y - h) 
       }
     },
-    /*findOccurenceInActiveTag: (state) => (objectID) => {
-      return state.selection.tag.active.occurrences.find(occurrence => occurrence.origin === objectID)
-    },*/
     positionInCloud: (state) => (cloud, id) => {
       if(!state.clouds[cloud]) throw new Error(`there is no cloud named ${cloud}`)
       return state.clouds[cloud].find(el => el.id === id)
     },
-    /*weightBySizeInCloud: (state) => (cloud, id) => {
-      if(!state.clouds[cloud]) throw new Error(`there is no cloud named ${cloud}`)
-      const maxSize = Math.max(...state.clouds[cloud].map(d => d.size));
-      return state.clouds[cloud].find(el => el.id === id).size / maxSize;
-    },*/
   },
   mutations: {
     setData: (state, data) => {
@@ -114,7 +96,7 @@ export default new Vuex.Store({
       state.isDragging = false
     },
     setForceLayout: (state, payload) => {
-      console.log('setForceLayout:', payload);
+      //console.log('setForceLayout:', payload);
       state.clouds[payload.key] = payload.data
     },
     setActiveTag: (state, payload) => {
@@ -122,12 +104,6 @@ export default new Vuex.Store({
     },
     setHoveredTag: (state, payload) => {
       state.selection.tag.hovered = payload
-    },
-    setActiveObject: (state, payload) => {
-      state.selection.object.active = payload
-    },
-    setView: (state, payload) => {
-      state.activeView = payload
     },
     updateCanvasSize: (state, payload) => {
       state.canvas = payload
@@ -193,13 +169,7 @@ export default new Vuex.Store({
     handleSetActiveTag: ({ commit }, payload) => {
       commit('setActiveTag', payload)
     },
-    handleSetActiveObject: ({ commit }, payload) => {
-      commit('setActiveObject', payload)
-    },
-    handleSetView: ({ commit }, payload) => {
-      commit('setView', payload)
-    },
-    updateCanvasSize: ({ commit, state }, payload) => {
+    updateCanvasSize: ({ commit }, payload) => {
       commit('updateCanvasSize', payload)
     },
     computeForceLayout({ commit, state }, payload) {
@@ -213,8 +183,11 @@ export default new Vuex.Store({
       })
     },
     async fetchData({commit}) {
-      console.log(`fetching ${publicDataUrl} ...`);
-      return window.fetch(publicDataUrl)
+      
+      const url = process.env.VUE_APP_URL_DATA;
+      console.log(`fetching ${url} ...`);
+      
+      return window.fetch(url)
         .then(response => response.json())
 
         //@debug check for duplicate ids

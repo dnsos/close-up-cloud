@@ -20,17 +20,17 @@ export default new Router({
       component: Viz,
       children: [
         {
-          name: 'overview',
+          name: 'viz-overview',
           path: '',
           component: VizOverview
         },
         {
-          name: 'tag',
+          name: 'viz-tag',
           path: 'tag/:id',
           component: VizTag
         },
         {
-          name: 'detail',
+          name: 'viz-detail',
           path: 'detail/:id',
           component: VizDetail
         }

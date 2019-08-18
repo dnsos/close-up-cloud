@@ -2,13 +2,11 @@
   <div class="tag">
     <router-link :to="`/viz/tag/${tag.title}`">Tag {{tag.title}}</router-link>
 
-    <VizCloud :cloudname="tag.title" :items="cloudlist" />
+    <VizCloud :cloudname="tag.title" :items="cloudlist" :subpath="`/viz/detail`" />
   </div>
 </template>
 
 <script>
-import * as PIXI from 'pixi.js'
-import { mapState } from 'vuex'
 import VizCloud from '../components/VizCloud'
 import { getCutoutUID } from '../utils.js'
 
@@ -36,7 +34,7 @@ export default {
             x: geo.x,
             y: geo.y
           }
-          //@todo I don't know how to make this more elegant
+          //@todo pass filename in a more elegant way
           sample.id = getCutoutUID(this.tag.title, sample);
           return sample;
         });
