@@ -68,6 +68,8 @@ export default {
             this.cloudContainer.name = 'cloudContainer'
         }
 
+        //@todo preload all child images?
+
         //create cloud overview force layout
         this.initForceLayout();
     },
@@ -76,7 +78,7 @@ export default {
         
 
         //@todo on late mount watch:canvas is not triggered so this is duplicated here
-        if(this.canvas.height) {
+        //if(this.canvas.height) {
             //center
             this.cloudContainer.position.set(this.canvas.width/2, this.canvas.height/2)
 
@@ -84,7 +86,7 @@ export default {
             const cloudBox = this.$store.getters.cloudBBox('overview');
             const zoom = this.$store.getters.viewportZoom(cloudBox);
             this.viewport.setZoom(zoom, true)
-        }
+        //}
 
         this.viewport.addChild(this.cloudContainer);
     },

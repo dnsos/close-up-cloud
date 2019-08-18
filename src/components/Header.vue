@@ -1,6 +1,6 @@
 <template>
   <header class="grid-area__header grid-3-columns">
-    <span>Close-Up Cloud</span>
+    <router-link to="/" exact>Close-Up Cloud</router-link>
     <span></span>
     <Navigation />
   </header>

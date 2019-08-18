@@ -52,14 +52,4 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.cutout {
-    width: 128px;
-    height: 128px;
-    display: inline-block;
-    margin: 8px;
-    word-break: break-word;
-    line-height: 1;
-    overflow: hidden;
-    background-size: cover;
-}
 </style>

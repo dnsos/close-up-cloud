@@ -73,6 +73,29 @@ export default {
     .on('drag-end', () => {
       this.$store.commit('dragEnd')
     })
+    
+    //@debug viewport
+    /*let sprite = objectViewport.addChild(new PIXI.Sprite(PIXI.Texture.WHITE))
+    sprite.tint = 0x00ff00
+    sprite.width = sprite.height = 1280
+    sprite.position.set(0, 0)
+
+    sprite = objectViewport.addChild(new PIXI.Sprite(PIXI.Texture.WHITE))
+    sprite.tint = 0xff0000
+    sprite.width = sprite.height = 64
+    sprite.position.set(0, 0)
+    
+    sprite = objectViewport.addChild(new PIXI.Sprite(PIXI.Texture.WHITE))
+    sprite.tint = 0xff0000
+    sprite.width = sprite.height = 64
+    sprite.anchor.set(0.5)
+    sprite.position.set(640, 640)
+    
+    sprite = objectViewport.addChild(new PIXI.Sprite(PIXI.Texture.WHITE))
+    sprite.tint = 0xff0000
+    sprite.width = sprite.height = 64
+    sprite.anchor.set(1)
+    sprite.position.set(1280, 1280)*/
 
     // init invert filter
     const colorMatrix = new PIXI.filters.ColorMatrixFilter()
@@ -88,7 +111,6 @@ export default {
     const wrap = this.$refs.rendererWrapper;
     wrap.appendChild(this.PIXIApp.view)
     this.PIXIApp.stage.addChild(this.viewport)
-    
     
     this.viewport
         .drag()
@@ -106,18 +128,6 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.vizhtml {
-  display: none;  
-    position: fixed;
-    right: 0;
-    width: 320px;
-    height: 90vh;
-    //transform: scale(0.25);
-    transform-origin: top right;
-    overflow: auto;
-    padding: 8px;
-    overflow: auto;
-}
 .renderer__wrapper {
   width: 100%;
   height: 100%;

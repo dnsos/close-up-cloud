@@ -83,16 +83,4 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.obj {
-    padding: 16px;
-    margin: 16px;
-    border: 1px solid #999;
-}
-
-.tile {
-  width: 64px;
-  height: 64px;
-  background-size: cover;
-  display: inline-block;
-}
 </style>

@@ -40,39 +40,6 @@ export default {
     beforeMount: function() {
         console.log("hello this is a detail view")
 
-        // objectViewport created by pixi-viewport for zoom/pan etc.
-        /*const objectViewport = this.objectViewport = new Viewport({
-            screenWidth: this.canvas.width, //will be set on resize
-            screenHeight: this.canvas.height,
-            worldWidth: 1280,
-            worldHeight: 1280,
-            interaction: this.PIXIApp.renderer.plugins.interaction
-        })*/  
-
-
-        /*let sprite = objectViewport.addChild(new PIXI.Sprite(PIXI.Texture.WHITE))
-        sprite.tint = 0x00ff00
-        sprite.width = sprite.height = 1280
-        sprite.position.set(0, 0)
-
-        sprite = objectViewport.addChild(new PIXI.Sprite(PIXI.Texture.WHITE))
-        sprite.tint = 0xff0000
-        sprite.width = sprite.height = 64
-        sprite.position.set(0, 0)
-        
-        sprite = objectViewport.addChild(new PIXI.Sprite(PIXI.Texture.WHITE))
-        sprite.tint = 0xff0000
-        sprite.width = sprite.height = 64
-        sprite.anchor.set(0.5)
-        sprite.position.set(640, 640)
-        
-        sprite = objectViewport.addChild(new PIXI.Sprite(PIXI.Texture.WHITE))
-        sprite.tint = 0xff0000
-        sprite.width = sprite.height = 64
-        sprite.anchor.set(1)
-        sprite.position.set(1280, 1280)*/
-
-
         const loader = new PIXI.Loader()
         loader
             .add(this.object.id, `assets/images/thumb/${this.object.id}/${this.object.id}.jpg`)
@@ -108,9 +75,4 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.detailobj {
-    height: 128px;
-    background: center no-repeat;
-    background-size: contain;
-}
 </style>

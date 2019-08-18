@@ -49,7 +49,7 @@ export class ForceLayout {
         
         this.svg = d3.select('body')
             .append('svg')
-            //.attr('id', 'd3debug')
+            .attr('id', 'd3debug')
             .attr('width', options.canvasWidth)
             .attr('height', options.canvasHeight)
 
@@ -97,10 +97,10 @@ export class ForceLayout {
 
         const dataByWeight = data.sort((a, b) => b.weight - a.weight);
 
-        this.nodes = dataByWeight.map(function (_, i) {
+        this.nodes = dataByWeight.map((_, i) => {
 
-            let size = Math.sqrt(dataByWeight[i].weight)*options.scaleFactor; //scale linear by area
-            //let size = Math.sqrt(logScale(data[i].weight))*options.scaleFactor //scale logy by area
+            let size = this.scalingFunction(data[i].weight);
+            size *= options.scaleFactor;
 
             const itemRadius = size/2;
             spiralDist += size/2;
@@ -115,8 +115,8 @@ export class ForceLayout {
             x += Math.sin(totalRad) * spiralDist;
             y += Math.cos(totalRad) * spiralDist;
             
-            //const aspect = options.canvasWidth / options.canvasHeight;
-            //x *= aspect;
+            const aspect = options.canvasWidth / options.canvasHeight;
+            x *= aspect;
 
             totalRad += rad;
         
@@ -128,6 +128,19 @@ export class ForceLayout {
         });
 
         return this;
+    }
+
+    //@todo different default scalings as static class methods, custom function via option
+    scalingFunction(weight) {
+
+        //scale linear by weight
+        //return weight;
+        
+        //scale linear by area
+        return Math.sqrt(weight); 
+        
+        //scale logarithmic by area
+        //let size = Math.sqrt(weight)
     }
 
     getLayoutData() {

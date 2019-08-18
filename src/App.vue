@@ -91,4 +91,60 @@ button {
     outline: .1rem dotted var(--color-primary-0);
   }
 }
+
+/* DEBUG
+----------------------------------------------------- */
+#d3debug {
+  display: none;
+  position: absolute; 
+  transform-origin: top left;
+  transform: scale(0.25);
+  border: 8px solid #eee;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.vizhtml {
+  display: none;  
+  position: fixed;
+  right: 0;
+  width: 320px;
+  height: 90vh;
+  transform-origin: top right;
+  overflow: auto;
+  padding: 8px;
+  overflow: auto;
+}
+.tag {
+    padding: 16px;
+    margin: 16px;
+    background: #eee;
+}
+.obj {
+    padding: 16px;
+    margin: 16px;
+    border: 1px solid #999;
+}
+.tile {
+  width: 64px;
+  height: 64px;
+  background-size: cover;
+  display: inline-block;
+}
+.cutout {
+    width: 128px;
+    height: 128px;
+    display: inline-block;
+    margin: 8px;
+    word-break: break-word;
+    line-height: 1;
+    overflow: hidden;
+    background-size: cover;
+}
+.detailobj {
+    height: 128px;
+    background: center no-repeat;
+    background-size: contain;
+}
 </style>

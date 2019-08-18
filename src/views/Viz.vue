@@ -62,10 +62,4 @@ body {
     transition: background-color 2s ease-in-out, color 2s ease-in-out;
   }
 }
-#d3debug {
-  position: absolute; 
-  transform-origin: top left;
-  transform: scale(0.25);
-  border: 8px solid #eee;
-}
 </style>

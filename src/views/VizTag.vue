@@ -135,9 +135,4 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.tag {
-    padding: 16px;
-    background: #eee;
-    margin: 16px;
-}
 </style>

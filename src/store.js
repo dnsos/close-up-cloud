@@ -1,8 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import forceLayout from './js/forceLayout.js';
+import forceLayout from './forceLayout.js';
 import { publicDataUrl } from './variables'
-import { maxHeaderSize } from 'http';
 
 Vue.use(Vuex)
 
@@ -13,7 +12,15 @@ export default new Vuex.Store({
     //activeView: '',
     data: [],
     taglist: [],
+    input: {
+      isDragging: false
+    },
+    canvas: {
+      width: 1280,
+      height: 800
+    },
     PIXIApp: null,
+    viewport: null,
     clouds: {   
       overview: null
     },
@@ -27,14 +34,6 @@ export default new Vuex.Store({
         active: ''
       }
     },*/
-    input: {
-      isDragging: false
-    },
-    canvas: {
-      width: 0,
-      height: 0
-    },
-    viewport: null,
     helpers: {
       renderCloseups: false
     }

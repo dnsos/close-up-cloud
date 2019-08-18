@@ -1,8 +1,7 @@
 <template>
   <nav>
-    <router-link to="/" exact>Home</router-link>
     <router-link to="/viz" exact>Visualisierung</router-link>
-    <router-link to="/info" exact>Info</router-link>
+    <router-link to="/info" exact>Über das Projekt</router-link>
   </nav>
 </template>
 

@@ -82,6 +82,33 @@ export default {
     const tagContainer = this.tagContainer = new PIXI.Container();
     
     //@todo build layers and add text label
+    /*
+    // create tag title
+    const textBox = new PIXI.Container();
+    textBox.name = 'textBox'
+    textBox.alpha = 0
+    textBox.x = 5
+    textBox.y = 5
+    //textBox.parentLayer = infoLayer;
+    
+    const textContent = tag.tagCount + ' ' + tag.title + '\n' + 'in ' + tag.objectCount + ' Objekten'
+    const tagTitle = new PIXI.Text(textContent, textStyle)
+    tagTitle.name = tag.title
+    tagTitle.x = 5
+
+    const txtBG = new PIXI.Sprite(PIXI.Texture.WHITE);
+    txtBG.width = tagTitle.width + 10;
+    txtBG.height = tagTitle.height;
+    textBox.addChild(txtBG, tagTitle);
+    tagContainer.addChild(textBox)
+    // add events
+    occurrencesContainer.on('pointerover', () => {
+      textBox.alpha = 1
+    })
+    occurrencesContainer.on('pointerout', () => {
+      textBox.alpha = 0
+    })
+    */
     
     //@todo get smarter
     const position = this.$store.getters.positionInCloud('overview', this.tag.title);
@@ -129,9 +156,4 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.tag {
-    padding: 16px;
-    background: #eee;
-    margin: 16px;
-}
 </style>
