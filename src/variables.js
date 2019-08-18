@@ -1,6 +1,7 @@
 import { TextStyle } from 'pixi.js'
 
 export const publicDataUrl = '/assets/data/objects-label-metadata.json';
+export const publicImageUrl = '/assets/images/';
 
 export const mockupSettings = {
   dimensionsUnit: 500

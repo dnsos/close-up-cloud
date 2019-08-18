@@ -1,98 +1,54 @@
 <template>
-    <div class="overview">
-    
-        <router-link :to="`/viz/`">hello this is an overview</router-link>
-    
-        <VizOverviewTag v-for="tag in taglist" :tag="tag" :key="tag.title" />
+  <div class="overview">
+    <router-link :to="`/viz/`">hello this is a tag overview</router-link>
 
-        <!-- @debug single tag -->
-        <!--VizOverviewTag :tag="taglist.find(child => child.title === 'Ziege')" /-->
-    
-    </div>
+    <VizCloud :cloudname="`overview`" :items="cloudlist" />  
+  </div>
 </template>
 
 <script>
 import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
-import VizOverviewTag from '../components/VizOverviewTag'
+import VizCloud from '../components/VizCloud'
+import { getCutoutUID } from '../utils.js'
 
 export default {
-    name: 'viz-renderer',
-    props: ['bus'],
-    components: { VizOverviewTag },
-    computed: mapState(['PIXIApp', 'taglist', 'canvas', 'viewport']),
-    cloudContainer: null,
-    data: () => {
+  name: 'viz-overview',
+  components: { VizCloud },
+  computed: {
+    ...mapState(['taglist']),
+    cloudlist: function() {
+
+      //convert taglist to cloudlist (see readme)
+      return this.taglist.map(tag => {
+
+        //per tag: sample all occurrences (objects) by their first geometry
+        const samples = tag.occurrences.map(occ => {
+          const sample = {
+            origin: occ.origin,
+            x: occ.geometry[0].x,
+            y: occ.geometry[0].y
+          }
+          //@todo I don't know how to make this more elegant
+          sample.id = getCutoutUID(tag.title, sample);
+          return sample;
+        });
+
         return {
-            loaded: false
+          id: tag.title,
+          weight: tag.tagCount,
+          samples: samples
         }
-    },
-    watch: {
-        canvas(newval, oldval) {
-            //center overview cloud
-            if(this.cloudContainer) {
-                this.cloudContainer.position.set(newval.width/2, newval.height/2)
-            }
-
-            //zoom to fit
-            const cloudBox = this.$store.getters.cloudBBox('overview');
-            const zoom = this.$store.getters.viewportZoom(cloudBox);
-            
-            this.viewport.setZoom(zoom, true)
-        }
-    },
-    methods: {
-        initForceLayout() {
-
-            if(this.$store.state.clouds.overview) return;
-
-            const forceInput = this.taglist.map(tag => {
-                return {
-                    id: tag.title,
-                    weight: tag.tagCount
-                };
-            });
-
-            this.$store.dispatch('computeForceLayout', {
-                key: 'overview',
-                data: forceInput
-            });
-        }
-    },
-    beforeMount: function() {
-        console.log("hello this is a overview")
-
-        // create container for tag cloud
-        if(!this.cloudContainer) {
-            this.cloudContainer = new PIXI.Container()
-            this.cloudContainer.name = 'cloudContainer'
-        }
-
-        //@todo preload all child images?
-
-        //create cloud overview force layout
-        this.initForceLayout();
-    },
-    mounted: function() {
-
-        
-
-        //@todo on late mount watch:canvas is not triggered so this is duplicated here
-        //if(this.canvas.height) {
-            //center
-            this.cloudContainer.position.set(this.canvas.width/2, this.canvas.height/2)
-
-            //zoom to fit
-            const cloudBox = this.$store.getters.cloudBBox('overview');
-            const zoom = this.$store.getters.viewportZoom(cloudBox);
-            this.viewport.setZoom(zoom, true)
-        //}
-
-        this.viewport.addChild(this.cloudContainer);
-    },
-    beforeDestroy: function () {
-        this.viewport.removeChild(this.cloudContainer)
+      })
     }
+  },
+  beforeMount: function() {
+    console.log("hello this is a tag overview cloud")
+  },
+  mounted: function() {
+  },
+  beforeDestroy: function() {
+  }
 }
 </script>
 

@@ -216,6 +216,17 @@ export default new Vuex.Store({
       console.log(`fetching ${publicDataUrl} ...`);
       return window.fetch(publicDataUrl)
         .then(response => response.json())
+
+        //@debug check for duplicate ids
+        .then(data => {
+          const dataIds = [];
+          data.forEach(d => {
+            if(dataIds.indexOf(d.id) > -1) console.error('Data Integrity Error: Duplicate ID', d.id);
+            dataIds.push(d.id);
+          })
+          return data;
+        })
+        
         .then(data => {
           console.log("data fetched", data)
           commit('setData', data);
