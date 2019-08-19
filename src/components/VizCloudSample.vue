@@ -45,10 +45,10 @@ export default {
     TweenLite.to(this.sprite, 1, {alpha: 1, ease: Power2.easeIn});
 
     //htmlviz
-    /*const uid = getOccurrenceUID(this.tag.title, this.occurrence, this.geometry)
-    const thumbName = `${uid}.jpg`;
-    const filename = this.occurrence.origin;
-    this.$refs.cutout.style.backgroundImage = `url(${process.env.VUE_APP_URL_IMG}/${filename}/${thumbName})`;*/
+    const path = process.env.VUE_APP_URL_IMG;
+    const fileName = this.sample.origin;
+    const thumbName = `${this.sample.id}.jpg`;
+    this.$refs.cutout.style.backgroundImage = `url(${process.env.VUE_APP_URL_IMG}/${fileName}/${thumbName})`;
   }
 }
 </script>
