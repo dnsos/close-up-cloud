@@ -77,11 +77,10 @@ export default {
 
         const texture = resources[this.object.id].texture
         const textureHeight = texture.baseTexture.height
+        const textureWidth = texture.baseTexture.width
         sprite.texture = texture;
         
-        //@todo center container
-        detailContainer.position.set(this.canvas.width/2, this.canvas.height/2)
-        //detailContainer.anchor.set(0.5)
+        detailContainer.position.set(this.canvas.width/2 - textureWidth/2, this.canvas.height/2 - textureHeight/2)
 
         const desiredHeight = this.canvas.height
         const ratio = (desiredHeight / textureHeight)
