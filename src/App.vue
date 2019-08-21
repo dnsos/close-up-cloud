@@ -20,6 +20,7 @@ export default {
 ----------------------------------------------------- */
 :root {
   --font-size: 16px;
+  --font-size-small: 12px;
   --font-family-primary: 'Overpass', sans-serif;
   --grid-spacing: 2.5rem;
 }
@@ -80,17 +81,36 @@ body {
 
 /* TYPOGRAPHY
 ----------------------------------------------------- */
-button {
-  font-weight: 600;
+a {
   color: var(--color-primary-100);
-  background-color: transparent;
-  border: none;
+  text-decoration: none;
+}
+
+button, .button {
+  font-weight: 600;
+  padding: calc(var(--grid-spacing)/4);
+  color: var(--color-primary-100);
+  background-color: var(--color-primary-0);
+  border: .15rem solid;
   cursor: pointer;
-  transition: color 2s ease-in-out;
-  &:focus {
-    outline: .1rem dotted var(--color-primary-0);
+  transition: color 2s ease-in-out, background-color 2s ease-in-out, border-color 2s ease-in-out;
+
+  &:not(.button--primary) {
+    border-color: transparent;
+    &:focus {
+      outline: .1rem dotted var(--color-primary-0);
+    }
+  }
+
+  &.button--primary {
+    border-color: var(--color-primary-100);
+    &:focus {
+      outline: .1rem dotted var(--color-primary-100);
+    }
   }
 }
+
+
 
 /* DEBUG
 ----------------------------------------------------- */

@@ -3,7 +3,7 @@
     <div class="home__wrapper">
       <h1>Close-Up Cloud</h1>
       <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Eos cum, repellat quaerat porro aspernatur repudiandae ipsam perferendis sed sequi dolore suscipit, ipsa tempore provident explicabo voluptates ipsum doloremque itaque debitis.</p>
-      <button><router-link to="/viz" exact>Zur Visualisierung</router-link></button>
+      <button class="button--primary"><router-link to="/viz" exact>Zur Visualisierung</router-link></button>
     </div>
   </div>
 </template>

@@ -86,7 +86,7 @@ export default new Vuex.Store({
     setViewport: (state, payload) => {
       state.viewport = payload
     },
-    toggleMode: (state) => {
+    toggleColors: (state) => {
       state.inverted = !state.inverted
     },
     dragStart: (state) => {
