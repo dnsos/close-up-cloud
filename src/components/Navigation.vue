@@ -1,7 +1,7 @@
 <template>
   <nav>
-    <router-link to="/viz" exact>Visualisierung</router-link>
-    <router-link to="/info" exact>Über das Projekt</router-link>
+    <router-link to="/viz">Visualisierung</router-link>
+    <router-link to="/info">Über das Projekt</router-link>
   </nav>
 </template>
 

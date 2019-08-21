@@ -88,7 +88,6 @@ a {
 
 button, .button {
   font-weight: 600;
-  padding: calc(var(--grid-spacing)/4);
   color: var(--color-primary-100);
   background-color: var(--color-primary-0);
   border: .15rem solid;
@@ -96,6 +95,7 @@ button, .button {
   transition: color 2s ease-in-out, background-color 2s ease-in-out, border-color 2s ease-in-out;
 
   &:not(.button--primary) {
+    padding: 0;
     border-color: transparent;
     &:focus {
       outline: .1rem dotted var(--color-primary-0);
@@ -103,6 +103,7 @@ button, .button {
   }
 
   &.button--primary {
+    padding: calc(var(--grid-spacing)/4);
     border-color: var(--color-primary-100);
     &:focus {
       outline: .1rem dotted var(--color-primary-100);

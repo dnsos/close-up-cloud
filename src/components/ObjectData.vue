@@ -8,7 +8,7 @@
         </li>
         <li class="list-item">
           <span class="highlighted">Herstellung</span><br>
-          {{objectdata.date}}&nbsp;in&nbsp;{{objectdata.location}}
+          {{objectData.date}}&nbsp;in&nbsp;{{objectData.location}}
         </li>
         <li class="list-item">
           <button>→ In Sammlung öffnen</button>
@@ -25,16 +25,11 @@
 export default {
   name: 'object-data',
   props: {
-    objectID: { type: String, required: true }
+    objectData: { type: Object, required: true }
   },
   data: function () {
     return {
       isOpened: false
-    }
-  },
-  computed: {
-    objectdata: function () {
-      return this.$store.getters.object(this.objectID)
     }
   },
   methods: {
