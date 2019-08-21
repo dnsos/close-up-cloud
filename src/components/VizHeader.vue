@@ -10,7 +10,7 @@
 import Navigation from '@/components/Navigation.vue'
 
 export default {
-  name: 'grid-header',
+  name: 'viz-header',
   components: {
     Navigation
   }

@@ -1,22 +1,24 @@
 <template>
-  <div class="view__viz grid__viz">
-    <Header />
-    <main class="grid-area__main">
-      <VizRenderer v-if="hasFetched" />
-    </main>
-    <Footer />
+  <div class="view__viz">
+    <div class="grid__viz">
+      <VizHeader />
+      <main class="grid-area__main">
+        <VizRenderer v-if="hasFetched" />
+      </main>
+    </div>
+    <VizOverlay />
   </div>
 </template>
 
 <script>
 import * as PIXI from 'pixi.js'
-import Header from '@/components/Header.vue'
-import Footer from '@/components/Footer.vue'
+import VizHeader from '@/components/VizHeader.vue'
 import VizRenderer from '@/components/VizRenderer.vue'
+import VizOverlay from '@/components/VizOverlay.vue'
 
 export default {
   name: 'viz',
-  components: { Header, VizRenderer, Footer },
+  components: { VizHeader, VizRenderer, VizOverlay },
   data: function () {
     return {
       hasFetched: false
@@ -44,21 +46,21 @@ body {
   height: 100%;
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  grid-template-rows: 4rem minmax(0, 1fr) 4rem;
+  grid-template-rows: 4rem minmax(0, 1fr);
   grid-template-areas:
     "h h h h h h h h h h h h"
-    "m m m m m m m m m m m m"
-    "f f f f f f f f f f f f";
+    "m m m m m m m m m m m m";
   grid-gap: 0;
 
-  .grid-area__header { grid-area: h; }
-  .grid-area__main { grid-area: m; }
-  .grid-area__footer { grid-area: f; }
-  .grid-area__header, .grid-area__footer {
+  .grid-area__header {
+    grid-area: h;
     padding: calc(var(--grid-spacing)/4);
     >* { align-self: center; }
   }
-  .grid-area__header, .grid-area__main, .grid-area__footer {
+
+  .grid-area__main { grid-area: m; }
+
+  .grid-area__header, .grid-area__main {
     transition: background-color 2s ease-in-out, color 2s ease-in-out;
   }
 }
