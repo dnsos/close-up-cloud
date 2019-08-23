@@ -72,6 +72,7 @@ export default {
     if(!this.cloudContainer) {
       this.cloudContainer = new PIXI.Container()
       this.cloudContainer.name = `cloud-${this.cloudname}`
+      this.cloudContainer.sortableChildren = true // necessary for enabling zIndex sorting of children
     }
 
     //@todo preload all child images?

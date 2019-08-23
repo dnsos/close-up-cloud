@@ -20,7 +20,7 @@ export default {
   },
   beforeMount: function() {
     
-    console.log("hello this is a sample");
+    //console.log("hello this is a sample");
 
     let sprite = this.sprite = new PIXI.Sprite(PIXI.Texture.WHITE)
     sprite.alpha = 0
@@ -40,7 +40,8 @@ export default {
 
   mounted: function() {
     // add children to respective containers
-    this.$parent.itemContainer.addChild(this.sprite)
+    //this.$parent.itemContainer.addChild(this.sprite)
+    this.$parent.samplesContainer.addChild(this.sprite)
 
     TweenLite.to(this.sprite, 1, {alpha: 1, ease: Power2.easeIn});
 

@@ -12,6 +12,7 @@
 
 <script>
 import * as PIXI from 'pixi.js'
+import { textStyle } from '../variables'
 import VizCloudSample from './VizCloudSample.vue'
 
 export default {
@@ -24,6 +25,7 @@ export default {
   data: function() {
     return {
       itemContainer: null,
+      samplesContainer: null,
       appendTimeout: null,
       renderIndex: 0, //index of next appended item
       renderStack: [] //array of items that are rendered
@@ -60,9 +62,16 @@ export default {
   watch: {
   },
   beforeMount: function() {
-  console.log("hello this is a cloud item")
-  
+  //console.log("hello this is a cloud item")
+ 
+  // itemContainer stores samplesContainer and textBox
   const itemContainer = this.itemContainer = new PIXI.Container();
+  //itemContainer.sortableChildren = true
+
+  // samplesContainer will store all sprites from VizCloudSample.vue
+  const samplesContainer = this.samplesContainer = new PIXI.Container();
+  samplesContainer.name = 'samplesContainer'
+  itemContainer.addChild(samplesContainer)
   
   const position = this.$store.getters.positionInCloud(this.cloudname, this.item.id);
   itemContainer.x = position.x
@@ -70,19 +79,25 @@ export default {
   itemContainer.width = position.size
   itemContainer.height = position.size
   
-  //@todo build layers and add text label
-  /*
-  // create tag title
   const textBox = new PIXI.Container();
   textBox.name = 'textBox'
   textBox.alpha = 0
-  textBox.x = 5
-  textBox.y = 5
-  //textBox.parentLayer = infoLayer;
+  textBox.x = 0
+  textBox.y = position.size
+
+  // text content depending on active view
+  const textOverview = this.item.weight + ' ' + this.item.id
+  let textTagview = ''
+
+  if (this.cloudname != 'overview') {
+    const tagData = this.$store.getters.tag(this.cloudname)
+    const originTitle = this.$store.getters.object(this.item.id).title
+    const originCount = tagData.occurrences.find(occurrence => occurrence.origin === this.item.id).geometry.length
+    textTagview = originCount + ' ' + tagData.title + '\n' + 'in ' + originTitle
+  }
   
-  const textContent = tag.tagCount + ' ' + tag.title + '\n' + 'in ' + tag.objectCount + ' Objekten'
-  const tagTitle = new PIXI.Text(textContent, textStyle)
-  tagTitle.name = tag.title
+  const textContent = this.cloudname === 'overview' ? textOverview : textTagview
+  const tagTitle = new PIXI.Text(textContent, textStyle.medium)
   tagTitle.x = 5
 
   const txtBG = new PIXI.Sprite(PIXI.Texture.WHITE);
@@ -90,22 +105,35 @@ export default {
   txtBG.height = tagTitle.height;
   textBox.addChild(txtBG, tagTitle);
   itemContainer.addChild(textBox)
-  // add events
-  occurrencesContainer.on('pointerover', () => {
-    textBox.alpha = 1
-  })
-  occurrencesContainer.on('pointerout', () => {
-    textBox.alpha = 0
-  })
-  */
 
-  //add interactivity
-  itemContainer.interactive = true;
-  itemContainer.buttonMode = true;
-  itemContainer.on('pointertap', () => {
+  // samplesContainer is interactive to avoid events
+  // on itemContainer (that also stores textBox)
+  samplesContainer.interactive = true;
+  samplesContainer.buttonMode = true;
+
+  samplesContainer.on('pointertap', () => {
     if(this.$store.state.isDragging) return;
       console.log('itemContainer tap!', this.item);
       this.$router.push({ path: `${this.subpath}/${this.item.id}` })
+  })
+  samplesContainer.on('pointerover', () => {
+    if(this.$store.state.isDragging) return
+
+    // workaround for maintaining original text size
+    // TODO: move to resize watcher / other solution in general?
+    const scaleInverted = 1 / this.$parent.viewport.transform.scale.x
+    textBox.scale = new PIXI.Point(scaleInverted, scaleInverted)
+    
+    itemContainer.zIndex = 1 // rendered above all other itemContainer's to ensure textBox visibility
+
+    textBox.alpha = 1
+  })
+  samplesContainer.on('pointerout', () => {
+    if(this.$store.state.isDragging) return
+
+    itemContainer.zIndex = 0 // back to default zIndex layer
+
+    textBox.alpha = 0
   })
 
 

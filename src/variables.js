@@ -5,12 +5,20 @@ export const durations = {
   invert: 2
 }
 
-export const textStyle = new TextStyle({
-  fontFamily: "\"Overpass\", sans-serif",
-  fontSize: 14,
-  fontWeight: 400,
-  dropShadow: false,
-  dropShadowAngle: 0,
-  dropShadowBlur: 5,
-  dropShadowDistance: 2
-})
+export const textStyle = {
+  regular: new TextStyle({
+    fontFamily: "\"Overpass\", sans-serif",
+    fontSize: 18,
+    fontWeight: 400
+  }),
+  medium: new TextStyle({
+    fontFamily: "\"Overpass\", sans-serif",
+    fontSize: 18,
+    fontWeight: 600
+  }),
+  bold: new TextStyle({
+    fontFamily: "\"Overpass\", sans-serif",
+    fontSize: 18,
+    fontWeight: 800
+  })
+}
