@@ -5,7 +5,7 @@
       <div v-else-if="isView('viz-tag')">
         {{currentTagData.title}}&nbsp;in
         <br>
-        {{currentTagData.objectCount}}&nbsp;Objekten
+        {{currentTagData.objectCount}}&nbsp;{{ currentTagData.objectCount > 1 ? 'Objekten' : 'Objekt' }}
       </div>
       <div v-else-if="isView('viz-detail')">
         {{currentObjectData.title}}

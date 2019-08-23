@@ -11,13 +11,12 @@
 
 <script>
 import * as PIXI from 'pixi.js'
-import VizHeader from '@/components/VizHeader.vue'
 import VizRenderer from '@/components/VizRenderer.vue'
 import VizOverlay from '@/components/VizOverlay.vue'
 
 export default {
   name: 'viz',
-  components: { VizHeader, VizRenderer, VizOverlay },
+  components: { VizRenderer, VizOverlay },
   data: function () {
     return {
       hasFetched: false
