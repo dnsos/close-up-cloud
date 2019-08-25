@@ -1,13 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 
-const dataPath = '../src/assets/data/';
-const csvFile = 'src/20190605_CloseUpCloud-Auswahl146.csv';
-const jsonFile = 'src/labelbox-export-2019-08-10T15_14_43.595Z.json';
-const outFile = 'objects-label-metadata.json';
+const inPath = '../src/assets/data/';
+const csvFile = '20190605_CloseUpCloud-Auswahl146.csv';
+const jsonFile = 'labelbox-export-2019-08-25T06_01_13.288Z.json';
+const outFile = '../public/assets/data/objects-label-metadata.json';
 
-const csvContent = fs.readFileSync(path.resolve(__dirname, dataPath, csvFile), {encoding: 'utf8'});
-const jsonContent = fs.readFileSync(path.resolve(__dirname, dataPath, jsonFile), {encoding: 'utf8'});
+const csvContent = fs.readFileSync(path.resolve(__dirname, inPath, csvFile), {encoding: 'utf8'});
+const jsonContent = fs.readFileSync(path.resolve(__dirname, inPath, jsonFile), {encoding: 'utf8'});
 
 const csvData = parseCsv(csvContent);
 const jsonData = JSON.parse(jsonContent);
@@ -18,13 +18,13 @@ for(let i=0; i<csvData.length; i++) {
 
 const out = combineData(jsonData, csvData);
 
-fs.writeFile(path.resolve(__dirname, dataPath, outFile), JSON.stringify(out, null, 2), (err) => {
+fs.writeFile(path.resolve(__dirname, outFile), JSON.stringify(out, null, 2), (err) => {
     if(err) {
         console.log('*** Error writing file', err);
     } else {
         console.log('*** DONE :)');
         console.log('***', out.length, 'valid Objects');
-        console.log('*** Combined data written to file:', path.resolve(__dirname, dataPath, outFile));
+        console.log('*** Combined data written to file:', path.resolve(__dirname, outFile));
     }   
 });
 
@@ -72,7 +72,9 @@ function combineData(labelboxData, metaData) {
             
             for(let geometry of labelboxObj['Label'][tagname]) {
 
-                cleanGeometry = getGeometryBoundaries(geometry.geometry);
+                //allow non-square frames
+                const isFrame = tagname === 'Frame' ? true : false;
+                cleanGeometry = getGeometryBoundaries(geometry.geometry, !isFrame);
                 tagGeometry.geometry.push(cleanGeometry);
             }
 
@@ -129,7 +131,7 @@ function cleanupCsv(row) {
  * @param {Object} geometry 
  * @return {Object}
  */
-function getGeometryBoundaries(geometry) {
+function getGeometryBoundaries(geometry, forceSquare) {
 
 	let top = 9999, left = 9999, width = 0, height = 0;
 
@@ -143,16 +145,22 @@ function getGeometryBoundaries(geometry) {
 	}
 
 	width = width - left;
-	height = height - top;
-	width = height = Math.max(width, height);
+    height = height - top;
+
+    const geo = {
+        x: left,
+        y: top
+    };
+    
+	if(forceSquare) {
+        geo.size = width = height = Math.min(width, height);
+    } else {
+        geo.width = width;
+        geo.height = height;
+    }
 
 	//console.log('assuming geometry', {top, left, width, height});
-	return {
-        x: left,
-        y: top, 
-        width, 
-        //height
-    };
+	return geo;
 }
 
 

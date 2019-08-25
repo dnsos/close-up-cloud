@@ -72,7 +72,7 @@ export default {
 
     const loader = new PIXI.Loader()
     loader
-      .add(this.object.id, `${process.env.VUE_APP_URL_IMG}/${this.object.id}/${this.object.id}.jpg`)
+      .add(this.object.id, `${process.env.VUE_APP_URL_IMG}/${this.object.id}/${this.object.id}-Frame.jpg`)
       .load((loader, resources) => {
 
         const texture = resources[this.object.id].texture
