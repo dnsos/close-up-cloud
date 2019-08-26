@@ -11,7 +11,7 @@ export default {
   name: 'viz-tooltip',
   props: {
     content: { type: String, required: true },
-    yOffset: { type: Number, required: true }
+    yOffset: { type: Number, required: false, default: 0 }
   },
   data: function() {
     return {
@@ -53,6 +53,7 @@ export default {
     textBox.y = this.yOffset
 
     const tagTitle = new Text(this.content, textStyle.medium)
+    tagTitle.roundPixels = true
     tagTitle.y = 5
     tagTitle.x = 5
 
