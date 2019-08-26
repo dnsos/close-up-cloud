@@ -18,20 +18,7 @@ export default new Vuex.Store({
     },
     PIXIApp: null,
     viewport: null,
-    clouds: {},
-    /*selection: {
-      tag: {
-        hovered: null,
-        active: null
-      },
-      object: {
-        hovered: '',
-        active: ''
-      }
-    },*/
-    helpers: {
-      renderCloseups: false
-    }
+    clouds: {}
   },
   getters: {
     tag: (state) => (title) => {
@@ -99,12 +86,6 @@ export default new Vuex.Store({
       //console.log('setForceLayout:', payload);
       state.clouds[payload.key] = payload.data
     },
-    setActiveTag: (state, payload) => {
-      state.selection.tag.active = payload
-    },
-    setHoveredTag: (state, payload) => {
-      state.selection.tag.hovered = payload
-    },
     updateCanvasSize: (state, payload) => {
       state.canvas = payload
     },
@@ -166,9 +147,6 @@ export default new Vuex.Store({
     }
   },
   actions: {
-    handleSetActiveTag: ({ commit }, payload) => {
-      commit('setActiveTag', payload)
-    },
     updateCanvasSize: ({ commit }, payload) => {
       commit('updateCanvasSize', payload)
     },
