@@ -55,7 +55,7 @@ export default {
     this.renderIndex++;
     if(this.renderIndex === this.item.samples.length) this.renderIndex = 0;
 
-    this.appendTimeout = window.setTimeout(this.appendNext, 6000 + ((-0.5 + Math.random())*2000));
+    this.appendTimeout = window.setTimeout(this.appendNext, 6000);
     }
   }
   },

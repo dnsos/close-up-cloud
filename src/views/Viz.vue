@@ -10,7 +10,6 @@
 </template>
 
 <script>
-import * as PIXI from 'pixi.js'
 import VizRenderer from '@/components/VizRenderer.vue'
 import VizOverlay from '@/components/VizOverlay.vue'
 
@@ -25,7 +24,7 @@ export default {
   mounted: function() {
     console.log('Hello this is a Viz')
     
-    this.$store.dispatch('fetchData').then((data) => {
+    this.$store.dispatch('fetchData').then(() => {
       this.hasFetched = true;
     });
   }
