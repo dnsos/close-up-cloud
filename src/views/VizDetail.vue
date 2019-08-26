@@ -8,6 +8,7 @@
 import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
 import { TweenLite } from 'gsap/TweenMax'
+import PolyBool from 'polybooljs';
 
 export default {
   name: 'viz-detail',
@@ -34,6 +35,8 @@ export default {
     return {
       detailContainer: null,
       sprite: null,
+      lastHoveredTag: '',
+      hideCutoutTimeout: null
     }
   },
   methods: {
@@ -77,47 +80,89 @@ export default {
         const textureWidth = texture.baseTexture.width;
         const textureScale = textureWidth / frame.width;
 
+        let cutoutCounter = 0;
+
         //add interactive cutouts
         this.object.tags.forEach(tag => {
 
-          tag.geometry.forEach(geo => {
-            const rect = new PIXI.Sprite(PIXI.Texture.WHITE);
-                
-            //right now we are working with scaled down textures (max 1280px width or height)
-            //but all coordinates in the data are still full size, so lets scale them down
-            rect.width = geo.size * textureScale;
-            rect.height = geo.size * textureScale;
-            rect.position.set(
-              (geo.x - frame.x) * textureScale, 
-              (geo.y - frame.y) * textureScale
-            );
-            
-            //@debug tint
-            rect.tint = '0x' + Math.floor(Math.random()*16777215).toString(16);
-            rect.alpha = 0;
+          const tagMask = new PIXI.Graphics();
+          const tagCutouts = new PIXI.Graphics();
+          tagCutouts.alpha = 0;
+          tagMask.alpha = 0;
+          
+          const polyRegions = [];
 
-            rect.interactive = true;
-            rect.buttonMode = true;
-            rect.on('pointertap', () => {
+          tag.geometry.forEach(geo => {                
+
+            //scale down coordinates
+            const x = (geo.x - frame.x) * textureScale, 
+                  y = (geo.y - frame.y) * textureScale, 
+                  w = geo.size * textureScale,
+                  h = geo.size * textureScale;
+
+            polyRegions.push({
+              regions: [
+                  [
+                      [x, y],
+                      [x+w, y],
+                      [x+w, y+h],
+                      [x, y+h]
+                  ]
+              ],
+              inverted: false
+            })
+
+            cutoutCounter++;
+          })
+
+          //combine all regions via PolyBool
+          let result = polyRegions[0];
+          for (let i=1; i < polyRegions.length; i++) {
+            result = PolyBool.union(result, polyRegions[i]);
+          }
+
+          tagCutouts.beginFill(0xFF0000);
+          tagMask.beginFill(0xFFFFFF, 0.55);
+          
+          tagMask.drawRect(0, 0, frame.width * textureScale, frame.height * textureScale);
+          tagMask.beginHole();
+
+          //convert PolyBool regions to PIXI Polygons
+          for(let i=0; i<result.regions.length; i++) {
+
+            const region = result.regions[i];
+
+            const pixiPoly = [];
+            for(let k=0; k<region.length; k++) {
+              pixiPoly.push(...region[k])
+            }
+
+            tagMask.drawPolygon(pixiPoly);
+            tagCutouts.drawPolygon(pixiPoly);
+          }
+        
+          tagMask.endHole();
+          tagMask.endFill();
+
+          tagCutouts.interactive = true;
+          tagCutouts.buttonMode = true;
+          tagCutouts.on('pointertap', () => {
               if(this.$store.state.isDragging) return;
               console.log('detail cutout tap!', tag, `viz/tag/${tag.title}`);
               this.$router.push({ path: `/viz/tag/${tag.title}` });
             })
-
-            rect.on('pointerover', () => {
-              //if(this.$store.state.isDragging) return
-              //rect.zIndex = 1
-              TweenLite.to(rect, 0.2, {alpha: 0.5});
-            })
-            rect.on('pointerout', () => {
-              //if(this.$store.state.isDragging) return
-              //rect.zIndex = 0
-              TweenLite.to(rect, 0.2, {alpha: 0});
-            })
-
-            detailContainer.addChild(rect);
+          tagCutouts.on('pointerout', () => {
+            TweenLite.to(tagMask, 0.2, {alpha: 0});
           })
+          tagCutouts.on('pointerover', () => {
+            TweenLite.to(tagMask, 0.2, {alpha: 1});
+          })
+
+          detailContainer.addChild(tagMask);
+          detailContainer.addChild(tagCutouts);
         })
+
+        console.log('Total Cutouts in ', this.object.id, ':', cutoutCounter)
 
       });
   },
