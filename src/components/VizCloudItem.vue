@@ -6,6 +6,10 @@
       :sample="sample" 
       :item="item" 
       :key="`${sample.id}`" />
+    <VizTooltip
+      :content="tooltipContent"
+      :yOffset="position.size"
+    />
   </div>
   
 </template>
@@ -14,6 +18,7 @@
 import * as PIXI from 'pixi.js'
 import { textStyle } from '../variables'
 import VizCloudSample from './VizCloudSample.vue'
+import VizTooltip from './VizTooltip.vue'
 
 export default {
   name: 'viz-cloud-item',
@@ -28,10 +33,26 @@ export default {
       samplesContainer: null,
       appendTimeout: null,
       renderIndex: 0, //index of next appended item
-      renderStack: [] //array of items that are rendered
+      renderStack: [], //array of items that are rendered
+      isHovered: false
     }
   },
-  components: { VizCloudSample },
+  components: { VizCloudSample, VizTooltip },
+  computed: {
+    position: function () {
+      return this.$store.getters.positionInCloud(this.cloudname, this.item.id)
+    },
+    tooltipContent: function () {
+      if (this.cloudname != 'overview') {
+        const tagData = this.$store.getters.tag(this.cloudname)
+        const originTitle = this.$store.getters.object(this.item.id).title
+        const originCount = tagData.occurrences.find(occurrence => occurrence.origin === this.item.id).geometry.length
+        return originCount + ' ' + tagData.title + '\n' + 'in ' + originTitle
+      } else {
+        return this.item.weight + ' ' + this.item.id
+      }
+    }
+  },
   methods: {
   appendNext: function() {
 
@@ -66,45 +87,16 @@ export default {
  
   // itemContainer stores samplesContainer and textBox
   const itemContainer = this.itemContainer = new PIXI.Container();
-  //itemContainer.sortableChildren = true
 
   // samplesContainer will store all sprites from VizCloudSample.vue
   const samplesContainer = this.samplesContainer = new PIXI.Container();
   samplesContainer.name = 'samplesContainer'
   itemContainer.addChild(samplesContainer)
   
-  const position = this.$store.getters.positionInCloud(this.cloudname, this.item.id);
-  itemContainer.x = position.x
-  itemContainer.y = position.y
-  itemContainer.width = position.size
-  itemContainer.height = position.size
-  
-  const textBox = new PIXI.Container();
-  textBox.name = 'textBox'
-  textBox.alpha = 0
-  textBox.x = 0
-  textBox.y = position.size
-
-  // text content depending on active view
-  const textOverview = this.item.weight + ' ' + this.item.id
-  let textTagview = ''
-
-  if (this.cloudname != 'overview') {
-    const tagData = this.$store.getters.tag(this.cloudname)
-    const originTitle = this.$store.getters.object(this.item.id).title
-    const originCount = tagData.occurrences.find(occurrence => occurrence.origin === this.item.id).geometry.length
-    textTagview = originCount + ' ' + tagData.title + '\n' + 'in ' + originTitle
-  }
-  
-  const textContent = this.cloudname === 'overview' ? textOverview : textTagview
-  const tagTitle = new PIXI.Text(textContent, textStyle.medium)
-  tagTitle.x = 5
-
-  const txtBG = new PIXI.Sprite(PIXI.Texture.WHITE);
-  txtBG.width = tagTitle.width + 10;
-  txtBG.height = tagTitle.height;
-  textBox.addChild(txtBG, tagTitle);
-  itemContainer.addChild(textBox)
+  itemContainer.x = this.position.x
+  itemContainer.y = this.position.y
+  itemContainer.width = this.position.size
+  itemContainer.height = this.position.size
 
   // samplesContainer is interactive to avoid events
   // on itemContainer (that also stores textBox)
@@ -118,22 +110,17 @@ export default {
   })
   samplesContainer.on('pointerover', () => {
     if(this.$store.state.isDragging) return
-
-    // workaround for maintaining original text size
-    // TODO: move to resize watcher / other solution in general?
-    const scaleInverted = 1 / this.$parent.viewport.transform.scale.x
-    textBox.scale = new PIXI.Point(scaleInverted, scaleInverted)
     
     itemContainer.zIndex = 1 // rendered above all other itemContainer's to ensure textBox visibility
 
-    textBox.alpha = 1
+    this.isHovered = true
   })
   samplesContainer.on('pointerout', () => {
     if(this.$store.state.isDragging) return
 
     itemContainer.zIndex = 0 // back to default zIndex layer
 
-    textBox.alpha = 0
+    this.isHovered = false
   })
 
 

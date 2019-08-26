@@ -8,17 +8,17 @@ export const durations = {
 export const textStyle = {
   regular: new TextStyle({
     fontFamily: "\"Overpass\", sans-serif",
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 400
   }),
   medium: new TextStyle({
     fontFamily: "\"Overpass\", sans-serif",
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 600
   }),
   bold: new TextStyle({
     fontFamily: "\"Overpass\", sans-serif",
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 800
   })
 }
