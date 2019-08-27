@@ -25,8 +25,6 @@ export default {
   watch: {
     $route(to, from) {
       //console.log('viz route changed', to, from);
-      //@todo reset viewport to center
-      //this.viewport.ensureVisible(0, 0, width, height)
     },
     inverted: function (newValue, previousValue) {
       const targetAlpha = (newValue === true) ? 1 : 0;
@@ -37,8 +35,30 @@ export default {
     handleResize() {
       const { clientWidth: width, clientHeight: height } = this.$refs.rendererWrapper;
       this.PIXIApp.renderer.resize(width, height);
-      this.viewport.resize(width, height);
+      this.viewport.resize(width, height, width, height);
+      
       this.$store.dispatch('updateCanvasSize', {width, height});
+
+      // update clamp values according to canvas size
+      this.viewport
+        .clamp({
+          left: 0,
+          right: width,
+          top: 0,
+          bottom: height
+        })
+        .clampZoom({
+          minWidth: width / this.$store.state.input.maxZoomFactor,
+          minHeight: height / this.$store.state.input.maxZoomFactor,
+          maxWidth: width,
+          maxHeight: height
+        })
+
+      // debug: update background's dimensions
+      /* const bg = this.viewport.children.find(child => child.name === 'debug-bg')
+      bg.width = width
+      bg.height = height */
+      // debug end
     },
       load() {
       },
@@ -61,10 +81,14 @@ export default {
     })
 
     this.viewport = new Viewport({
+
+        // width/height values arbitrary
+        // will be overwritten immediately by handleResize call
         screenWidth: 1280,
         screenHeight: 800,
         worldWidth: 1280,
         worldHeight: 1280,
+
         interaction: this.PIXIApp.renderer.plugins.interaction
     })
     .on('drag-start', () => {
@@ -73,6 +97,21 @@ export default {
     .on('drag-end', () => {
       this.$store.commit('dragEnd')
     })
+    .on('zoomed', (e) => {
+      //console.log('Current scale:', e.viewport.transform.scale.x)
+    })
+
+    // debug: tinted background with viewport dimensions
+    /* const bg = new PIXI.Sprite(PIXI.Texture.WHITE)
+    bg.name = 'debug-bg'
+    bg.tint = 0xff0000
+    bg.alpha = 0.2
+    bg.x = this.viewport.left
+    bg.y = this.viewport.top
+    bg.width = this.viewport.worldWidth
+    bg.height = this.viewport.worldHeight
+    this.viewport.addChild(bg) */
+    // debug end
     
     //@debug viewport
     /*let sprite = objectViewport.addChild(new PIXI.Sprite(PIXI.Texture.WHITE))
@@ -117,8 +156,7 @@ export default {
         .pinch()
         .wheel()
         .decelerate()
-        //.clamp({ direction: 'all' })
-        
+    
     //handle resize
     this.PIXIApp.renderer.autoResize = true;
     window.addEventListener('resize', this.handleResize);
