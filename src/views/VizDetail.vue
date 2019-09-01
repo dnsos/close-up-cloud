@@ -7,7 +7,7 @@
 <script>
 import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
-import { TweenLite } from 'gsap/TweenMax'
+import { TweenLite, TimelineLite } from 'gsap/TweenMax'
 import PolyBool from 'polybooljs';
 
 export default {
@@ -35,8 +35,7 @@ export default {
     return {
       detailContainer: null,
       sprite: null,
-      lastHoveredTag: '',
-      hideCutoutTimeout: null
+      masks: []
     }
   },
   methods: {
@@ -73,6 +72,22 @@ export default {
 
         const texture = resources[this.object.id].texture
         sprite.texture = texture;
+
+        sprite.interactive = true;
+        sprite.buttonMode = true;
+        sprite.on('pointertap', () => {
+          if(this.$store.state.isDragging) return;
+          console.log('detail tap!');
+
+          for(let mask of this.masks) {
+            new TimelineLite()
+              .from(mask, 0, {alpha: 0})
+              .to(mask, 0.2, {alpha: 0.66})
+              .to(mask, 0.2, {alpha: 0})
+              .to(mask, 0.2, {alpha: 0.66})
+              .to(mask, 0.2, {alpha: 0})
+          }
+        });
 
         this.resize(this.canvas);        
         TweenLite.to(detailContainer, 1, {alpha: 1});
@@ -121,8 +136,9 @@ export default {
             result = PolyBool.union(result, polyRegions[i]);
           }
 
-          tagCutouts.beginFill(0xFF0000);
-          tagMask.beginFill(0xFFFFFF, 0.55);
+          tagCutouts.beginFill(0xFFFFFF, 0.1);
+          tagCutouts.lineStyle(2, 0xFFFFFF);
+          tagMask.beginFill(0xFFFFFF);
           
           tagMask.drawRect(0, 0, frame.width * textureScale, frame.height * textureScale);
           tagMask.beginHole();
@@ -155,8 +171,10 @@ export default {
             TweenLite.to(tagMask, 0.2, {alpha: 0});
           })
           tagCutouts.on('pointerover', () => {
-            TweenLite.to(tagMask, 0.2, {alpha: 1});
+            TweenLite.to(tagMask, 0.2, {alpha: 0.55});
           })
+
+          this.masks.push(tagCutouts);
 
           detailContainer.addChild(tagMask);
           detailContainer.addChild(tagCutouts);
