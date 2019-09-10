@@ -43,15 +43,22 @@ export default {
 
       if(!this.sprite || !this.sprite.texture) return;
 
-      //center detail image
       const textureHeight = this.sprite.texture.baseTexture.height
-      const textureWidth = this.sprite.texture.baseTexture.width        
-      this.detailContainer.position.set(this.canvas.width/2 - textureWidth/2, this.canvas.height/2 - textureHeight/2)
-        
-      //@todo also pay respect to width
-      const desiredHeight = this.canvas.height
-      const ratio = (desiredHeight / textureHeight)
-      this.viewport.setZoom(ratio, true)
+      const textureWidth = this.sprite.texture.baseTexture.width
+       
+      // retrieve orientations
+      const landscapeScreen = this.canvas.width > this.canvas.height
+      const landscapeTexture = textureWidth > textureHeight
+
+      // evaluate ratio based on orientations
+      const relevantDimension = landscapeScreen ? this.canvas.height : this.canvas.width
+      const ratio = relevantDimension * 0.9 / (landscapeTexture ? textureWidth : textureHeight) // 0.9 for padding
+
+      this.detailContainer.width = textureWidth * ratio
+      this.detailContainer.height = textureHeight * ratio
+      this.detailContainer.position.set(this.canvas.width/2 - this.detailContainer.width/2, this.canvas.height/2 - this.detailContainer.height/2)
+
+      this.viewport.setZoom(1, true)
     }
   },
   beforeMount: function() {
