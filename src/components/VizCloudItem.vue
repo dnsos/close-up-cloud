@@ -87,16 +87,17 @@ export default {
  
   // itemContainer stores samplesContainer and textBox
   const itemContainer = this.itemContainer = new PIXI.Container();
+  
+  itemContainer.x = this.position.x
+  itemContainer.y = this.position.y
+  //itemContainer.width = this.position.size
+  //itemContainer.height = this.position.size
 
   // samplesContainer will store all sprites from VizCloudSample.vue
   const samplesContainer = this.samplesContainer = new PIXI.Container();
   samplesContainer.name = 'samplesContainer'
-  itemContainer.addChild(samplesContainer)
-  
-  itemContainer.x = this.position.x
-  itemContainer.y = this.position.y
-  itemContainer.width = this.position.size
-  itemContainer.height = this.position.size
+  samplesContainer.width = this.position.size
+  samplesContainer.height = this.position.size
 
   // samplesContainer is interactive to avoid events
   // on itemContainer (that also stores textBox)
@@ -123,6 +124,7 @@ export default {
     this.isHovered = false
   })
 
+  itemContainer.addChild(samplesContainer)
 
   //@debug adds a sprite and random tint that will be removed on load
   /*let sprite = new PIXI.Sprite(PIXI.Texture.WHITE)

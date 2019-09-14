@@ -26,25 +26,33 @@ export default {
     sprite.alpha = 0
 
     //inherit size
-    sprite.width = this.$parent.itemContainer._width
-    sprite.height = this.$parent.itemContainer._height
+    sprite.width = this.$parent.samplesContainer._width
+    sprite.height = this.$parent.samplesContainer._height
 
-    const path = process.env.VUE_APP_URL_IMG;
+    const cutoutsRoot = process.env.VUE_APP_URL_IMG;
     const fileName = this.sample.origin;
     const thumbName = `${this.sample.id}.jpg`;
-    sprite.texture = PIXI.Texture.from(`${path}/${fileName}/${thumbName}`);
+    const cutoutPath = `${cutoutsRoot}/${fileName}/${thumbName}`;
+
+    const loader = new PIXI.Loader()
+
+    if (!loader.resources[cutoutPath] || !PIXI.utils.TextureCache[cutoutPath]) {
+      // add resource only if doesn't exist already
+      // TODO: possible to avoid duplicates in TextureCache?
+      loader.add(cutoutPath)
+    }
+
+    loader.load((loader, resources) => {
+      sprite.texture = resources[cutoutPath].texture
+      this.$parent.samplesContainer.addChild(this.sprite)
+      TweenLite.to(this.sprite, 1, {alpha: 1, ease: Power2.easeIn})
+    })
 
     //@debug add a random tint that will be removed on load
     //sprite.tint = '0x' + Math.floor(Math.random()*16777215).toString(16);
   },
 
   mounted: function() {
-    // add children to respective containers
-    //this.$parent.itemContainer.addChild(this.sprite)
-    this.$parent.samplesContainer.addChild(this.sprite)
-
-    TweenLite.to(this.sprite, 1, {alpha: 1, ease: Power2.easeIn});
-
     //htmlviz
     const path = process.env.VUE_APP_URL_IMG;
     const fileName = this.sample.origin;
