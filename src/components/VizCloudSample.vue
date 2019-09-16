@@ -5,10 +5,10 @@
 <script>
 import * as PIXI from 'pixi.js'
 import { TweenLite, Power2 } from 'gsap/TweenMax'
+import { durations } from '../variables.js'
 
 export default {
   name: 'viz-cutout',
-  sprite: null,
   props: {
     sample: { type: Object, required: true },
     item: { type: Object, required: true }
@@ -20,7 +20,7 @@ export default {
   },
   beforeMount: function() {
     
-    console.log("hello this is a sample");
+    //console.log("hello this is a sample");
 
     let sprite = this.sprite = new PIXI.Sprite(PIXI.Texture.WHITE)
     sprite.alpha = 0
@@ -41,7 +41,7 @@ export default {
     if(loader.resources[cutoutPath]) {
       sprite.texture = loader.resources[cutoutPath].texture
       this.$parent.samplesContainer.addChild(sprite)
-      TweenLite.to(sprite, 1, {alpha: 1, ease: Power2.easeIn})
+      TweenLite.to(sprite, durations.sampleFadeIn, {alpha: 1, ease: Power2.easeIn})
     } else {
       console.error('Texture not found', cutoutPath)
     }
@@ -52,6 +52,9 @@ export default {
     const fileName = this.sample.origin;
     const thumbName = `${this.sample.id}.jpg`;
     this.$refs.cutout.style.backgroundImage = `url(${process.env.VUE_APP_URL_IMG}/${fileName}/${thumbName})`;
+  },
+  beforeDestroy: function () {
+    this.$parent.samplesContainer.removeChild(this.sprite)
   }
 }
 </script>
