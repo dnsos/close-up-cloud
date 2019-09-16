@@ -89,6 +89,7 @@ function combineData(labelboxData, metaData) {
             widthInCm:  csvRow['widthInCm'], 
             heightInCm: csvRow['heightInCm'], 
             signature:  csvRow['Signatur'],
+            permalink:  csvRow['Permalink'],
             tags:       tags
         };
 

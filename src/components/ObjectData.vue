@@ -10,8 +10,8 @@
           <span class="highlighted">Herstellung</span><br>
           {{objectData.date}}&nbsp;in&nbsp;{{objectData.location}}
         </li>
-        <li class="list-item">
-          <button>→ In Sammlung öffnen</button>
+        <li class="list-item" v-if="objectData.permalink">
+          <a :href="objectData.permalink" target="_blank">→ In Sammlung öffnen</a>
         </li>
       </ul>
     </div>
