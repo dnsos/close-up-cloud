@@ -2,7 +2,7 @@
   <div class="overview">
     <router-link :to="`/viz/`">hello this is a cloud</router-link>
   
-    <VizCloudItem v-for="item in items" 
+    <VizCloudItem v-for="item in items" ref="clouditems"
       :item="item" 
       :cloudname="cloudname" 
       :subpath="subpath"
@@ -19,6 +19,7 @@
 import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
 import VizCloudItem from './VizCloudItem'
+import { durations } from '../variables'
 
 export default {
   name: 'viz-cloud',
@@ -31,8 +32,9 @@ export default {
   computed: mapState(['canvas', 'viewport']),
   data: () => {
     return {
-      renderItems: [],
-      cloudContainer: null
+      cloudContainer: null,
+      sampleGenerators: [],
+      loadChunkTimeout: null
     }
   },
   watch: {
@@ -82,6 +84,43 @@ export default {
         key: this.cloudname,
         data: this.items
       });
+    },
+    createSampleGenerators() {
+
+      this.items.forEach((item) => {
+        const gen = sampleGenerator(item);
+        this.sampleGenerators.push(gen);
+      });
+
+      //harvesting the sampleUrls per item in order
+      function * sampleGenerator(item) {
+        for(let sample of item.samples) {
+          const fileName = sample.origin;
+          const thumbName = `${sample.id}.jpg`;
+          const cutoutPath = `${process.env.VUE_APP_URL_IMG}/${fileName}/${thumbName}`;
+          yield cutoutPath;
+        }
+      }
+    },
+    loadSampleChunks() {
+      
+      const loader = PIXI.Loader.shared;
+      
+      //pre-load samples
+      this.items.forEach((item, i) => {
+        const sampleUrl = this.sampleGenerators[i].next().value;
+        if(sampleUrl && !loader.resources[sampleUrl]) {
+          loader.add(sampleUrl)
+        }
+      });
+      
+      loader.load(() => {
+        for(let clouditem of this.$refs.clouditems) {
+          clouditem.appendNext();
+        }
+      })
+
+      this.loadChunkTimeout = window.setTimeout(this.loadSampleChunks, durations.sampleVisible * 1000);
     }
   },
   beforeMount: function() {
@@ -95,12 +134,22 @@ export default {
       this.cloudContainer.sortableChildren = true // necessary for enabling zIndex sorting of children
     }
 
-    //@todo preload all child images?
-
     //create cloud overview force layout
     this.initForceLayout();
   },
   mounted: function() {
+
+    this.createSampleGenerators();
+    this.loadSampleChunks();
+
+
+    //pause and resume loading sample chunks on window blur/focus
+    window.addEventListener('blur', () => {
+      window.clearTimeout(this.loadChunkTimeout);
+    })
+    window.addEventListener('focus', () => {
+      this.loadChunkTimeout = window.setTimeout(this.loadSampleChunks, durations.sampleVisible * 1000);
+    })
 
     //@todo prevent double resize call
     this.resize(this.canvas);
@@ -109,6 +158,7 @@ export default {
   },
   beforeDestroy: function () {
     this.viewport.removeChild(this.cloudContainer)
+    window.clearTimeout(this.loadChunkTimeout);
   }
 }
 </script>

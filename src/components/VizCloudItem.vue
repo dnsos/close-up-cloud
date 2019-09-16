@@ -16,7 +16,6 @@
 
 <script>
 import * as PIXI from 'pixi.js'
-import { textStyle } from '../variables'
 import VizCloudSample from './VizCloudSample.vue'
 import VizTooltip from './VizTooltip.vue'
 
@@ -54,33 +53,31 @@ export default {
     }
   },
   methods: {
-  appendNext: function() {
+    appendNext: function() {
 
-    //next sample to be appended
-    const nextSample = this.item.samples[this.renderIndex];
+      //if there is only one sample that is already in the renderStack, do nothing
+      if(this.item.samples.length === 1 && this.renderStack.length === 1) return;
 
-    //clone renderStack and add nextSample
-    let renderStack = this.renderStack.map(d => d);
-    renderStack.push(nextSample)    
-    
-    //only keep last two samples
-    if(renderStack.length > 2) {
-    renderStack = renderStack.slice(renderStack.length-2);
+      //@todo bugfix - when there are only two samples, VizCloudSamples seem not to be remounted, resulting in no shuffling
+      //console.log('hmm ...', this.item.samples.length, this.renderIndex)
+
+      //next sample to be appended
+      const nextSample = this.item.samples[this.renderIndex];
+
+      //clone renderStack and add nextSample
+      let renderStack = this.renderStack.map(d => d);
+      renderStack.push(nextSample)    
+      
+      //only keep last two samples
+      if(renderStack.length > 2) {
+        renderStack = renderStack.slice(renderStack.length-2);
+      }
+
+      //update render stack
+      this.renderStack = renderStack;
+      this.renderIndex++;
+      if(this.renderIndex === this.item.samples.length) this.renderIndex = 0;
     }
-
-    //update render stack
-    this.renderStack = renderStack;
-
-    //prepare next append
-    if(this.item.samples.length > 1) {
-    this.renderIndex++;
-    if(this.renderIndex === this.item.samples.length) this.renderIndex = 0;
-
-    this.appendTimeout = window.setTimeout(this.appendNext, 6000);
-    }
-  }
-  },
-  watch: {
   },
   beforeMount: function() {
   //console.log("hello this is a cloud item")
@@ -90,8 +87,6 @@ export default {
   
   itemContainer.x = this.position.x
   itemContainer.y = this.position.y
-  //itemContainer.width = this.position.size
-  //itemContainer.height = this.position.size
 
   // samplesContainer will store all sprites from VizCloudSample.vue
   const samplesContainer = this.samplesContainer = new PIXI.Container();
@@ -137,11 +132,7 @@ export default {
   itemContainer.addChild(sprite)*/
   },
   mounted: function() {
-  
-  this.$parent.cloudContainer.addChild(this.itemContainer);
-  
-  //first append: mix it up a lil
-  window.setTimeout(this.appendNext, Math.random()*1000);
+    this.$parent.cloudContainer.addChild(this.itemContainer);
   },
   beforeDestroy: function () {
     this.$parent.cloudContainer.removeChild(this.itemContainer)

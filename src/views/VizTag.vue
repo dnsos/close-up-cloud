@@ -34,7 +34,6 @@ export default {
             x: geo.x,
             y: geo.y
           }
-          //@todo pass filename in a more elegant way
           sample.id = getCutoutUID(this.tag.title, sample);
           return sample;
         });
