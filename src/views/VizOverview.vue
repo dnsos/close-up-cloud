@@ -28,7 +28,6 @@ export default {
             x: occ.geometry[0].x,
             y: occ.geometry[0].y
           }
-          //@todo pass filename in a more elegant way
           sample.id = getCutoutUID(tag.title, sample);
           return sample;
         });

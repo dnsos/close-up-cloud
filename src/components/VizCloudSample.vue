@@ -20,41 +20,35 @@ export default {
   },
   beforeMount: function() {
     
-    //console.log("hello this is a sample");
+    console.log("hello this is a sample");
 
     let sprite = this.sprite = new PIXI.Sprite(PIXI.Texture.WHITE)
     sprite.alpha = 0
+
+    //@debug add a random tint that will be removed on load
+    //sprite.tint = '0x' + Math.floor(Math.random()*16777215).toString(16);
 
     //inherit size
     sprite.width = this.$parent.samplesContainer._width
     sprite.height = this.$parent.samplesContainer._height
 
-    const cutoutsRoot = process.env.VUE_APP_URL_IMG;
     const fileName = this.sample.origin;
     const thumbName = `${this.sample.id}.jpg`;
-    const cutoutPath = `${cutoutsRoot}/${fileName}/${thumbName}`;
+    const cutoutPath = `${process.env.VUE_APP_URL_IMG}/${fileName}/${thumbName}`;
 
-    const loader = new PIXI.Loader()
-
-    if (!loader.resources[cutoutPath] || !PIXI.utils.TextureCache[cutoutPath]) {
-      // add resource only if doesn't exist already
-      // TODO: possible to avoid duplicates in TextureCache?
-      loader.add(cutoutPath)
+    //load texture and fade in
+    const loader = PIXI.Loader.shared;
+    if(loader.resources[cutoutPath]) {
+      sprite.texture = loader.resources[cutoutPath].texture
+      this.$parent.samplesContainer.addChild(sprite)
+      TweenLite.to(sprite, 1, {alpha: 1, ease: Power2.easeIn})
+    } else {
+      console.error('Texture not found', cutoutPath)
     }
-
-    loader.load((loader, resources) => {
-      sprite.texture = resources[cutoutPath].texture
-      this.$parent.samplesContainer.addChild(this.sprite)
-      TweenLite.to(this.sprite, 1, {alpha: 1, ease: Power2.easeIn})
-    })
-
-    //@debug add a random tint that will be removed on load
-    //sprite.tint = '0x' + Math.floor(Math.random()*16777215).toString(16);
   },
 
   mounted: function() {
     //htmlviz
-    const path = process.env.VUE_APP_URL_IMG;
     const fileName = this.sample.origin;
     const thumbName = `${this.sample.id}.jpg`;
     this.$refs.cutout.style.backgroundImage = `url(${process.env.VUE_APP_URL_IMG}/${fileName}/${thumbName})`;

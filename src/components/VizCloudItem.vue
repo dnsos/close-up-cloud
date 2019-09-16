@@ -54,33 +54,29 @@ export default {
     }
   },
   methods: {
-  appendNext: function() {
+    appendNext: function() {
 
-    //next sample to be appended
-    const nextSample = this.item.samples[this.renderIndex];
+      //next sample to be appended
+      const nextSample = this.item.samples[this.renderIndex];
 
-    //clone renderStack and add nextSample
-    let renderStack = this.renderStack.map(d => d);
-    renderStack.push(nextSample)    
-    
-    //only keep last two samples
-    if(renderStack.length > 2) {
-    renderStack = renderStack.slice(renderStack.length-2);
+      //clone renderStack and add nextSample
+      let renderStack = this.renderStack.map(d => d);
+      renderStack.push(nextSample)    
+      
+      //only keep last two samples
+      if(renderStack.length > 2) {
+      renderStack = renderStack.slice(renderStack.length-2);
+      }
+
+      //update render stack
+      this.renderStack = renderStack;
+
+      //prepare next append
+      if(this.item.samples.length > 1) {
+        this.renderIndex++;
+        if(this.renderIndex === this.item.samples.length) this.renderIndex = 0;
+      }
     }
-
-    //update render stack
-    this.renderStack = renderStack;
-
-    //prepare next append
-    if(this.item.samples.length > 1) {
-    this.renderIndex++;
-    if(this.renderIndex === this.item.samples.length) this.renderIndex = 0;
-
-    this.appendTimeout = window.setTimeout(this.appendNext, 6000);
-    }
-  }
-  },
-  watch: {
   },
   beforeMount: function() {
   //console.log("hello this is a cloud item")
@@ -141,7 +137,7 @@ export default {
   this.$parent.cloudContainer.addChild(this.itemContainer);
   
   //first append: mix it up a lil
-  window.setTimeout(this.appendNext, Math.random()*1000);
+  //window.setTimeout(this.appendNext, Math.random()*1000);
   },
   beforeDestroy: function () {
     this.$parent.cloudContainer.removeChild(this.itemContainer)

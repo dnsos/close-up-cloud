@@ -2,7 +2,7 @@
   <div class="overview">
     <router-link :to="`/viz/`">hello this is a cloud</router-link>
   
-    <VizCloudItem v-for="item in items" 
+    <VizCloudItem v-for="item in items" ref="clouditems"
       :item="item" 
       :cloudname="cloudname" 
       :subpath="subpath"
@@ -31,7 +31,6 @@ export default {
   computed: mapState(['canvas', 'viewport']),
   data: () => {
     return {
-      renderItems: [],
       cloudContainer: null
     }
   },
@@ -95,12 +94,33 @@ export default {
       this.cloudContainer.sortableChildren = true // necessary for enabling zIndex sorting of children
     }
 
-    //@todo preload all child images?
-
     //create cloud overview force layout
     this.initForceLayout();
   },
   mounted: function() {
+
+    //preload all child images
+    const loader = PIXI.Loader.shared;
+
+    for(let item of this.items) {
+      for(let sample of item.samples) {
+        
+        const fileName = sample.origin;
+        const thumbName = `${sample.id}.jpg`;
+        const cutoutPath = `${process.env.VUE_APP_URL_IMG}/${fileName}/${thumbName}`;
+        
+        if(!loader.resources[cutoutPath]) loader.add(cutoutPath)
+
+        break;
+      }
+    }
+    
+    //@todo load samples before mount? currently happens in mounted because we need this.$refs.clouditems :(
+    loader.load((loader, resources) => {
+      for(let clouditem of this.$refs.clouditems) {
+        clouditem.appendNext();
+      }
+    })
 
     //@todo prevent double resize call
     this.resize(this.canvas);
