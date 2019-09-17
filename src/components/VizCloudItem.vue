@@ -2,7 +2,7 @@
   <div class="tag">
     <router-link :to="`/viz/tag/${item.id}`">Cloud item {{item.id}}</router-link>
 
-    <VizCloudSample v-for="sample in renderStack" 
+    <VizCloudSample v-for="sample in renderStack" ref="cloudsamples"
       :sample="sample" 
       :item="item" 
       :key="`${sample.id}`" />
@@ -16,8 +16,10 @@
 
 <script>
 import * as PIXI from 'pixi.js'
+import { TweenLite, Power2 } from 'gsap/TweenMax'
 import VizCloudSample from './VizCloudSample.vue'
 import VizTooltip from './VizTooltip.vue'
+import { getCutoutUID } from '../utils.js'
 
 export default {
   name: 'viz-cloud-item',
@@ -30,10 +32,10 @@ export default {
     return {
       itemContainer: null,
       samplesContainer: null,
-      appendTimeout: null,
       renderIndex: 0, //index of next appended item
       renderStack: [], //array of items that are rendered
-      isHovered: false
+      isHovered: false,
+      isSpread: false
     }
   },
   components: { VizCloudSample, VizTooltip },
@@ -55,10 +57,16 @@ export default {
   methods: {
     appendNext: function() {
 
+      //don't shuffle while hovered
+      if(this.isHovered) return;
+
+      //don't shuffle while spread – all samples are visible now
+      if(this.isSpread) return;
+
       //if there is only one sample that is already in the renderStack, do nothing
       if(this.item.samples.length === 1 && this.renderStack.length === 1) return;
 
-      //@todo bugfix - when there are only two samples, VizCloudSamples seem not to be remounted, resulting in no shuffling
+      //@todo bugfix - when there are only two samples, VizCloudSamples seem not to be remounted, resulting in no re-appending on PIXI level
       //console.log('hmm ...', this.item.samples.length, this.renderIndex)
 
       //next sample to be appended
@@ -101,21 +109,164 @@ export default {
 
   samplesContainer.on('pointertap', () => {
     if(this.$store.state.isDragging) return;
-      console.log('itemContainer tap!', this.item);
-      this.$router.push({ path: `${this.subpath}/${this.item.id}` })
-  })
-  samplesContainer.on('pointerover', () => {
-    if(this.$store.state.isDragging) return
-    
-    itemContainer.zIndex = 1 // rendered above all other itemContainer's to ensure textBox visibility
+    console.log('itemContainer tap!', this.item);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ########## big mess for spread animation START ##########
+
+  
+    
+    //if(this.cloudname === 'overview') {
+
+      const tag = this.$store.getters.tag(this.item.id)
+      
+
+    
+    
+    //reset position of this item
+    TweenLite.to(this.itemContainer, 1, {
+      x: 0,
+      y: 0,
+      ease: Power2.easeOut
+    });
+    
+
+    //hide all other items
+    this.$parent.hideOtherItems(tag.title);
+
+
+
+
+
+    
+
+
+      //only ever compute cloud layout once
+      if(!this.$store.state.clouds[tag.title]) {
+
+        const cloudItems = tag.occurrences.map(occ => {
+
+          //per occurencant object: sample all geometries
+          const samples = occ.geometry.map(geo => {
+            const sample = {
+              origin: occ.origin,
+              x: geo.x,
+              y: geo.y
+            }
+            sample.id = getCutoutUID(tag.title, sample);
+            return sample;
+          });
+
+          return {
+            id: occ.origin,
+            weight: samples.length,
+            samples: samples
+          }
+        });
+
+        this.$store.dispatch('computeForceLayout', {
+          key: tag.title,
+          data: cloudItems
+        });
+      }
+    //}
+
+    //load all sample cutouts before spreading
+    const loader = PIXI.Loader.shared;
+
+    this.item.samples.forEach((sample, i) => {
+      const fileName = sample.origin;
+      const thumbName = `${sample.id}.jpg`;
+      const sampleUrl = `${process.env.VUE_APP_URL_IMG}/${fileName}/${thumbName}`;
+      if(!loader.resources[sampleUrl]) {
+        loader.add(sampleUrl)
+      }
+    });
+      
+    loader.load(() => {
+      
+      //put all samples in the renderstack
+      this.renderStack = this.item.samples;
+
+      //preserve the currently visible sample at the top :/ not working ...
+      /*const topMostSample = this.renderStack[this.renderStack.length-1];
+      let renderStack = this.item.samples.map(d => d);
+      renderStack.splice(renderStack.indexOf(topMostSample), 1);
+      renderStack.push(topMostSample);
+      this.renderStack = renderStack;*/
+
+      //wait for vue to reflect the new renderStack as VizCloudSamples
+      this.$nextTick(() => {
+        
+        this.$refs.cloudsamples.forEach((cloudSample, i) => {
+          const newPosition = this.$store.getters.positionInCloud(tag.title, cloudSample.sample.origin);
+
+          //skip fade-in of samples
+          cloudSample.sprite.alpha = 1;
+
+          //update sample positions
+          TweenLite.to(cloudSample.sprite, 1, {
+            x: newPosition.x,
+            y: newPosition.y,
+            width: newPosition.size,
+            height: newPosition.size,
+            ease: Power2.easeOut,
+            delay: 0.5 + (i*0.01)
+          })
+            
+        });
+      })
+    })
+
+
+
+    
+// ########## big mess for spread animation END ##########
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //this.$router.push({ path: `${this.subpath}/${this.item.id}` })
+  })
+  samplesContainer.on('pointerover', () => {    
+    itemContainer.zIndex = 1 // rendered above all other itemContainer's to ensure textBox visibility
     this.isHovered = true
   })
   samplesContainer.on('pointerout', () => {
-    if(this.$store.state.isDragging) return
-
     itemContainer.zIndex = 0 // back to default zIndex layer
-
     this.isHovered = false
   })
 
@@ -136,7 +287,6 @@ export default {
   },
   beforeDestroy: function () {
     this.$parent.cloudContainer.removeChild(this.itemContainer)
-    window.clearTimeout(this.appendTimeout);
   }
 }
 </script>

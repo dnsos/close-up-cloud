@@ -2,7 +2,7 @@
   <div class="tag">
     <router-link :to="`/viz/tag/${tag.title}`">Tag {{tag.title}}</router-link>
 
-    <VizCloud :cloudname="tag.title" :items="cloudlist" :subpath="`/viz/detail`" />
+    <VizCloud :cloudname="tag.title" :items="cloudItems" :subpath="`/viz/detail`" />
   </div>
 </template>
 
@@ -22,9 +22,9 @@ export default {
     }
   },
   computed: {
-    cloudlist: function() {
+    cloudItems: function() {
 
-      //convert tag.occurrences to cloudlist (see readme)
+      //convert tag.occurrences to cloudItems (see readme)
       return this.tag.occurrences.map(occ => {
 
         //per occurencant object: sample all geometries

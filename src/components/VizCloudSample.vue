@@ -41,7 +41,7 @@ export default {
     if(loader.resources[cutoutPath]) {
       sprite.texture = loader.resources[cutoutPath].texture
       this.$parent.samplesContainer.addChild(sprite)
-      TweenLite.to(sprite, durations.sampleFadeIn, {alpha: 1, ease: Power2.easeIn})
+      TweenLite.to(sprite, durations.sampleFadeIn, {alpha: 1, ease: Power2.easeInOut})
     } else {
       console.error('Texture not found', cutoutPath)
     }

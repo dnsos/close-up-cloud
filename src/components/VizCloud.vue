@@ -17,6 +17,7 @@
 
 <script>
 import * as PIXI from 'pixi.js'
+import { TweenLite, Power2 } from 'gsap/TweenMax'
 import { mapState } from 'vuex'
 import VizCloudItem from './VizCloudItem'
 import { durations } from '../variables'
@@ -32,6 +33,7 @@ export default {
   computed: mapState(['canvas', 'viewport']),
   data: () => {
     return {
+      isShuffling: true,
       cloudContainer: null,
       sampleGenerators: [],
       loadChunkTimeout: null
@@ -68,12 +70,12 @@ export default {
       }
 
       // zoom to fit and center
-      this.viewport.snapZoom({
+      /*this.viewport.snapZoom({
         ...relevantDimension,
         center: new PIXI.Point(canvas.width/2, canvas.height/2),
         removeOnComplete: true,
         removeOnInterrupt: true
-      })
+      })*/
     },
     initForceLayout() {
 
@@ -120,19 +122,29 @@ export default {
         }
       })
 
-      this.loadChunkTimeout = window.setTimeout(this.loadSampleChunks, durations.sampleVisible * 1000);
+      //if(this.isShuffling) {
+        this.loadChunkTimeout = window.setTimeout(this.loadSampleChunks, durations.sampleVisible * 1000);
+      //}
+    },
+    hideOtherItems(id) {
+
+      //this.isShuffling = false;
+      window.clearTimeout(this.loadChunkTimeout);
+
+      for(let clouditem of this.$refs.clouditems) {
+        if(clouditem.item.id !== id) {
+          TweenLite.to(clouditem.itemContainer, 0.5, { alpha: 0 });
+        }
+      }
     }
   },
   beforeMount: function() {
     console.log("hello this is a cloud")
 
     // create container for tag cloud
-    //@todo implications of only created once?
-    if(!this.cloudContainer) {
-      this.cloudContainer = new PIXI.Container()
-      this.cloudContainer.name = `cloud-${this.cloudname}`
-      this.cloudContainer.sortableChildren = true // necessary for enabling zIndex sorting of children
-    }
+    this.cloudContainer = new PIXI.Container()
+    this.cloudContainer.name = `cloud-${this.cloudname}`
+    this.cloudContainer.sortableChildren = true // necessary for enabling zIndex sorting of children
 
     //create cloud overview force layout
     this.initForceLayout();
