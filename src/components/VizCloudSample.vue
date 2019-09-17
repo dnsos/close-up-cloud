@@ -23,7 +23,7 @@ export default {
     //console.log("hello this is a sample");
 
     let sprite = this.sprite = new PIXI.Sprite(PIXI.Texture.WHITE)
-    sprite.alpha = 0
+    //sprite.alpha = 0
 
     //@debug add a random tint that will be removed on load
     //sprite.tint = '0x' + Math.floor(Math.random()*16777215).toString(16);
@@ -41,7 +41,7 @@ export default {
     if(loader.resources[cutoutPath]) {
       sprite.texture = loader.resources[cutoutPath].texture
       this.$parent.samplesContainer.addChild(sprite)
-      TweenLite.to(sprite, durations.sampleFadeIn, {alpha: 1, ease: Power2.easeInOut})
+      //TweenLite.to(sprite, durations.sampleFadeIn, {alpha: 1, ease: Power2.easeInOut})
     } else {
       console.error('Texture not found', cutoutPath)
     }

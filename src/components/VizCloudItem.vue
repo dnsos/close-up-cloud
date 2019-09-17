@@ -16,6 +16,7 @@
 
 <script>
 import * as PIXI from 'pixi.js'
+import { mapState } from 'vuex'
 import { TweenLite, Power2 } from 'gsap/TweenMax'
 import VizCloudSample from './VizCloudSample.vue'
 import VizTooltip from './VizTooltip.vue'
@@ -40,6 +41,7 @@ export default {
   },
   components: { VizCloudSample, VizTooltip },
   computed: {
+    ...mapState(['canvas', 'viewport']),
     position: function () {
       return this.$store.getters.positionInCloud(this.cloudname, this.item.id)
     },
@@ -140,20 +142,16 @@ export default {
 
     
     
-    //reset position of this item
+    //set position of this item to canvas center
     TweenLite.to(this.itemContainer, 1, {
-      x: 0,
-      y: 0,
+      x: -this.position.size/2,
+      y: -this.position.size/2,
       ease: Power2.easeOut
     });
     
 
     //hide all other items
     this.$parent.hideOtherItems(tag.title);
-
-
-
-
 
     
 
@@ -188,6 +186,35 @@ export default {
       }
     //}
 
+
+
+
+      //get size of next cloud and zoom in
+      const cloudBox = this.$store.getters.cloudBBox(tag.title)
+      const remainders = {
+        x: this.canvas.width - cloudBox.width,
+        y: this.canvas.height - cloudBox.height
+      }
+      // evaluate relevant axis for snapZoom
+      const relevantDimension = {
+        ...(remainders.x < remainders.y && { width: cloudBox.width + 100 }),
+        ...(remainders.y < remainders.x && { height: cloudBox.height + 100 })
+      }
+      // zoom to fit and center
+      window.setTimeout(() => {
+        this.viewport.snapZoom({
+          ...relevantDimension,
+          center: new PIXI.Point(this.canvas.width/2, this.canvas.height/2),
+          removeOnComplete: true,
+          removeOnInterrupt: true,
+          time: 1000,
+          ease: 'easeInOutQuad'
+        })
+      }, 1500);
+
+
+
+
     //load all sample cutouts before spreading
     const loader = PIXI.Loader.shared;
 
@@ -212,8 +239,16 @@ export default {
       renderStack.push(topMostSample);
       this.renderStack = renderStack;*/
 
+
       //wait for vue to reflect the new renderStack as VizCloudSamples
       this.$nextTick(() => {
+
+        TweenLite.to(this.itemContainer, 1, {
+          x: 0,
+          y: 0,
+          ease: Power2.easeOut,
+          delay: 1// + (this.$refs.cloudsamples.length * 0.025)
+        });
         
         this.$refs.cloudsamples.forEach((cloudSample, i) => {
           const newPosition = this.$store.getters.positionInCloud(tag.title, cloudSample.sample.origin);
@@ -222,16 +257,20 @@ export default {
           cloudSample.sprite.alpha = 1;
 
           //update sample positions
-          TweenLite.to(cloudSample.sprite, 1, {
+          TweenLite.to(cloudSample.sprite, 1.5, {
             x: newPosition.x,
             y: newPosition.y,
             width: newPosition.size,
             height: newPosition.size,
             ease: Power2.easeOut,
-            delay: 0.5 + (i*0.01)
-          })
-            
+            delay: 1// + (i*0.025)
+          })            
         });
+
+        //when the animation is done, finally switch to the actual tag view
+        window.setTimeout(() => {
+          this.$router.push({ path: `${this.subpath}/${this.item.id}` })
+        }, 2500);
       })
     })
 

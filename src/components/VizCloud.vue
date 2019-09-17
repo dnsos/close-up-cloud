@@ -70,12 +70,12 @@ export default {
       }
 
       // zoom to fit and center
-      /*this.viewport.snapZoom({
+      this.viewport.snapZoom({
         ...relevantDimension,
         center: new PIXI.Point(canvas.width/2, canvas.height/2),
         removeOnComplete: true,
         removeOnInterrupt: true
-      })*/
+      })
     },
     initForceLayout() {
 
