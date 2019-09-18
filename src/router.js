@@ -37,10 +37,6 @@ export default new Router({
       ]
     },
     {
-      path: '/viz/tag/:id',
-      component: Viz
-    },
-    {
       path: '/info',
       name: 'info',
       component: () => import('./views/Info.vue')

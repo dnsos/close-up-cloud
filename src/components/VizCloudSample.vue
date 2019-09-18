@@ -4,8 +4,8 @@
 
 <script>
 import * as PIXI from 'pixi.js'
-import { TweenLite, Power2 } from 'gsap/TweenMax'
-import { durations } from '../variables.js'
+//import { TweenLite, Power2 } from 'gsap/TweenMax'
+//import { durations } from '../variables.js'
 
 export default {
   name: 'viz-cutout',
@@ -37,9 +37,8 @@ export default {
     const cutoutPath = `${process.env.VUE_APP_URL_IMG}/${fileName}/${thumbName}`;
 
     //load texture and fade in
-    const loader = PIXI.Loader.shared;
-    if(loader.resources[cutoutPath]) {
-      sprite.texture = loader.resources[cutoutPath].texture
+    if(PIXI.utils.TextureCache[cutoutPath]) {
+      sprite.texture = PIXI.utils.TextureCache[cutoutPath]
       this.$parent.samplesContainer.addChild(sprite)
       //TweenLite.to(sprite, durations.sampleFadeIn, {alpha: 1, ease: Power2.easeInOut})
     } else {

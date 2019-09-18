@@ -33,7 +33,6 @@ export default {
   computed: mapState(['canvas', 'viewport']),
   data: () => {
     return {
-      isShuffling: true,
       cloudContainer: null,
       sampleGenerators: [],
       loadChunkTimeout: null
@@ -51,6 +50,8 @@ export default {
       if(this.cloudContainer) {
         this.cloudContainer.position.set(canvas.width/2, canvas.height/2)
       }
+      
+      //@todo centralize viewport zooming-to-fit
 
       const cloudBox = this.$store.getters.cloudBBox(this.cloudname)
 
@@ -64,6 +65,7 @@ export default {
       // evaluate relevant axis for snapZoom
       // TODO: #1 double check if logic is correct
       // TODO: #2 make padding value less arbitrary
+      // TODO: also update in VizDetail, I copied this script over there to have a uniform zoom
       const relevantDimension = {
         ...(remainders.x < remainders.y && { width: cloudBox.width + 100 }),
         ...(remainders.y < remainders.x && { height: cloudBox.height + 100 })
@@ -106,13 +108,13 @@ export default {
     },
     loadSampleChunks() {
       
-      const loader = PIXI.Loader.shared;
+      const loader = new PIXI.Loader();
       
       //pre-load samples
       this.items.forEach((item, i) => {
         const sampleUrl = this.sampleGenerators[i].next().value;
-        if(sampleUrl && !loader.resources[sampleUrl]) {
-          loader.add(sampleUrl)
+        if(sampleUrl && !PIXI.utils.TextureCache[sampleUrl]) {
+          loader.add(sampleUrl);
         }
       });
       
@@ -122,18 +124,15 @@ export default {
         }
       })
 
-      //if(this.isShuffling) {
-        this.loadChunkTimeout = window.setTimeout(this.loadSampleChunks, durations.sampleVisible * 1000);
-      //}
+      this.loadChunkTimeout = window.setTimeout(this.loadSampleChunks, durations.sampleVisible * 1000);
     },
     hideOtherItems(id) {
 
-      //this.isShuffling = false;
       window.clearTimeout(this.loadChunkTimeout);
 
       for(let clouditem of this.$refs.clouditems) {
         if(clouditem.item.id !== id) {
-          TweenLite.to(clouditem.itemContainer, 0.5, { alpha: 0 });
+          TweenLite.to(clouditem.itemContainer, 0.5, { alpha: 0 }, Power2.easeOut);
         }
       }
     }

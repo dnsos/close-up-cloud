@@ -32,7 +32,8 @@ export default {
           const sample = {
             origin: occ.origin,
             x: geo.x,
-            y: geo.y
+            y: geo.y,
+            size: geo.size
           }
           sample.id = getCutoutUID(this.tag.title, sample);
           return sample;

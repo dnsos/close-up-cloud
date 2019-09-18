@@ -113,6 +113,9 @@ export default {
     if(this.$store.state.isDragging) return;
     console.log('itemContainer tap!', this.item);
 
+    //deactivate interaction, animation only from this point
+    samplesContainer.interactive = false;
+    samplesContainer.buttonMode = false;
 
 
 
@@ -125,40 +128,42 @@ export default {
 
 
 
+// #######################################################
+// ########## big mess for spread animation START ########
+// #######################################################
 
 
 
 
 
 
-// ########## big mess for spread animation START ##########
+/**
+ * Timeline of Spread Animation 
+ * [0.0s – 0.5s] Hide all other CloudItems
+ * [0.0s – 1.0s] Center the selected CloudItem
+ * [1.0s – 2.5s] (after loading) Spread out all VizCloudSamples
+ * [1.0s – 2.0s] (after loading) Center the next view
+ * [1.5s – 2.5s] (after loading) Zoom viewport to fit the next view
+ */
 
-  
-    
-    //if(this.cloudname === 'overview') {
+    // Hide all other CloudItems
+    this.$parent.hideOtherItems(this.item.id);
 
-      const tag = this.$store.getters.tag(this.item.id)
-      
+    let targetBBox;
 
-    
-    
-    //set position of this item to canvas center
-    TweenLite.to(this.itemContainer, 1, {
-      x: -this.position.size/2,
-      y: -this.position.size/2,
-      ease: Power2.easeOut
-    });
-    
+    // ##############################
+    // # CLOUD TO CLOUD START
+    // ##############################
 
-    //hide all other items
-    this.$parent.hideOtherItems(tag.title);
+    if(this.$route.name === 'viz-overview') {
 
-    
-
+      const tagTitle = this.item.id;
+      const tag = this.$store.getters.tag(tagTitle)
 
       //only ever compute cloud layout once
-      if(!this.$store.state.clouds[tag.title]) {
+      if(!this.$store.state.clouds[tagTitle]) {
 
+        //prepare input data for occurences cloud
         const cloudItems = tag.occurrences.map(occ => {
 
           //per occurencant object: sample all geometries
@@ -168,7 +173,7 @@ export default {
               x: geo.x,
               y: geo.y
             }
-            sample.id = getCutoutUID(tag.title, sample);
+            sample.id = getCutoutUID(tagTitle, sample);
             return sample;
           });
 
@@ -180,104 +185,219 @@ export default {
         });
 
         this.$store.dispatch('computeForceLayout', {
-          key: tag.title,
+          key: tagTitle,
           data: cloudItems
         });
       }
-    //}
+      
+      //get size of next cloud
+      targetBBox = this.$store.getters.cloudBBox(tagTitle)
+  
+    // ##############################
+    // # CLOUD TO CLOUD END
+    // ##############################
+    
+    } else if(this.$route.name === 'viz-tag') {
+
+    // ##############################
+    // # CLOUD TO DETAIL START
+    // ##############################
+
+      const object = this.$store.getters.object(this.item.id);
+      const frame = object.tags.find(tag => tag.title === "Frame");
+      targetBBox = frame.geometry[0];
+
+    }
+    // ##############################
+    // # CLOUD TO DETAIL END
+    // ##############################
+    
+
+  
+
+
+    //Center the selected CloudItem
+    TweenLite.to(this.itemContainer, 1, {
+      x: -this.position.size/2,
+      y: -this.position.size/2,
+      ease: Power2.easeOut
+    });
 
 
 
 
-      //get size of next cloud and zoom in
-      const cloudBox = this.$store.getters.cloudBBox(tag.title)
-      const remainders = {
-        x: this.canvas.width - cloudBox.width,
-        y: this.canvas.height - cloudBox.height
-      }
-      // evaluate relevant axis for snapZoom
-      const relevantDimension = {
-        ...(remainders.x < remainders.y && { width: cloudBox.width + 100 }),
-        ...(remainders.y < remainders.x && { height: cloudBox.height + 100 })
-      }
-      // zoom to fit and center
-      window.setTimeout(() => {
-        this.viewport.snapZoom({
-          ...relevantDimension,
-          center: new PIXI.Point(this.canvas.width/2, this.canvas.height/2),
-          removeOnComplete: true,
-          removeOnInterrupt: true,
-          time: 1000,
-          ease: 'easeInOutQuad'
-        })
-      }, 1500);
 
 
 
 
     //load all sample cutouts before spreading
-    const loader = PIXI.Loader.shared;
+    const loader = new PIXI.Loader();
 
-    this.item.samples.forEach((sample, i) => {
+    this.item.samples.forEach((sample) => {
       const fileName = sample.origin;
       const thumbName = `${sample.id}.jpg`;
       const sampleUrl = `${process.env.VUE_APP_URL_IMG}/${fileName}/${thumbName}`;
-      if(!loader.resources[sampleUrl]) {
+      if(!PIXI.utils.TextureCache[sampleUrl]) {
         loader.add(sampleUrl)
       }
     });
       
     loader.load(() => {
       
-      //put all samples in the renderstack
-      this.renderStack = this.item.samples;
-
-      //preserve the currently visible sample at the top :/ not working ...
-      /*const topMostSample = this.renderStack[this.renderStack.length-1];
-      let renderStack = this.item.samples.map(d => d);
-      renderStack.splice(renderStack.indexOf(topMostSample), 1);
-      renderStack.push(topMostSample);
-      this.renderStack = renderStack;*/
-
-
+      //remember the currently visible cutout (last item in renderStack)
+      const topMostSample = this.renderStack.pop();
+      
+      //empty the renderStack for one tick ... this is a hack to force Vue to re-mount 
+      //all VizCutoutSamples in the desired order, so that topMostSample stays on top
+      this.renderStack = [];
+      
       //wait for vue to reflect the new renderStack as VizCloudSamples
       this.$nextTick(() => {
 
-        TweenLite.to(this.itemContainer, 1, {
-          x: 0,
-          y: 0,
-          ease: Power2.easeOut,
-          delay: 1// + (this.$refs.cloudsamples.length * 0.025)
-        });
-        
-        this.$refs.cloudsamples.forEach((cloudSample, i) => {
-          const newPosition = this.$store.getters.positionInCloud(tag.title, cloudSample.sample.origin);
+        //put all samples in the renderStack, put topMostSample at the top again
+        let renderStack = this.item.samples.map(d => d);
+        renderStack.splice(renderStack.indexOf(topMostSample), 1);
+        renderStack.push(topMostSample);
+        this.renderStack = renderStack;
 
-          //skip fade-in of samples
-          cloudSample.sprite.alpha = 1;
+        //wait for vue to reflect the new renderStack as VizCloudSamples
+        this.$nextTick(() => {
 
-          //update sample positions
-          TweenLite.to(cloudSample.sprite, 1.5, {
-            x: newPosition.x,
-            y: newPosition.y,
-            width: newPosition.size,
-            height: newPosition.size,
-            ease: Power2.easeOut,
-            delay: 1// + (i*0.025)
-          })            
-        });
+          let detailDesiredZoom;
 
-        //when the animation is done, finally switch to the actual tag view
-        window.setTimeout(() => {
-          this.$router.push({ path: `${this.subpath}/${this.item.id}` })
-        }, 2500);
+          //@todo centralize viewport zooming-to-fit
+          
+          if(this.$route.name === 'viz-overview') {
+              
+            //Zoom viewport to fit the next view
+            const remainders = {
+              x: this.canvas.width - targetBBox.width,
+              y: this.canvas.height - targetBBox.height
+            }
+            //evaluate relevant axis for snapZoom
+            const relevantDimension = {
+              ...(remainders.x < remainders.y && { width: targetBBox.width + 100 }),
+              ...(remainders.y < remainders.x && { height: targetBBox.height + 100 })
+            }
+            // zoom to fit and center
+            window.setTimeout(() => {
+              this.viewport.snapZoom({
+                ...relevantDimension,
+                center: new PIXI.Point(this.canvas.width/2, this.canvas.height/2),
+                removeOnComplete: true,
+                removeOnInterrupt: true,
+                time: 1000,
+                ease: 'easeInOutQuad'
+              })
+            }, 1500);
+
+          } else if(this.$route.name === 'viz-tag') {
+
+            const padding = 64;
+            const canvasRatio = this.canvas.width / this.canvas.height;
+            const frameRatio = targetBBox.width / targetBBox.height;
+
+            let relevantDimension;
+            if(frameRatio > canvasRatio) {
+              detailDesiredZoom = (this.canvas.width - (padding*2)) / (targetBBox.width);
+              relevantDimension = { width: this.canvas.width };
+            } else {
+              detailDesiredZoom = (this.canvas.height - (padding*2)) / (targetBBox.height);
+              relevantDimension = { height: this.canvas.height };
+            }
+
+            // zoom to fit and center
+            //window.setTimeout(() => {
+              this.viewport.snapZoom({
+                ...relevantDimension,
+                center: new PIXI.Point(this.canvas.width/2, this.canvas.height/2),
+                removeOnComplete: true,
+                removeOnInterrupt: true
+              })
+            //}, 500);
+          }
+
+
+
+
+
+
+
+
+          //Undo the total centering of the CloudItem to prepare for perfect alignment with the following view
+          //this should happen simultaniously to the spreading so users shouldn't notice
+          if(this.$route.name === 'viz-overview') {
+            TweenLite.to(this.itemContainer, 1, {
+              x: 0,
+              y: 0,
+              ease: Power2.easeOut,
+              delay: 1
+            });
+          } else if(this.$route.name === 'viz-tag') {
+            TweenLite.to(this.itemContainer, 1, {
+              x: -(targetBBox.width * detailDesiredZoom)/2,
+              y: -(targetBBox.height * detailDesiredZoom)/2,
+              ease: Power2.easeOut,
+              delay: 1
+            });
+          }
+          
+          
+
+
+
+
+
+          this.$refs.cloudsamples.forEach((cloudSample) => {
+
+            let newPosition;
+
+            if(this.$route.name === 'viz-overview') {
+              newPosition = this.$store.getters.positionInCloud(this.item.id, cloudSample.sample.origin);
+            } else if(this.$route.name === 'viz-tag') {
+              newPosition = this.item.samples.find(sample => sample.id === cloudSample.sample.id);
+              
+              //subtract frame offset
+              newPosition.x -= targetBBox.x;
+              newPosition.y -= targetBBox.y;
+
+              //apply scaling
+              newPosition.x *= detailDesiredZoom;
+              newPosition.y *= detailDesiredZoom;
+              newPosition.size *= detailDesiredZoom;
+            }
+
+            //Spread out all VizCloudSamples
+            TweenLite.to(cloudSample.sprite, 1.5, {
+              x: newPosition.x,
+              y: newPosition.y,
+              width: newPosition.size,
+              height: newPosition.size,
+              ease: Power2.easeOut,
+              delay: 1
+            })
+          });
+
+
+
+
+
+
+
+          //when the animation is done, finally route to the target url and change views
+          window.setTimeout(() => {
+            this.$router.push({ path: `${this.subpath}/${this.item.id}` })
+          }, 2500);
+        })
       })
+
     })
 
 
 
-    
+// #######################################################
 // ########## big mess for spread animation END ##########
+// #######################################################
     
 
 

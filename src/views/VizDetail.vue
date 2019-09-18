@@ -20,7 +20,7 @@ export default {
         if (this.$route.params.id) {
           return this.$store.getters.object(this.$route.params.id)
         } else {
-          console.warning('initialized VizDetail without id')
+          console.error('initialized VizDetail without id')
         }
       }
     }
@@ -40,10 +40,48 @@ export default {
   },
   methods: {
     resize(canvas) {
+      
+      //center container on canvas
+      if(this.detailContainer) {
+        this.detailContainer.position.set(canvas.width/2, canvas.height/2)
+      }
 
-      if(!this.sprite || !this.sprite.texture) return;
+      //@todo centralize viewport zooming-to-fit
 
-      const textureHeight = this.sprite.texture.baseTexture.height
+      const frameBBox = this.object.tags.find(tag => tag.title === "Frame").geometry[0];
+      
+      const padding = 64;
+      const canvasRatio = canvas.width / canvas.height;
+      const frameRatio = frameBBox.width / frameBBox.height;
+
+      let desiredZoom;
+      let relevantDimension;
+      if(frameRatio > canvasRatio) {
+        desiredZoom = (canvas.width - (padding*2)) / (frameBBox.width);
+        relevantDimension = { width: canvas.width };
+      } else {
+        desiredZoom = (canvas.height - (padding*2)) / (frameBBox.height);
+        relevantDimension = { height: canvas.height };
+      }
+
+      this.sprite.width = frameBBox.width * desiredZoom;
+      this.sprite.height = frameBBox.height * desiredZoom;
+
+      //instant zoom
+      //this.viewport.setZoom(1, true);
+      //this.viewport.moveCenter(canvas.width/2, canvas.height/2);
+
+      //animated zoom
+      // zoom to fit and center
+      this.viewport.snapZoom({
+        ...relevantDimension,
+        center: new PIXI.Point(canvas.width/2, canvas.height/2),
+        removeOnComplete: true,
+        removeOnInterrupt: true
+      })
+
+
+      /*const textureHeight = this.sprite.texture.baseTexture.height
       const textureWidth = this.sprite.texture.baseTexture.width
        
       // retrieve orientations
@@ -58,14 +96,18 @@ export default {
       this.detailContainer.height = textureHeight * ratio
       this.detailContainer.position.set(this.canvas.width/2 - this.detailContainer.width/2, this.canvas.height/2 - this.detailContainer.height/2)
 
-      this.viewport.setZoom(1, true)
+      this.viewport.setZoom(1, true)*/
+
+
+
+
     }
   },
   beforeMount: function() {
     console.log("hello this is a detail view")
 
     const detailContainer = this.detailContainer = new PIXI.Container();
-    detailContainer.alpha = 0;
+    //detailContainer.alpha = 0;
 
     const sprite = this.sprite = new PIXI.Sprite()
     detailContainer.addChild(sprite);
@@ -79,6 +121,7 @@ export default {
 
         const texture = resources[this.object.id].texture
         sprite.texture = texture;
+        sprite.anchor.set(0.5);
 
         sprite.interactive = true;
         sprite.buttonMode = true;
@@ -96,8 +139,7 @@ export default {
           }
         });
 
-        this.resize(this.canvas);        
-        TweenLite.to(detailContainer, 1, {alpha: 1});
+        this.resize(this.canvas);
         
         const textureWidth = texture.baseTexture.width;
         const textureScale = textureWidth / frame.width;
@@ -105,7 +147,7 @@ export default {
         let cutoutCounter = 0;
 
         //add interactive cutouts
-        this.object.tags.forEach(tag => {
+        /*this.object.tags.forEach(tag => {
 
           const tagMask = new PIXI.Graphics();
           const tagCutouts = new PIXI.Graphics();
@@ -187,7 +229,7 @@ export default {
           detailContainer.addChild(tagCutouts);
         })
 
-        console.log('Total Cutouts in ', this.object.id, ':', cutoutCounter)
+        console.log('Total Cutouts in ', this.object.id, ':', cutoutCounter)*/
 
       });
   },

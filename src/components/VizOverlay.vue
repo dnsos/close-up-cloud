@@ -2,12 +2,12 @@
   <div class="overlay__wrapper">
     <div class="overlay__top overlay__left">
       <router-link v-if="isView('viz-overview')" to="/" exact>Close-Up Cloud</router-link>
-      <div v-else-if="isView('viz-tag')">
+      <div v-else-if="isView('viz-tag') && currentTagData && currentTagData">
         {{currentTagData.title}}&nbsp;in
         <br>
         {{currentTagData.objectCount}}&nbsp;{{ currentTagData.objectCount > 1 ? 'Objekten' : 'Objekt' }}
       </div>
-      <div v-else-if="isView('viz-detail')">
+      <div v-else-if="isView('viz-detail') && currentObjectData">
         {{currentObjectData.title}}
       </div>
     </div>
@@ -21,7 +21,7 @@
       <button @click="toggleColors()">Farben umkehren</button>
     </div>
     <ObjectData
-      v-if="isView('viz-detail')"
+      v-if="isView('viz-detail') && currentObjectData"
       :objectData="currentObjectData"
       class="overlay__bottom overlay__right"
     />
@@ -31,6 +31,9 @@
 <script>
 import Navigation from '@/components/Navigation.vue'
 import ObjectData from '@/components/ObjectData.vue'
+
+//@todo this component could be split up in 1) general overlay (logo, invert) 
+//and 2) multiple view-dependent overlays (overview, tag, detail)
 
 export default {
   name: 'viz-overlay',
