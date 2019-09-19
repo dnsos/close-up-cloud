@@ -12,7 +12,7 @@ import PolyBool from 'polybooljs';
 
 export default {
   name: 'viz-detail',
-  computed: mapState(['PIXIApp', 'canvas', 'viewport']),
+  computed: mapState(['PIXIApp', 'canvas', 'viewport', 'renderer']),
   props: {
     object: {
       //in case we get no object prop passed down, try to fetch it from the store
@@ -45,62 +45,13 @@ export default {
       if(this.detailContainer) {
         this.detailContainer.position.set(canvas.width/2, canvas.height/2)
       }
+  
+      //zoom to fit and center
+      const scaleFactor = this.renderer.zoomToFitDetail(this.object.id);
 
-      //@todo centralize viewport zooming-to-fit
-
-      const frameBBox = this.object.tags.find(tag => tag.title === "Frame").geometry[0];
-      
-      const padding = 64;
-      const canvasRatio = canvas.width / canvas.height;
-      const frameRatio = frameBBox.width / frameBBox.height;
-
-      let desiredZoom;
-      let relevantDimension;
-      if(frameRatio > canvasRatio) {
-        desiredZoom = (canvas.width - (padding*2)) / (frameBBox.width);
-        relevantDimension = { width: canvas.width };
-      } else {
-        desiredZoom = (canvas.height - (padding*2)) / (frameBBox.height);
-        relevantDimension = { height: canvas.height };
-      }
-
-      this.sprite.width = frameBBox.width * desiredZoom;
-      this.sprite.height = frameBBox.height * desiredZoom;
-
-      //instant zoom
-      //this.viewport.setZoom(1, true);
-      //this.viewport.moveCenter(canvas.width/2, canvas.height/2);
-
-      //animated zoom
-      // zoom to fit and center
-      this.viewport.snapZoom({
-        ...relevantDimension,
-        center: new PIXI.Point(canvas.width/2, canvas.height/2),
-        removeOnComplete: true,
-        removeOnInterrupt: true
-      })
-
-
-      /*const textureHeight = this.sprite.texture.baseTexture.height
-      const textureWidth = this.sprite.texture.baseTexture.width
-       
-      // retrieve orientations
-      const landscapeScreen = this.canvas.width > this.canvas.height
-      const landscapeTexture = textureWidth > textureHeight
-
-      // evaluate ratio based on orientations
-      const relevantDimension = landscapeScreen ? this.canvas.height : this.canvas.width
-      const ratio = relevantDimension * 0.9 / (landscapeTexture ? textureWidth : textureHeight) // 0.9 for padding
-
-      this.detailContainer.width = textureWidth * ratio
-      this.detailContainer.height = textureHeight * ratio
-      this.detailContainer.position.set(this.canvas.width/2 - this.detailContainer.width/2, this.canvas.height/2 - this.detailContainer.height/2)
-
-      this.viewport.setZoom(1, true)*/
-
-
-
-
+      //apply scaling to stay within viewport dimensions
+      this.sprite.width = frameBBox.width * scaleFactor;
+      this.sprite.height = frameBBox.height * scaleFactor;
     }
   },
   beforeMount: function() {

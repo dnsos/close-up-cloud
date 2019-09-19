@@ -66,9 +66,36 @@ export default {
     },
     
     //@todo centralize viewport zooming-to-fit
-    zoomToFitCloud() {
+    zoomToFitCloud(cloudKey) {
     },
-    zoomToFitDetail() {
+    zoomToFitDetail(objectId) {
+
+      const object = this.$store.getters.object(objectId);
+      const frameBBox = object.tags.find(tag => tag.title === "Frame").geometry[0];
+      
+      const padding = 64;
+      const canvasRatio = this.canvas.width / this.canvas.height;
+      const frameRatio = frameBBox.width / frameBBox.height;
+
+      let scaleFactor;
+      let relevantDimension;
+      if(frameRatio > canvasRatio) {
+        scaleFactor = (this.canvas.width - (padding*2)) / (frameBBox.width);
+        relevantDimension = { width: this.canvas.width };
+      } else {
+        scaleFactor = (this.canvas.height - (padding*2)) / (frameBBox.height);
+        relevantDimension = { height: this.canvas.height };
+      }
+
+      // zoom to fit and center
+      this.viewport.snapZoom({
+        ...relevantDimension,
+        center: new PIXI.Point(this.canvas.width/2, this.canvas.height/2),
+        removeOnComplete: true,
+        removeOnInterrupt: true
+      })
+
+      return scaleFactor;
     },
     appendDebugGrid() {
 
@@ -147,6 +174,7 @@ export default {
 
     this.$store.commit('setPIXIApp', this.PIXIApp);
     this.$store.commit('setViewport', this.viewport);
+    this.$store.commit('setRenderer', this);
   },
   mounted: function() {
     

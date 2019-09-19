@@ -20,6 +20,7 @@ export default new Vuex.Store({
     },
     PIXIApp: null,
     viewport: null,
+    renderer: null,
     clouds: {}
   },
   getters: {
@@ -74,6 +75,9 @@ export default new Vuex.Store({
     },
     setViewport: (state, payload) => {
       state.viewport = payload
+    },
+    setRenderer: (state, payload) => {
+      state.renderer = payload
     },
     toggleColors: (state) => {
       state.inverted = !state.inverted
