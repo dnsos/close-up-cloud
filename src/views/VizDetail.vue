@@ -45,11 +45,14 @@ export default {
       if(this.detailContainer) {
         this.detailContainer.position.set(canvas.width/2, canvas.height/2)
       }
+
+      const frameBBox = this.object.tags.find(tag => tag.title === "Frame").geometry[0];
   
       //zoom to fit and center
-      const scaleFactor = this.renderer.zoomToFitDetail(this.object.id);
+      this.renderer.zoomToFitBBox(canvas);
 
       //apply scaling to stay within viewport dimensions
+      const scaleFactor = this.renderer.getDetailScaleFactor(frameBBox);
       this.sprite.width = frameBBox.width * scaleFactor;
       this.sprite.height = frameBBox.height * scaleFactor;
     }

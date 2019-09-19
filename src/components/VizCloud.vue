@@ -30,7 +30,7 @@ export default {
     items: { type: Array, required: true }
   },
   components: { VizCloudItem },
-  computed: mapState(['canvas', 'viewport']),
+  computed: mapState(['canvas', 'viewport', 'renderer']),
   data: () => {
     return {
       cloudContainer: null,
@@ -51,33 +51,9 @@ export default {
         this.cloudContainer.position.set(canvas.width/2, canvas.height/2)
       }
       
-      //@todo centralize viewport zooming-to-fit
-
-      const cloudBox = this.$store.getters.cloudBBox(this.cloudname)
-
-      // information for which axis is relevant for snapZoom
-      const remainders = {
-        x: canvas.width - cloudBox.width,
-        y: canvas.height - cloudBox.height
-      }
-      //console.table(remainders)
-
-      // evaluate relevant axis for snapZoom
-      // TODO: #1 double check if logic is correct
-      // TODO: #2 make padding value less arbitrary
-      // TODO: also update in VizDetail, I copied this script over there to have a uniform zoom
-      const relevantDimension = {
-        ...(remainders.x < remainders.y && { width: cloudBox.width + 100 }),
-        ...(remainders.y < remainders.x && { height: cloudBox.height + 100 })
-      }
-
-      // zoom to fit and center
-      this.viewport.snapZoom({
-        ...relevantDimension,
-        center: new PIXI.Point(canvas.width/2, canvas.height/2),
-        removeOnComplete: true,
-        removeOnInterrupt: true
-      })
+      //zoom to fit and center
+      const cloudBox = this.$store.getters.cloudBBox(this.cloudname);
+      this.renderer.zoomToFitBBox(cloudBox);
     },
     initForceLayout() {
 

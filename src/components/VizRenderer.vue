@@ -68,23 +68,17 @@ export default {
     //@todo centralize viewport zooming-to-fit
     zoomToFitCloud(cloudKey) {
     },
-    zoomToFitDetail(objectId) {
+    zoomToFitBBox(boundingBox) {
 
-      const object = this.$store.getters.object(objectId);
-      const frameBBox = object.tags.find(tag => tag.title === "Frame").geometry[0];
-      
       const padding = 64;
       const canvasRatio = this.canvas.width / this.canvas.height;
-      const frameRatio = frameBBox.width / frameBBox.height;
+      const frameRatio = boundingBox.width / boundingBox.height;
 
-      let scaleFactor;
       let relevantDimension;
       if(frameRatio > canvasRatio) {
-        scaleFactor = (this.canvas.width - (padding*2)) / (frameBBox.width);
-        relevantDimension = { width: this.canvas.width };
+        relevantDimension = { width: boundingBox.width + (padding*2) };
       } else {
-        scaleFactor = (this.canvas.height - (padding*2)) / (frameBBox.height);
-        relevantDimension = { height: this.canvas.height };
+        relevantDimension = { height: boundingBox.height + (padding*2) };
       }
 
       // zoom to fit and center
@@ -94,6 +88,19 @@ export default {
         removeOnComplete: true,
         removeOnInterrupt: true
       })
+    },
+    getDetailScaleFactor(frameBBox) {
+      
+      const padding = 0;
+      const canvasRatio = this.canvas.width / this.canvas.height;
+      const frameRatio = frameBBox.width / frameBBox.height;
+
+      let scaleFactor;
+      if(frameRatio > canvasRatio) {
+        scaleFactor = (this.canvas.width - (padding*2)) / (frameBBox.width);
+      } else {
+        scaleFactor = (this.canvas.height - (padding*2)) / (frameBBox.height);
+      }
 
       return scaleFactor;
     },

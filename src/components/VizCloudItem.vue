@@ -41,7 +41,7 @@ export default {
   },
   components: { VizCloudSample, VizTooltip },
   computed: {
-    ...mapState(['canvas', 'viewport']),
+    ...mapState(['canvas', 'viewport', 'renderer']),
     position: function () {
       return this.$store.getters.positionInCloud(this.cloudname, this.item.id)
     },
@@ -263,58 +263,18 @@ export default {
         //wait for vue to reflect the new renderStack as VizCloudSamples
         this.$nextTick(() => {
 
-          let detailDesiredZoom;
+          let detailScaleFactor;
 
           //@todo centralize viewport zooming-to-fit
           
+          // zoom to fit and center
           if(this.$route.name === 'viz-overview') {
-              
-            //Zoom viewport to fit the next view
-            const remainders = {
-              x: this.canvas.width - targetBBox.width,
-              y: this.canvas.height - targetBBox.height
-            }
-            //evaluate relevant axis for snapZoom
-            const relevantDimension = {
-              ...(remainders.x < remainders.y && { width: targetBBox.width + 100 }),
-              ...(remainders.y < remainders.x && { height: targetBBox.height + 100 })
-            }
-            // zoom to fit and center
             window.setTimeout(() => {
-              this.viewport.snapZoom({
-                ...relevantDimension,
-                center: new PIXI.Point(this.canvas.width/2, this.canvas.height/2),
-                removeOnComplete: true,
-                removeOnInterrupt: true,
-                time: 1000,
-                ease: 'easeInOutQuad'
-              })
+              this.renderer.zoomToFitBBox(targetBBox);
             }, 1500);
-
           } else if(this.$route.name === 'viz-tag') {
-
-            const padding = 64;
-            const canvasRatio = this.canvas.width / this.canvas.height;
-            const frameRatio = targetBBox.width / targetBBox.height;
-
-            let relevantDimension;
-            if(frameRatio > canvasRatio) {
-              detailDesiredZoom = (this.canvas.width - (padding*2)) / (targetBBox.width);
-              relevantDimension = { width: this.canvas.width };
-            } else {
-              detailDesiredZoom = (this.canvas.height - (padding*2)) / (targetBBox.height);
-              relevantDimension = { height: this.canvas.height };
-            }
-
-            // zoom to fit and center
-            //window.setTimeout(() => {
-              this.viewport.snapZoom({
-                ...relevantDimension,
-                center: new PIXI.Point(this.canvas.width/2, this.canvas.height/2),
-                removeOnComplete: true,
-                removeOnInterrupt: true
-              })
-            //}, 500);
+            this.renderer.zoomToFitBBox(this.canvas);
+            detailScaleFactor = this.renderer.getDetailScaleFactor(targetBBox);
           }
 
 
@@ -335,8 +295,8 @@ export default {
             });
           } else if(this.$route.name === 'viz-tag') {
             TweenLite.to(this.itemContainer, 1, {
-              x: -(targetBBox.width * detailDesiredZoom)/2,
-              y: -(targetBBox.height * detailDesiredZoom)/2,
+              x: -(targetBBox.width * detailScaleFactor)/2,
+              y: -(targetBBox.height * detailScaleFactor)/2,
               ease: Power2.easeOut,
               delay: 1
             });
@@ -362,9 +322,9 @@ export default {
               newPosition.y -= targetBBox.y;
 
               //apply scaling
-              newPosition.x *= detailDesiredZoom;
-              newPosition.y *= detailDesiredZoom;
-              newPosition.size *= detailDesiredZoom;
+              newPosition.x *= detailScaleFactor;
+              newPosition.y *= detailScaleFactor;
+              newPosition.size *= detailScaleFactor;
             }
 
             //Spread out all VizCloudSamples
