@@ -32,11 +32,11 @@ export default {
   data: function() {
     return {
       itemContainer: null,
+      fauxDetail: null,
       samplesContainer: null,
       renderIndex: 0, //index of next appended item
       renderStack: [], //array of items that are rendered
-      isHovered: false,
-      isSpread: false
+      isHovered: false
     }
   },
   components: { VizCloudSample, VizTooltip },
@@ -61,9 +61,6 @@ export default {
 
       //don't shuffle while hovered
       if(this.isHovered) return;
-
-      //don't shuffle while spread – all samples are visible now
-      if(this.isSpread) return;
 
       //if there is only one sample that is already in the renderStack, do nothing
       if(this.item.samples.length === 1 && this.renderStack.length === 1) return;
@@ -118,50 +115,37 @@ export default {
     samplesContainer.buttonMode = false;
 
 
+    // #########################################################
+    // ########## big mess for spread animation START ##########
+    // #########################################################
+    //
+    // Order of Spread Animation:
+    // [1] Hide all other CloudItems
+    // [2] Center the selected CloudItem
+    // [3] Pre-Load Samples
+    // [4] Zoom viewport to fit the next view
+    // [5] Align Samples with the next view
+    // [6] Spread out all VizCloudSamples
+    // [7] Route to the target view
+    //
+
+    const loader = new PIXI.Loader();
+    const isCloudToCloud = (this.$route.name === 'viz-overview') ? true : false;
+    const isCloudToDetail = (this.$route.name === 'viz-tag') ? true : false;
+    
+    let nextCloudBBox; //dimensions of the upcoming cloud (cloud-to-cloud)
+    let detailFrameBBox; //dimensions of the upcoming detail image (cloud-to-detail)
+    let detailScaleFactor; //scaling factor of the upcoming detail image (cloud-to-detail)
 
 
+    //for cloud-to-cloud, we have to compute the next cloud layout first    
+    if(isCloudToCloud) {
 
-
-
-
-
-
-
-
-// #######################################################
-// ########## big mess for spread animation START ########
-// #######################################################
-
-
-
-
-
-
-/**
- * Timeline of Spread Animation 
- * [0.0s – 0.5s] Hide all other CloudItems
- * [0.0s – 1.0s] Center the selected CloudItem
- * [1.0s – 2.5s] (after loading) Spread out all VizCloudSamples
- * [1.0s – 2.0s] (after loading) Center the next view
- * [1.5s – 2.5s] (after loading) Zoom viewport to fit the next view
- */
-
-    // Hide all other CloudItems
-    this.$parent.hideOtherItems(this.item.id);
-
-    let targetBBox;
-
-    // ##############################
-    // # CLOUD TO CLOUD START
-    // ##############################
-
-    if(this.$route.name === 'viz-overview') {
-
-      const tagTitle = this.item.id;
-      const tag = this.$store.getters.tag(tagTitle)
+      //@todo exclude
+      const tag = this.$store.getters.tag(this.item.id)
 
       //only ever compute cloud layout once
-      if(!this.$store.state.clouds[tagTitle]) {
+      if(!this.$store.state.clouds[tag.title]) {
 
         //prepare input data for occurences cloud
         const cloudItems = tag.occurrences.map(occ => {
@@ -173,7 +157,7 @@ export default {
               x: geo.x,
               y: geo.y
             }
-            sample.id = getCutoutUID(tagTitle, sample);
+            sample.id = getCutoutUID(tag.title, sample);
             return sample;
           });
 
@@ -185,38 +169,32 @@ export default {
         });
 
         this.$store.dispatch('computeForceLayout', {
-          key: tagTitle,
+          key: tag.title,
           data: cloudItems
         });
       }
       
       //get size of next cloud
-      targetBBox = this.$store.getters.cloudBBox(tagTitle)
+      nextCloudBBox = this.$store.getters.cloudBBox(tag.title)
   
-    // ##############################
-    // # CLOUD TO CLOUD END
-    // ##############################
     
-    } else if(this.$route.name === 'viz-tag') {
+    //for cloud-to-detail, let's gather some size information
+    } else if(isCloudToDetail) {
 
-    // ##############################
-    // # CLOUD TO DETAIL START
-    // ##############################
-
-      const object = this.$store.getters.object(this.item.id);
-      const frame = object.tags.find(tag => tag.title === "Frame");
-      targetBBox = frame.geometry[0];
-
+      const targetObject = this.$store.getters.object(this.item.id);
+      const frame = targetObject.tags.find(tag => tag.title === "Frame");
+      detailFrameBBox = frame.geometry[0];
+      detailScaleFactor = this.renderer.getDetailScaleFactor(detailFrameBBox);
     }
-    // ##############################
-    // # CLOUD TO DETAIL END
-    // ##############################
     
 
-  
+
+    // [1] Hide all other CloudItems
+    this.$parent.hideOtherItems(this.item.id);
 
 
-    //Center the selected CloudItem
+
+    // [2] Center the selected CloudItem
     TweenLite.to(this.itemContainer, 1, {
       x: -this.position.size/2,
       y: -this.position.size/2,
@@ -225,14 +203,7 @@ export default {
 
 
 
-
-
-
-
-
-    //load all sample cutouts before spreading
-    const loader = new PIXI.Loader();
-
+    // [3] Pre-Load Samples
     this.item.samples.forEach((sample) => {
       const fileName = sample.origin;
       const thumbName = `${sample.id}.jpg`;
@@ -241,6 +212,11 @@ export default {
         loader.add(sampleUrl)
       }
     });
+       
+    //cloud-to-detail: also pre-load the detail image
+    if(isCloudToDetail && !PIXI.utils.TextureCache[this.item.id]) {
+      loader.add(this.item.id, `${process.env.VUE_APP_URL_IMG}/${this.item.id}/${this.item.id}-Frame.jpg`)
+    }
       
     loader.load(() => {
       
@@ -249,6 +225,7 @@ export default {
       
       //empty the renderStack for one tick ... this is a hack to force Vue to re-mount 
       //all VizCutoutSamples in the desired order, so that topMostSample stays on top
+      //otherwise the change will not be visible on PIXI level
       this.renderStack = [];
       
       //wait for vue to reflect the new renderStack as VizCloudSamples
@@ -262,64 +239,47 @@ export default {
 
         //wait for vue to reflect the new renderStack as VizCloudSamples
         this.$nextTick(() => {
-
-          let detailScaleFactor;
-
-          //@todo centralize viewport zooming-to-fit
           
-          // zoom to fit and center
-          if(this.$route.name === 'viz-overview') {
+          // [4] Zoom viewport to fit the next view
+          if(isCloudToCloud) {
             window.setTimeout(() => {
-              this.renderer.zoomToFitBBox(targetBBox);
+              this.renderer.zoomToFitBBox(nextCloudBBox);
             }, 1500);
-          } else if(this.$route.name === 'viz-tag') {
+          } else if(isCloudToDetail) {
             this.renderer.zoomToFitBBox(this.canvas);
-            detailScaleFactor = this.renderer.getDetailScaleFactor(targetBBox);
           }
 
 
 
+          // [5] Align Samples with the next view
+          //Undo the total centering of the CloudItem ([2]) to prepare for perfect alignment with the following view
+          //this should happen simultaniously to the spreading so users won't notice
+          TweenLite.to(this.itemContainer, 1, {
+            x: 0,
+            y: 0,
+            ease: Power2.easeOut,
+            delay: 1
+          });
 
 
 
-
-
-          //Undo the total centering of the CloudItem to prepare for perfect alignment with the following view
-          //this should happen simultaniously to the spreading so users shouldn't notice
-          if(this.$route.name === 'viz-overview') {
-            TweenLite.to(this.itemContainer, 1, {
-              x: 0,
-              y: 0,
-              ease: Power2.easeOut,
-              delay: 1
-            });
-          } else if(this.$route.name === 'viz-tag') {
-            TweenLite.to(this.itemContainer, 1, {
-              x: -(targetBBox.width * detailScaleFactor)/2,
-              y: -(targetBBox.height * detailScaleFactor)/2,
-              ease: Power2.easeOut,
-              delay: 1
-            });
-          }
-          
-          
-
-
-
-
-
+          // [6] Spread out all VizCloudSamples
           this.$refs.cloudsamples.forEach((cloudSample) => {
 
             let newPosition;
 
-            if(this.$route.name === 'viz-overview') {
+            if(isCloudToCloud) {
               newPosition = this.$store.getters.positionInCloud(this.item.id, cloudSample.sample.origin);
-            } else if(this.$route.name === 'viz-tag') {
+            } else if(isCloudToDetail) {
               newPosition = this.item.samples.find(sample => sample.id === cloudSample.sample.id);
               
               //subtract frame offset
-              newPosition.x -= targetBBox.x;
-              newPosition.y -= targetBBox.y;
+              newPosition.x -= detailFrameBBox.x;
+              newPosition.y -= detailFrameBBox.y;
+
+              //subtract half size
+              newPosition.x -= detailFrameBBox.width/2;
+              newPosition.y -= detailFrameBBox.height/2;
 
               //apply scaling
               newPosition.x *= detailScaleFactor;
@@ -327,7 +287,6 @@ export default {
               newPosition.size *= detailScaleFactor;
             }
 
-            //Spread out all VizCloudSamples
             TweenLite.to(cloudSample.sprite, 1.5, {
               x: newPosition.x,
               y: newPosition.y,
@@ -339,46 +298,45 @@ export default {
           });
 
 
+          //fade-in detail image
+          if(isCloudToDetail) {
+            
+            const sprite = this.fauxDetail = new PIXI.Sprite()
+            sprite.alpha = 0;
+            sprite.anchor.set(0.5);
+            sprite.position.set(this.canvas.width/2, this.canvas.height/2)
+            sprite.texture = PIXI.utils.TextureCache[this.item.id]
+            
+            //apply scaling to stay within viewport dimensions
+            sprite.width = detailFrameBBox.width * detailScaleFactor;
+            sprite.height = detailFrameBBox.height * detailScaleFactor;
+            this.viewport.addChild(sprite) 
+            
+            TweenLite.to(sprite, 1.5, {
+              alpha: 1,
+              delay: 2.5
+            });
+          }
 
 
 
-
-
+          // [7] Route to the target view
           //when the animation is done, finally route to the target url and change views
+          //cloud-to-detail takes a bit longer because of the detail fade-in
+          let routerAfterMs = isCloudToCloud ? 2500 : 4000;
           window.setTimeout(() => {
             this.$router.push({ path: `${this.subpath}/${this.item.id}` })
-          }, 2500);
-        })
-      })
+          }, routerAfterMs);
 
-    })
+        }) //nextTick
+      }) //nextTick
+    }) //loader.load
 
-
-
-// #######################################################
-// ########## big mess for spread animation END ##########
-// #######################################################
-    
+    // #######################################################
+    // ########## big mess for spread animation END ##########
+    // #######################################################
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    //this.$router.push({ path: `${this.subpath}/${this.item.id}` })
   })
   samplesContainer.on('pointerover', () => {    
     itemContainer.zIndex = 1 // rendered above all other itemContainer's to ensure textBox visibility
@@ -406,6 +364,7 @@ export default {
   },
   beforeDestroy: function () {
     this.$parent.cloudContainer.removeChild(this.itemContainer)
+    if(this.fauxDetail) this.viewport.removeChild(this.fauxDetail)
   }
 }
 </script>

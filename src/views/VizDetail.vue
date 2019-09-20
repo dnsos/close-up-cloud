@@ -64,44 +64,49 @@ export default {
     //detailContainer.alpha = 0;
 
     const sprite = this.sprite = new PIXI.Sprite()
+    sprite.anchor.set(0.5);
     detailContainer.addChild(sprite);
 
     const frame = this.object.tags.find(tag => tag.title === 'Frame').geometry[0];
 
-    const loader = new PIXI.Loader()
-    loader
-      .add(this.object.id, `${process.env.VUE_APP_URL_IMG}/${this.object.id}/${this.object.id}-Frame.jpg`)
-      .load((loader, resources) => {
+    // add interactivity
+    sprite.interactive = true;
+    sprite.buttonMode = true;
+    sprite.on('pointertap', () => {
+      if(this.$store.state.isDragging) return;
+      console.log('detail tap!');
 
-        const texture = resources[this.object.id].texture
-        sprite.texture = texture;
-        sprite.anchor.set(0.5);
+      for(let mask of this.masks) {
+        new TimelineLite()
+          .from(mask, 0, {alpha: 0})
+          .to(mask, 0.2, {alpha: 0.66})
+          .to(mask, 0.2, {alpha: 0})
+          .to(mask, 0.2, {alpha: 0.66})
+          .to(mask, 0.2, {alpha: 0})
+      }
+    });
 
-        sprite.interactive = true;
-        sprite.buttonMode = true;
-        sprite.on('pointertap', () => {
-          if(this.$store.state.isDragging) return;
-          console.log('detail tap!');
-
-          for(let mask of this.masks) {
-            new TimelineLite()
-              .from(mask, 0, {alpha: 0})
-              .to(mask, 0.2, {alpha: 0.66})
-              .to(mask, 0.2, {alpha: 0})
-              .to(mask, 0.2, {alpha: 0.66})
-              .to(mask, 0.2, {alpha: 0})
-          }
+    //load texture
+    if(!PIXI.utils.TextureCache[this.object.id]) {
+      const loader = new PIXI.Loader();
+      loader
+        .add(this.object.id, `${process.env.VUE_APP_URL_IMG}/${this.object.id}/${this.object.id}-Frame.jpg`)
+        .load((loader, resources) => {
+          sprite.texture = PIXI.utils.TextureCache[this.object.id];
         });
+    } else {
+      sprite.texture = PIXI.utils.TextureCache[this.object.id];
+    }
 
-        this.resize(this.canvas);
+    this.resize(this.canvas);
         
-        const textureWidth = texture.baseTexture.width;
+        /*const textureWidth = texture.baseTexture.width;
         const textureScale = textureWidth / frame.width;
 
         let cutoutCounter = 0;
 
         //add interactive cutouts
-        /*this.object.tags.forEach(tag => {
+        this.object.tags.forEach(tag => {
 
           const tagMask = new PIXI.Graphics();
           const tagCutouts = new PIXI.Graphics();
@@ -184,8 +189,6 @@ export default {
         })
 
         console.log('Total Cutouts in ', this.object.id, ':', cutoutCounter)*/
-
-      });
   },
   mounted: function () {
 
