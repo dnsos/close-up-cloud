@@ -20,7 +20,7 @@ import { mapState } from 'vuex'
 import { TweenLite, Power2 } from 'gsap/TweenMax'
 import VizCloudSample from './VizCloudSample.vue'
 import VizTooltip from './VizTooltip.vue'
-import { getCutoutUID } from '../utils.js'
+import { getCutoutUID, convertTagOccurencesToCloudItems } from '../utils.js'
 
 export default {
   name: 'viz-cloud-item',
@@ -141,42 +141,21 @@ export default {
     //for cloud-to-cloud, we have to compute the next cloud layout first    
     if(isCloudToCloud) {
 
-      //@todo exclude
-      const tag = this.$store.getters.tag(this.item.id)
-
       //only ever compute cloud layout once
-      if(!this.$store.state.clouds[tag.title]) {
+      if(!this.$store.state.clouds[this.item.id]) {
 
         //prepare input data for occurences cloud
-        const cloudItems = tag.occurrences.map(occ => {
-
-          //per occurencant object: sample all geometries
-          const samples = occ.geometry.map(geo => {
-            const sample = {
-              origin: occ.origin,
-              x: geo.x,
-              y: geo.y
-            }
-            sample.id = getCutoutUID(tag.title, sample);
-            return sample;
-          });
-
-          return {
-            id: occ.origin,
-            weight: samples.length,
-            samples: samples
-          }
-        });
+        const tag = this.$store.getters.tag(this.item.id)
+        const cloudItems = convertTagOccurencesToCloudItems(tag)
 
         this.$store.dispatch('computeForceLayout', {
-          key: tag.title,
+          key: this.item.id,
           data: cloudItems
         });
       }
       
       //get size of next cloud
-      nextCloudBBox = this.$store.getters.cloudBBox(tag.title)
-  
+      nextCloudBBox = this.$store.getters.cloudBBox(this.item.id)  
     
     //for cloud-to-detail, let's gather some size information
     } else if(isCloudToDetail) {
@@ -186,12 +165,10 @@ export default {
       detailFrameBBox = frame.geometry[0];
       detailScaleFactor = this.renderer.getDetailScaleFactor(detailFrameBBox);
     }
-    
 
 
     // [1] Hide all other CloudItems
     this.$parent.hideOtherItems(this.item.id);
-
 
 
     // [2] Center the selected CloudItem
@@ -200,7 +177,6 @@ export default {
       y: -this.position.size/2,
       ease: Power2.easeOut
     });
-
 
 
     // [3] Pre-Load Samples
@@ -250,7 +226,6 @@ export default {
           }
 
 
-
           // [5] Align Samples with the next view
           //Undo the total centering of the CloudItem ([2]) to prepare for perfect alignment with the following view
           //this should happen simultaniously to the spreading so users won't notice
@@ -260,7 +235,6 @@ export default {
             ease: Power2.easeOut,
             delay: 1
           });
-
 
 
           // [6] Spread out all VizCloudSamples
@@ -297,7 +271,6 @@ export default {
             })
           });
 
-
           //fade-in detail image
           if(isCloudToDetail) {
             
@@ -317,7 +290,6 @@ export default {
               delay: 2.5
             });
           }
-
 
 
           // [7] Route to the target view

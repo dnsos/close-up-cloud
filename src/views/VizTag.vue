@@ -8,7 +8,7 @@
 
 <script>
 import VizCloud from '../components/VizCloud'
-import { getCutoutUID } from '../utils.js'
+import { getCutoutUID, convertTagOccurencesToCloudItems } from '../utils.js'
 
 export default {
   name: 'viz-tag',
@@ -23,28 +23,7 @@ export default {
   },
   computed: {
     cloudItems: function() {
-
-      //convert tag.occurrences to cloudItems (see readme)
-      return this.tag.occurrences.map(occ => {
-
-        //per occurencant object: sample all geometries
-        const samples = occ.geometry.map(geo => {
-          const sample = {
-            origin: occ.origin,
-            x: geo.x,
-            y: geo.y,
-            size: geo.size
-          }
-          sample.id = getCutoutUID(this.tag.title, sample);
-          return sample;
-        });
-
-        return {
-          id: occ.origin,
-          weight: samples.length,
-          samples: samples
-        }
-      })
+      return convertTagOccurencesToCloudItems(this.tag);
     }
   },
   beforeMount: function() {

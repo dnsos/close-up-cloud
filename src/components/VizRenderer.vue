@@ -64,10 +64,6 @@ export default {
       //@debug show viewport grid
       //this.appendDebugGrid();
     },
-    
-    //@todo centralize viewport zooming-to-fit
-    zoomToFitCloud(cloudKey) {
-    },
     zoomToFitBBox(boundingBox) {
 
       const padding = 64;
@@ -154,14 +150,14 @@ export default {
 
     this.viewport = new Viewport({
 
-        // width/height values required but arbitrary,
-        // will be overwritten immediately by handleResize call
-        screenWidth: 1280,
-        screenHeight: 800,
-        worldWidth: 1280,
-        worldHeight: 1280,
+      // width/height values required but arbitrary,
+      // will be overwritten immediately by handleResize call
+      screenWidth: 1280,
+      screenHeight: 800,
+      worldWidth: 1280,
+      worldHeight: 1280,
 
-        interaction: this.PIXIApp.renderer.plugins.interaction
+      interaction: this.PIXIApp.renderer.plugins.interaction
     })
     .on('drag-start', () => {
       this.$store.commit('dragStart')
