@@ -1,89 +1,90 @@
 <template>
-  <div class="overlay__wrapper">
+  <div class="overlay">
     <div class="overlay__top overlay__left">
-      <router-link v-if="isView('viz-overview')" to="/" exact>Close-Up Cloud</router-link>
-      <div v-else-if="isView('viz-tag')">
-        {{currentTagData.title}}&nbsp;in
-        <br>
-        {{currentTagData.objectCount}}&nbsp;{{ currentTagData.objectCount > 1 ? 'Objekten' : 'Objekt' }}
+      <InfoHeader />
+    </div>
+    <div @click="toggleColors()">
+      <OverlayIcon
+        :position="'bottom-left'"
+        :tooltip="{
+          side: 'right',
+          title: 'Farben umkehren'
+        }"
+        :iconFileName="'invert.svg'"
+      />
+    </div>
+    <div v-if="isView('viz-detail')">
+      <MetadataBox
+        :metadata="currentMetadata"
+        :isVisible="metadataVisible"
+      />
+      <div @click="toggleMetadataVisible()">
+        <OverlayIcon
+          :position="'bottom-right'"
+          :tooltip="{
+            side: 'left',
+            title: 'Schlagwörter'
+          }"
+          :iconFileName="'list.svg'"
+        />
       </div>
-      <div v-else-if="isView('viz-detail')">
-        {{currentObjectData.title}}
-      </div>
     </div>
-    <div class="overlay__top overlay__right">
-      <Navigation />
+    <div @click="goToAbout()">
+      <OverlayIcon
+        :position="'top-right'"
+        :tooltip="{
+          side: 'left',
+          title: 'Über das Projekt'
+        }"
+        :iconFileName="'info.svg'"
+      />
     </div>
-    <div class="overlay__bottom overlay__left">
-      <button v-if="isView('viz-detail')">Entdecken</button>
-    </div>
-    <div class="overlay__bottom overlay__center">
-      <button @click="toggleColors()">Farben umkehren</button>
-    </div>
-    <ObjectData
-      v-if="isView('viz-detail')"
-      :objectData="currentObjectData"
-      class="overlay__bottom overlay__right"
-    />
   </div>
 </template>
 
 <script>
-import Navigation from '@/components/Navigation.vue'
-import ObjectData from '@/components/ObjectData.vue'
+import InfoHeader from '@/components/InfoHeader.vue'
+import MetadataBox from '@/components/overlay/MetadataBox.vue'
+import OverlayIcon from '@/components/overlay/OverlayIcon.vue'
 
 export default {
   name: 'viz-overlay',
-  components: { Navigation, ObjectData },
+  components: { InfoHeader, MetadataBox, OverlayIcon },
+  data: function () {
+    return {
+      metadataVisible: true
+    }
+  },
   computed: {
-    currentTagData: function () {
-      if (this.$route.name != 'viz-tag') return
-      return this.$store.getters.tag(this.$route.params.id)
-    },
-    currentObjectData: function () {
+    currentMetadata: function () {
       if (this.$route.name != 'viz-detail') return
       return this.$store.getters.object(this.$route.params.id)
     }
   },
   methods: {
-    isView: function (view) {
-      return this.$route.name === view
-    },
     toggleColors: function () {
       this.$store.commit('toggleColors')
+    },
+    goToAbout: function () {
+      this.$router.push({ name: 'home' })
+    },
+    toggleMetadataVisible: function () {
+      this.metadataVisible = !this.metadataVisible
+    },
+    isView: function (view) {
+      return this.$route.name === view
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.overlay__wrapper {
+.overlay {
+  font-size: var(--font-size-small);
   & > * {
-    position: absolute;
-    padding: calc(var(--grid-spacing)/2);
-    color: var(--color-primary-100);
-    background-color: var(--color-primary-0);
-    transition: background-color 2s ease-in-out, color 2s ease-in-out;
+    /* position: absolute; */
+    width: 100%;
+    height: 100%;
   }
-}
-
-.overlay__left {
-  left: 0;
-}
-
-.overlay__right {
-  right: 0;
-}
-
-.overlay__top {
-  top: 0;
-}
-
-.overlay__bottom {
-  bottom: 0;
-}
-
-.overlay__center {
-  left: 50%; // TODO: center properly
 }
 </style>

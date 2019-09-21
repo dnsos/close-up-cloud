@@ -3,9 +3,7 @@
     <main class="layer__viz">
       <VizRenderer v-if="hasFetched" />
     </main>
-    <div class="layer__overlay">
-      <VizOverlay />
-    </div>
+    <VizOverlay class="layer__overlay" />
   </div>
 </template>
 
@@ -33,14 +31,16 @@ export default {
 
 <style lang="scss" scoped>
 .view__viz {
-  font-size: var(--font-size-small);
   overflow: hidden;
-  z-index: 0;
 }
 
 .layer__viz { 
   width: 100%;
   height: 100%;
+  z-index: 0;
+}
+
+.layer__overlay { 
   z-index: 1;
 }
 </style>
