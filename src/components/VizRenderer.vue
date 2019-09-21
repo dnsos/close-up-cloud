@@ -169,7 +169,7 @@ export default {
 .renderer__wrapper {
   width: 100%;
   height: 100%;
-  background-color: var(--color-primary-0);
+  background-color: var(--color-canvas);
   transition: background-color 2s ease-in-out;
 }
 </style>

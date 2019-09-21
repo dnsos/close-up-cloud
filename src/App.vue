@@ -20,25 +20,52 @@ export default {
 ----------------------------------------------------- */
 :root {
   --font-size: 16px;
-  --font-size-small: 12px;
+  --font-size-small: 13px;
   --font-family-primary: 'Overpass', sans-serif;
   --grid-spacing: 2.5rem;
-}
+  --padding-outer: 1.5rem;
+  --border-width: .1rem;
+  --border-solid: var(--border-width) solid var(--color-ui-primary);
+  --border-dotted: var(--border-width) dotted var(--color-ui-primary);
 
-:root {
-  --color-primary-100: hsl(0, 0%, 10%);
-  --color-primary-75: hsl(0, 0%, 25%);
-  --color-primary-50: hsl(0, 0%, 50%);
-  --color-primary-25: hsl(0, 0%, 75%);
-  --color-primary-0: hsl(0, 0%, 100%);
+  --icon-size: calc(var(--grid-spacing)*1.5);
+
+  --transition-duration: 2s;
+
+  --transition-color: color var(--transition-duration) ease-in-out;
+  --transition-bg-color: background-color var(--transition-duration) ease-in-out;
+
+  // font weights
+  --font-weight-regular: 400;
+  --font-weight-medium: 600;
+  --font-weight-bold: 800;
+
+  // colors
+  --color-gold-medium: #AE9962;
+  --color-gold-dark: #887031;
+  --color-neutral-100: hsl(0, 0%, 0%);
+  --color-neutral-75: hsl(0, 0%, 25%);
+  --color-neutral-60: hsl(0, 0%, 40%);
+  --color-neutral-50: hsl(0, 0%, 50%);
+  --color-neutral-25: hsl(0, 0%, 75%);
+  --color-neutral-5: hsl(0, 0%, 95%);
+  --color-neutral-0: hsl(0, 0%, 100%);
+
+  // theme specific styles
+  --color-canvas: var(--color-neutral-5);
+  --color-ui-bg: var(--color-neutral-0);
+  --color-ui-primary: var(--color-neutral-75);
+  --color-ui-secondary: var(--color-neutral-25);
+  --color-ui-highlighted: var(--color-gold-dark);
 }
 
 [data-theme="dark"] {
-  --color-primary-100: hsl(0, 0%, 100%);
-  --color-primary-75: hsl(0, 0%, 75%);
-  --color-primary-50: hsl(0, 0%, 50%);
-  --color-primary-25: hsl(0, 0%, 25%);
-  --color-primary-0: hsl(0, 0%, 10%);
+  // theme specific
+  --color-canvas: var(--color-neutral-75);
+  --color-ui-bg: var(--color-neutral-100);
+  --color-ui-primary: var(--color-neutral-5);
+  --color-ui-secondary: var(--color-neutral-50);
+  --color-ui-highlighted: var(--color-gold-medium);
 }
 
 html {
@@ -51,7 +78,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: var(--font-size);
-  font-weight: 600;
+  font-weight: var(--font-weight-medium);
   * {
     box-sizing: border-box;
   }
@@ -62,51 +89,70 @@ body {
 #app {
   width: 100%;
   height: 100vh;
+  color: var(--color-ui-primary);
+  font-weight: var(--font-weight-medium);
   >* {
     width: 100%;
     height: 100%;
   }
 }
 
-/* GRIDS
+/* CLASSES
 ----------------------------------------------------- */
-.grid-3-columns {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-gap: calc(var(--grid-spacing)/4);
-    >:nth-child(1) { text-align: left; }
-    >:nth-child(2) { text-align: center; }
-    >:nth-child(3) { text-align: right; }
-  }
 
 /* TYPOGRAPHY
 ----------------------------------------------------- */
+.font-uppercase {
+  text-transform: uppercase;
+  letter-spacing: .05rem;
+}
+.font-bold {
+  font-weight: var(--font-weight-bold);
+}
+h1 {
+  font-size: 2.8rem;
+  font-weight: var(--font-weight-regular);
+  color: var(--color-ui-highlighted);
+}
+p, span {
+  color: var(--color-ui-primary);
+}
 a {
-  color: var(--color-primary-100);
+  color: var(--color-ui-primary);
   text-decoration: none;
+  transition: color .2s ease-in;
+  &:hover {
+    color: var(--color-ui-highlighted);
+  }
+  &:focus {
+    color: var(--color-ui-highlighted);
+    outline: var(--border-dotted);
+  }
+  &.router-link-active {
+    color: var(--color-ui-highlighted);
+  }
 }
 
 button, .button {
   font-weight: 600;
-  color: var(--color-primary-100);
-  background-color: var(--color-primary-0);
-  border: .15rem solid;
+  color: var(--color-ui-primary);
+  background-color: var(--color-ui-bg);
+  border: var(--border-width) solid;
   cursor: pointer;
-  transition: color 2s ease-in-out, background-color 2s ease-in-out, border-color 2s ease-in-out;
 
   &:not(.button--primary) {
     padding: 0;
     border-color: transparent;
     &:focus {
-      outline: .1rem dotted var(--color-primary-0);
+      outline: var(--border-dotted);
     }
   }
 
   &.button--primary {
     padding: calc(var(--grid-spacing)/4);
-    border-color: var(--color-primary-100);
+    border-color: var(--color-ui-primary);
     &:focus {
-      outline: .1rem dotted var(--color-primary-100);
+      outline: var(--border-dotted);
     }
   }
 }

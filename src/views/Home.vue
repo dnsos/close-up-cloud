@@ -20,8 +20,8 @@ export default {
   justify-content: center;
   align-items: center;
   text-align: center;
-  color: var(--color-primary-100);
-  background-color: var(--color-primary-0);
+  color: var(--color-ui-primary);
+  background-color: var(--color-ui-bg);
 
   .home__wrapper {
     max-width: 50%;

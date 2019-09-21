@@ -31,15 +31,16 @@ export default {
 }
 </script>
 
-<style lang="scss">
-
-html,
-body {
+<style lang="scss" scoped>
+.view__viz {
+  font-size: var(--font-size-small);
   overflow: hidden;
+  z-index: 0;
 }
 
 .layer__viz { 
   width: 100%;
   height: 100%;
+  z-index: 1;
 }
 </style>
