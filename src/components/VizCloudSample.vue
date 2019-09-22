@@ -4,8 +4,8 @@
 
 <script>
 import * as PIXI from 'pixi.js'
-//import { TweenLite, Power2 } from 'gsap/TweenMax'
-//import { durations } from '../variables.js'
+import { TweenLite, Power2 } from 'gsap/TweenMax'
+import { durations } from '../variables.js'
 
 export default {
   name: 'viz-cutout',
@@ -23,7 +23,6 @@ export default {
     //console.log("hello this is a sample");
 
     let sprite = this.sprite = new PIXI.Sprite(PIXI.Texture.WHITE)
-    //sprite.alpha = 0
 
     //@debug add a random tint that will be removed on load
     //sprite.tint = '0x' + Math.floor(Math.random()*16777215).toString(16);
@@ -36,11 +35,16 @@ export default {
     const thumbName = `${this.sample.id}.jpg`;
     const cutoutPath = `${process.env.VUE_APP_URL_IMG}/${fileName}/${thumbName}`;
 
-    //load texture and fade in
+    //assuming the texture is already preloaded
     if(PIXI.utils.TextureCache[cutoutPath]) {
       sprite.texture = PIXI.utils.TextureCache[cutoutPath]
       this.$parent.samplesContainer.addChild(sprite)
-      //TweenLite.to(sprite, durations.sampleFadeIn, {alpha: 1, ease: Power2.easeInOut})
+
+      if(!this.$store.state.skipFadeIn) {
+        sprite.alpha = 0
+        TweenLite.to(sprite, durations.sampleFadeIn, {alpha: 1, ease: Power2.easeInOut})
+      }
+      
     } else {
       console.error('Texture not found', cutoutPath)
     }

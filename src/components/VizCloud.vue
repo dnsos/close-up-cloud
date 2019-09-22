@@ -129,7 +129,13 @@ export default {
     this.createSampleGenerators();
     this.loadSampleChunks();
 
-
+    //if we came here with a spread transition that skips fade-in, enable fade-in again
+    if(this.$store.state.skipFadeIn) {
+      this.$nextTick(() => {
+        this.$store.commit('skipFadeIn', false);
+      });
+    }
+    
     //pause and resume loading sample chunks on window blur/focus
     window.addEventListener('blur', () => {
       window.clearTimeout(this.loadChunkTimeout);

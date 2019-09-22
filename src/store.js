@@ -8,6 +8,7 @@ export default new Vuex.Store({
   state: {
     inverted: false,
     isLoading: false,
+    skipFadeIn: false,
     data: [], //original data
     taglist: [],
     input: {
@@ -36,15 +37,6 @@ export default new Vuex.Store({
     cloud: (state) => (cloud) => {
       if(!state.clouds[cloud]) throw new Error(`there is no cloud named ${cloud}`)
       return state.clouds[cloud];
-    },
-    viewportZoom: (state) => (geometry) => {
-
-      let ratio = 1;
-      const padding = 120;
-
-      //@todo pay respect both width and height
-      ratio = ((state.canvas.height-padding) / geometry.height)
-      return ratio;
     },
     cloudBBox: (state) => (cloud) => {
       if(!state.clouds[cloud]) throw new Error(`there is no cloud named ${cloud}`)
@@ -79,6 +71,9 @@ export default new Vuex.Store({
     setRenderer: (state, payload) => {
       state.renderer = payload
     },
+    skipFadeIn: (state, payload) => {
+      state.skipFadeIn = payload
+    },
     toggleColors: (state) => {
       state.inverted = !state.inverted
     },
@@ -89,7 +84,6 @@ export default new Vuex.Store({
       state.isDragging = false
     },
     setForceLayout: (state, payload) => {
-      //console.log('setForceLayout:', payload);
       state.clouds[payload.key] = payload.data
     },
     updateCanvasSize: (state, payload) => {

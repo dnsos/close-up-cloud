@@ -7,8 +7,9 @@
 <script>
 import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
-import { TweenLite, TimelineLite } from 'gsap/TweenMax'
+import { TweenLite, TimelineLite, Power2 } from 'gsap/TweenMax'
 import PolyBool from 'polybooljs';
+import { durations } from '../variables.js'
 
 export default {
   name: 'viz-detail',
@@ -61,8 +62,6 @@ export default {
     console.log("hello this is a detail view")
 
     const detailContainer = this.detailContainer = new PIXI.Container();
-    //detailContainer.alpha = 0;
-
     const sprite = this.sprite = new PIXI.Sprite()
     sprite.anchor.set(0.5);
     detailContainer.addChild(sprite);
@@ -93,6 +92,11 @@ export default {
         .add(this.object.id, `${process.env.VUE_APP_URL_IMG}/${this.object.id}/${this.object.id}-Frame.jpg`)
         .load((loader, resources) => {
           sprite.texture = PIXI.utils.TextureCache[this.object.id];
+          
+          if(!this.$store.state.skipFadeIn) {
+            detailContainer.alpha = 0;
+            TweenLite.to(detailContainer, durations.detailFadeIn, {alpha: 1, ease: Power2.easeInOut})
+          }
         });
     } else {
       sprite.texture = PIXI.utils.TextureCache[this.object.id];
@@ -193,6 +197,13 @@ export default {
   mounted: function () {
 
     this.viewport.addChild(this.detailContainer) 
+
+    //if we came here with a spread transition that skips fade-in, enable fade-in again
+    if(this.$store.state.skipFadeIn) {
+      this.$nextTick(() => {
+        this.$store.commit('skipFadeIn', false);
+      });
+    }
 
     //htmlviz
     this.$refs.detail.style.backgroundImage = `url(${process.env.VUE_APP_URL_IMG}/${this.object.id}/${this.object.id}.jpg)`;

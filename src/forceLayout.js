@@ -17,7 +17,7 @@ export class ForceLayout {
     constructor(data, options) {
 
         this.options = Object.assign({
-            rectPadding: 5,
+            rectPadding: 4,
             ticks: 400,
             scaleFactor: 8,
             canvasWidth: 1280,
@@ -139,8 +139,8 @@ export class ForceLayout {
         //scale linear by area
         return Math.sqrt(weight); 
         
-        //scale logarithmic by area
-        //let size = Math.sqrt(weight)
+        //scale logarithmic by weight
+        //return Math.log(1+weight)
     }
 
     getLayoutData() {

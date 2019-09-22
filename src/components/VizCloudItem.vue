@@ -21,6 +21,7 @@ import { TweenLite, Power2 } from 'gsap/TweenMax'
 import VizCloudSample from './VizCloudSample.vue'
 import VizTooltip from './VizTooltip.vue'
 import { getCutoutUID, convertTagOccurencesToCloudItems } from '../utils.js'
+import { durations } from '../variables.js'
 
 export default {
   name: 'viz-cloud-item',
@@ -137,6 +138,8 @@ export default {
     let detailFrameBBox; //dimensions of the upcoming detail image (cloud-to-detail)
     let detailScaleFactor; //scaling factor of the upcoming detail image (cloud-to-detail)
 
+    //skip fade-in of samples and detail view while transitioning
+    this.$store.commit('skipFadeIn', true);
 
     //for cloud-to-cloud, we have to compute the next cloud layout first    
     if(isCloudToCloud) {
@@ -285,7 +288,7 @@ export default {
             sprite.height = detailFrameBBox.height * detailScaleFactor;
             this.viewport.addChild(sprite) 
             
-            TweenLite.to(sprite, 1.5, {
+            TweenLite.to(sprite, durations.detailFadeIn, {
               alpha: 1,
               delay: 2.5
             });
