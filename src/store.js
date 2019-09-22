@@ -12,8 +12,7 @@ export default new Vuex.Store({
     data: [], //original data
     taglist: [],
     input: {
-      isDragging: false,
-      maxZoomFactor: 20
+      isDragging: false
     },
     canvas: {
       width: 1280,

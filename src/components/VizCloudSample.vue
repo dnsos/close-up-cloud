@@ -33,7 +33,7 @@ export default {
 
     const fileName = this.sample.origin;
     const thumbName = `${this.sample.id}.jpg`;
-    const cutoutPath = `${process.env.VUE_APP_URL_IMG}/${fileName}/${thumbName}`;
+    const cutoutPath = `${process.env.VUE_APP_URL_SAMPLE}/${fileName}/${thumbName}`;
 
     //assuming the texture is already preloaded
     if(PIXI.utils.TextureCache[cutoutPath]) {

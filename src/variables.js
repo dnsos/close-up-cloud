@@ -4,6 +4,7 @@ import { TextStyle } from 'pixi.js'
 export const durations = {
   sampleFadeIn: 2,    //CloudSamples fade in animation duration 
   sampleVisible: 8,   //CloudSamples shuffle time
+  sampleSpread: 1.5,   //CloudSamples spread duration
   detailFadeIn: 1.5,  //CloudDetail fade in animation duration 
   move: .4,
   invert: 2           //invert colors animation duration 

@@ -51,7 +51,7 @@ export default {
         this.cloudContainer.position.set(canvas.width/2, canvas.height/2)
       }
       
-      //zoom to fit and center
+      //zoom to fit
       const cloudBox = this.$store.getters.cloudBBox(this.cloudname);
       this.renderer.zoomToFitBBox(cloudBox);
     },
@@ -77,7 +77,7 @@ export default {
         for(let sample of item.samples) {
           const fileName = sample.origin;
           const thumbName = `${sample.id}.jpg`;
-          const cutoutPath = `${process.env.VUE_APP_URL_IMG}/${fileName}/${thumbName}`;
+          const cutoutPath = `${process.env.VUE_APP_URL_SAMPLE}/${fileName}/${thumbName}`;
           yield cutoutPath;
         }
       }

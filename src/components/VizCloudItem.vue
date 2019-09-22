@@ -17,7 +17,7 @@
 <script>
 import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
-import { TweenLite, Power2 } from 'gsap/TweenMax'
+import { TweenLite, Power2, Sine } from 'gsap/TweenMax'
 import VizCloudSample from './VizCloudSample.vue'
 import VizTooltip from './VizTooltip.vue'
 import { getCutoutUID, convertTagOccurencesToCloudItems } from '../utils.js'
@@ -181,12 +181,18 @@ export default {
       ease: Power2.easeOut
     });
 
+    //@todo it would probably be better to move the camera to the item, but I don't get pixi-viewport
+    //move camera to item, absolute viewport coords
+    /*this.renderer.moveToPoint({ 
+      x: (this.canvas.width/2) + this.position.x + this.position.size/2, 
+      y: (this.canvas.height/2) + this.position.y + this.position.size/2
+    });*/
 
     // [3] Pre-Load Samples
     this.item.samples.forEach((sample) => {
       const fileName = sample.origin;
       const thumbName = `${sample.id}.jpg`;
-      const sampleUrl = `${process.env.VUE_APP_URL_IMG}/${fileName}/${thumbName}`;
+      const sampleUrl = `${process.env.VUE_APP_URL_SAMPLE}/${fileName}/${thumbName}`;
       if(!PIXI.utils.TextureCache[sampleUrl]) {
         loader.add(sampleUrl)
       }
@@ -194,8 +200,10 @@ export default {
        
     //cloud-to-detail: also pre-load the detail image
     if(isCloudToDetail && !PIXI.utils.TextureCache[this.item.id]) {
-      loader.add(this.item.id, `${process.env.VUE_APP_URL_IMG}/${this.item.id}/${this.item.id}-Frame.jpg`)
+      loader.add(this.item.id, `${process.env.VUE_APP_URL_DETAIL}/${this.item.id}/${this.item.id}-Frame.jpg`)
     }
+
+
       
     loader.load(() => {
       
@@ -218,25 +226,28 @@ export default {
 
         //wait for vue to reflect the new renderStack as VizCloudSamples
         this.$nextTick(() => {
-          
+
+          const spreadAfterS = 1;
+                
           // [4] Zoom viewport to fit the next view
-          if(isCloudToCloud) {
-            window.setTimeout(() => {
+          //this should happen simultaniously to the spreading
+          window.setTimeout(() => {
+            if(isCloudToCloud) {
               this.renderer.zoomToFitBBox(nextCloudBBox);
-            }, 1500);
-          } else if(isCloudToDetail) {
-            this.renderer.zoomToFitBBox(this.canvas);
-          }
+            } else if(isCloudToDetail) {
+              this.renderer.zoomToFitBBox(this.canvas);
+            }
+          }, spreadAfterS * 1000);
 
 
           // [5] Align Samples with the next view
           //Undo the total centering of the CloudItem ([2]) to prepare for perfect alignment with the following view
           //this should happen simultaniously to the spreading so users won't notice
-          TweenLite.to(this.itemContainer, 1, {
+          TweenLite.to(this.itemContainer, durations.sampleSpread, {
             x: 0,
             y: 0,
-            ease: Power2.easeOut,
-            delay: 1
+            ease: Sine.easeInOut,
+            delay: spreadAfterS
           });
 
 
@@ -264,13 +275,13 @@ export default {
               newPosition.size *= detailScaleFactor;
             }
 
-            TweenLite.to(cloudSample.sprite, 1.5, {
+            TweenLite.to(cloudSample.sprite, durations.sampleSpread, {
               x: newPosition.x,
               y: newPosition.y,
               width: newPosition.size,
               height: newPosition.size,
-              ease: Power2.easeOut,
-              delay: 1
+              ease: Sine.easeInOut,
+              delay: spreadAfterS
             })
           });
 
@@ -290,7 +301,8 @@ export default {
             
             TweenLite.to(sprite, durations.detailFadeIn, {
               alpha: 1,
-              delay: 2.5
+              delay: spreadAfterS + durations.sampleSpread,
+              ease: Power2.easeIn
             });
           }
 
@@ -298,10 +310,10 @@ export default {
           // [7] Route to the target view
           //when the animation is done, finally route to the target url and change views
           //cloud-to-detail takes a bit longer because of the detail fade-in
-          let routerAfterMs = isCloudToCloud ? 2500 : 4000;
+          let routerAfterS = isCloudToCloud ? (spreadAfterS + durations.sampleSpread) : (spreadAfterS + durations.sampleSpread +  durations.detailFadeIn);
           window.setTimeout(() => {
             this.$router.push({ path: `${this.subpath}/${this.item.id}` })
-          }, routerAfterMs);
+          }, routerAfterS * 1000);
 
         }) //nextTick
       }) //nextTick

@@ -54,6 +54,7 @@ export default {
 
       //apply scaling to stay within viewport dimensions
       const scaleFactor = this.renderer.getDetailScaleFactor(frameBBox);
+      console.log('scaling down img to', scaleFactor)
       this.sprite.width = frameBBox.width * scaleFactor;
       this.sprite.height = frameBBox.height * scaleFactor;
     }
@@ -89,7 +90,7 @@ export default {
     if(!PIXI.utils.TextureCache[this.object.id]) {
       const loader = new PIXI.Loader();
       loader
-        .add(this.object.id, `${process.env.VUE_APP_URL_IMG}/${this.object.id}/${this.object.id}-Frame.jpg`)
+        .add(this.object.id, `${process.env.VUE_APP_URL_DETAIL}/${this.object.id}/${this.object.id}-Frame.jpg`)
         .load((loader, resources) => {
           sprite.texture = PIXI.utils.TextureCache[this.object.id];
           

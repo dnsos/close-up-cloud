@@ -19,7 +19,7 @@ export class ForceLayout {
         this.options = Object.assign({
             rectPadding: 4,
             ticks: 400,
-            scaleFactor: 8,
+            scaleFactor: 8, //item size = scalingFunction(item weight) * scaleFactor
             canvasWidth: 1280,
             canvasHeight: 800
         }, options);
