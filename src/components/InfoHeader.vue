@@ -1,15 +1,15 @@
 <template>
-  <header class="color-animated">
-    <router-link to="/viz" exact class="font-uppercase">Close-Up Cloud</router-link>
-    <h1>{{ title }}</h1>
-    <div class="header__counter">
-      <span class="font-uppercase">
-        <span class="font-bold">{{ count.closeups }}</span>
+  <header>
+    <router-link to="/viz" exact>Close-Up Cloud</router-link>
+    <h1>{{ currentData.title }}</h1>
+    <div class="count__wrapper">
+      <span>
+        <span class="count">{{ currentData.closeupCount }}</span>
         Close-Ups
-        <span>
+        <span v-if="currentData.objectCount != null">
           in
-          <span class="font-bold">{{ count.objects }}</span>
-          {{ count.closeups > 1 ? 'Objekten' : 'Objekt' }}
+          <span class="count">{{ currentData.objectCount }}</span>
+          {{ currentData.objectCount > 1 ? 'Objekten' : 'Objekt' }}
         </span>
       </span>
     </div>
@@ -19,37 +19,16 @@
 <script>
 export default {
   name: 'info-header',
-  data: function () {
-    return {
-      title: 'Wilhelm Weimars Glasnegative',
-      count: {
-        closeups: 1062,
-        objects: 137
+  props: {
+    currentData: {
+      type: Object,
+      default: function () {
+        return {
+          title: '[Unbekannt]',
+          closeupCount: 0,
+          objectCount: 0
+        }
       }
-    }
-  },
-  computed: {
-    currentTagData: function () {
-      if (this.$route.name != 'viz-tag') return
-      return this.$store.getters.tag(this.$route.params.id)
-    },
-    currentObjectData: function () {
-      if (this.$route.name != 'viz-detail') return
-      return this.$store.getters.object(this.$route.params.id)
-    }
-  },
-  watch: {
-    $route: function (newRoute) {
-      if (newRoute === 'viz-tag') {
-        this.title = 'Taggg'
-      } else if (newRoute === 'viz-detail') {
-        this.title = 'Objecttt'
-      }
-    }
-  },
-  methods: {
-    isView: function (view) {
-      return this.$route.name === view
     }
   }
 }
@@ -57,17 +36,25 @@ export default {
 
 <style lang="scss" scoped>
 header {
+  position: absolute;
+  top: var(--padding-outer);
+  left: var(--padding-outer);
   > * {
     margin: 0;
   }
-  a {
+  > *:not(h1) {
+    text-transform: uppercase;
+    letter-spacing: .05rem;
+  }
+  a, .router-link-active {
     color: var(--color-ui-primary);
   }
-  .router-link-active {
-    color: var(--color-ui-primary);
-  }
-  .header__counter {
+  .count__wrapper {
     padding-left: var(--grid-spacing);
+
+    .count {
+      font-weight: var(--font-weight-bold);
+    }
   }
 }
 </style>

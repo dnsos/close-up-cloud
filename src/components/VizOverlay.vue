@@ -1,5 +1,6 @@
 <template>
   <div class="overlay">
+    <InfoHeader/>
     <div @click="toggleColors()">
       <OverlayIcon
         :position="'bottom-left'"
