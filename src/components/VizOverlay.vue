@@ -1,8 +1,5 @@
 <template>
   <div class="overlay">
-    <div class="overlay__top overlay__left">
-      <InfoHeader />
-    </div>
     <div @click="toggleColors()">
       <OverlayIcon
         :position="'bottom-left'"
@@ -14,11 +11,11 @@
       />
     </div>
     <div v-if="isView('viz-detail')">
-      <MetadataBox
-        :metadata="currentMetadata"
-        :isVisible="metadataVisible"
+      <ObjectInfoBox
+        :objectInfo="currentMetadata"
+        :isVisible="objectInfoVisible"
       />
-      <div @click="toggleMetadataVisible()">
+      <div @click="toggleobjectInfoVisible()">
         <OverlayIcon
           :position="'bottom-right'"
           :tooltip="{
@@ -44,15 +41,15 @@
 
 <script>
 import InfoHeader from '@/components/InfoHeader.vue'
-import MetadataBox from '@/components/overlay/MetadataBox.vue'
+import ObjectInfoBox from '@/components/overlay/ObjectInfoBox.vue'
 import OverlayIcon from '@/components/overlay/OverlayIcon.vue'
 
 export default {
   name: 'viz-overlay',
-  components: { InfoHeader, MetadataBox, OverlayIcon },
+  components: { InfoHeader, ObjectInfoBox, OverlayIcon },
   data: function () {
     return {
-      metadataVisible: true
+      objectInfoVisible: true
     }
   },
   computed: {
@@ -68,8 +65,8 @@ export default {
     goToAbout: function () {
       this.$router.push({ name: 'home' })
     },
-    toggleMetadataVisible: function () {
-      this.metadataVisible = !this.metadataVisible
+    toggleobjectInfoVisible: function () {
+      this.objectInfoVisible = !this.objectInfoVisible
     },
     isView: function (view) {
       return this.$route.name === view
@@ -81,10 +78,5 @@ export default {
 <style lang="scss" scoped>
 .overlay {
   font-size: var(--font-size-small);
-  & > * {
-    /* position: absolute; */
-    width: 100%;
-    height: 100%;
-  }
 }
 </style>
