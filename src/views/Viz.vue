@@ -1,6 +1,6 @@
 <template>
   <div class="view__viz">
-    <main class="layer__viz">
+    <main class="layer__viz" ref="main">
       <VizRenderer v-if="hasFetched" />
     </main>
     <div class="layer__overlay">

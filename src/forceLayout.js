@@ -87,10 +87,6 @@ export class ForceLayout {
         const { data, options } = this;
 
         const weightList = data.map(tag => tag.weight)
-        const logScale = d3.scaleLog()
-            .base(5)
-            .domain(d3.extent(weightList))
-            .range([1000,10000])
 
         let totalRad = Math.random()*Math.PI*2;
         let spiralDist = 50;
@@ -141,6 +137,13 @@ export class ForceLayout {
         
         //scale logarithmic by weight
         //return Math.log(1+weight)
+
+        
+        //scale logarithmic with d3
+        /*const logScale = d3.scaleLog()
+            .base(5)
+            .domain(d3.extent(weightList))
+            .range([1000,10000])*/
     }
 
     getLayoutData() {

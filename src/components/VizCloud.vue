@@ -144,7 +144,6 @@ export default {
       this.loadChunkTimeout = window.setTimeout(this.loadSampleChunks, durations.sampleVisible * 1000);
     })
 
-    //@todo prevent double resize call
     this.resize(this.canvas);
 
     this.viewport.addChild(this.cloudContainer);

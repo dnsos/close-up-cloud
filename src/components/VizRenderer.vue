@@ -151,7 +151,7 @@ export default {
     this.viewport = new Viewport({
 
       // width/height values required but arbitrary,
-      // will be overwritten immediately by handleResize call
+      // will be overwritten by handleResize call
       screenWidth: 1280,
       screenHeight: 800,
       worldWidth: 1280,
@@ -165,9 +165,9 @@ export default {
     .on('drag-end', () => {
       this.$store.commit('dragEnd')
     })
-    /*.on('zoomed', (e) => {
+    .on('zoomed', (e) => {
       console.log('Current scale:', e.viewport.transform.scale.x)
-    })*/
+    })
 
     // init invert filter
     const colorMatrix = new PIXI.filters.ColorMatrixFilter()
@@ -178,6 +178,12 @@ export default {
     this.$store.commit('setPIXIApp', this.PIXIApp);
     this.$store.commit('setViewport', this.viewport);
     this.$store.commit('setRenderer', this);
+    
+    //already put the assumed canvas-size in the store, so that forceLayout can respect it
+    this.$store.dispatch('updateCanvasSize', {
+      width: this.$parent.$refs.main.clientWidth, 
+      height: this.$parent.$refs.main.clientHeight
+    });
   },
   mounted: function() {
     
