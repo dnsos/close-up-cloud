@@ -22,8 +22,8 @@ export default {
   --font-size: 16px;
   --font-size-small: 13px;
   --font-family-primary: 'Overpass', sans-serif;
-  --grid-spacing: 2.5rem;
-  --padding-outer: 1.5rem;
+  --grid-spacing: 2.4rem;
+  --padding-outer: 1.6rem;
   --border-width: .1rem;
   --border-solid: var(--border-width) solid var(--color-ui-primary);
   --border-dotted: var(--border-width) dotted var(--color-ui-primary);
@@ -109,27 +109,45 @@ body {
 .font-bold {
   font-weight: var(--font-weight-bold);
 }
+
+h1, h2, h3 {
+  margin-top: 0;
+}
+
 h1 {
-  font-size: 2.8rem;
+  font-size: calc(var(--font-size)*2);
   font-weight: var(--font-weight-regular);
   color: var(--color-ui-highlighted);
 }
+h2 {
+  font-size: var(--font-size);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-ui-primary);
+}
+h3 {
+  font-size: var(--font-size-small);
+  text-transform: uppercase;
+  letter-spacing: .05rem;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-ui-primary);
+}
+
 p, span {
   color: var(--color-ui-primary);
 }
 a {
-  color: var(--color-ui-primary);
+  color: var(--color-ui-highlighted);
   text-decoration: none;
   transition: color .2s ease-in;
   &:hover {
-    color: var(--color-ui-highlighted);
+    /* color: var(--color-ui-highlighted); */
   }
   &:focus {
-    color: var(--color-ui-highlighted);
+    /* color: var(--color-ui-highlighted); */
     outline: var(--border-dotted);
   }
   &.router-link-active {
-    color: var(--color-ui-highlighted);
+    /* color: var(--color-ui-highlighted); */
   }
 }
 

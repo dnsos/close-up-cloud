@@ -23,7 +23,7 @@
           :position="'bottom-right'"
           :tooltip="{
             side: 'left',
-            title: 'Schlagwörter'
+            title: 'Objektinformationen'
           }"
           :iconFileName="'list.svg'"
         />
