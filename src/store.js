@@ -7,6 +7,7 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     inverted: false,
+    dataFetched: false,
     data: [], //original data
     taglist: [],
     input: {
@@ -27,6 +28,16 @@ export default new Vuex.Store({
     },
     object: (state) => (objectID) => {
       return state.data.find(object => object.id === objectID)
+    },
+    totalNumberOfCloseups: (state) => {
+      let counter = 0
+      state.data.map(object => {
+        object.tags.map(tag => {
+          if (tag.title === 'Frame') return // do not count closeups that represent the main frame
+          counter += tag.geometry.length
+        })
+      })
+      return counter
     },
     /*maxTagCount: (state) => (title) => {
       return Math.max( ...state.taglist.map(tag => tag.tagCount))
@@ -67,6 +78,9 @@ export default new Vuex.Store({
   mutations: {
     setData: (state, data) => {
       state.data = data
+    },
+    setDataFetched: (state) => {
+      state.dataFetched = true
     },
     setPIXIApp: (state, payload) => {
       state.PIXIApp = payload

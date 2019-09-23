@@ -1,7 +1,7 @@
 <template>
   <div class="view__viz">
     <main class="layer__viz">
-      <VizRenderer v-if="hasFetched" />
+      <VizRenderer v-if="dataFetched" />
     </main>
     <VizOverlay class="layer__overlay" />
   </div>
@@ -14,16 +14,16 @@ import VizOverlay from '@/components/VizOverlay.vue'
 export default {
   name: 'viz',
   components: { VizRenderer, VizOverlay },
-  data: function () {
-    return {
-      hasFetched: false
+  computed: {
+    dataFetched: function () {
+      return this.$store.state.dataFetched
     }
   },
   mounted: function() {
     console.log('Hello this is a Viz')
     
     this.$store.dispatch('fetchData').then(() => {
-      this.hasFetched = true;
+      this.$store.commit('setDataFetched')
     });
   }
 }
