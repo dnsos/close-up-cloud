@@ -2,7 +2,7 @@
   <div class="overview">
     <router-link :to="`/viz/`">hello this is a tag overview</router-link>
 
-    <VizCloud :cloudname="`overview`" :items="cloudlist" :subpath="`/viz/tag`" />  
+    <VizCloud :cloudname="`overview`" :items="cloudItems" :subpath="`/viz/tag`" />  
   </div>
 </template>
 
@@ -16,9 +16,9 @@ export default {
   components: { VizCloud },
   computed: {
     ...mapState(['taglist']),
-    cloudlist: function() {
+    cloudItems: function() {
 
-      //convert taglist to cloudlist (see readme)
+      //convert taglist to cloudItems (see readme)
       return this.taglist.map(tag => {
 
         //per tag: sample all occurrences (objects) by their first geometry

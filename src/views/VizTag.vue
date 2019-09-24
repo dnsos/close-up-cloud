@@ -2,13 +2,13 @@
   <div class="tag">
     <router-link :to="`/viz/tag/${tag.title}`">Tag {{tag.title}}</router-link>
 
-    <VizCloud :cloudname="tag.title" :items="cloudlist" :subpath="`/viz/detail`" />
+    <VizCloud :cloudname="tag.title" :items="cloudItems" :subpath="`/viz/detail`" />
   </div>
 </template>
 
 <script>
 import VizCloud from '../components/VizCloud'
-import { getCutoutUID } from '../utils.js'
+import { getCutoutUID, convertTagOccurencesToCloudItems } from '../utils.js'
 
 export default {
   name: 'viz-tag',
@@ -22,28 +22,8 @@ export default {
     }
   },
   computed: {
-    cloudlist: function() {
-
-      //convert tag.occurrences to cloudlist (see readme)
-      return this.tag.occurrences.map(occ => {
-
-        //per occurencant object: sample all geometries
-        const samples = occ.geometry.map(geo => {
-          const sample = {
-            origin: occ.origin,
-            x: geo.x,
-            y: geo.y
-          }
-          sample.id = getCutoutUID(this.tag.title, sample);
-          return sample;
-        });
-
-        return {
-          id: occ.origin,
-          weight: samples.length,
-          samples: samples
-        }
-      })
+    cloudItems: function() {
+      return convertTagOccurencesToCloudItems(this.tag);
     }
   },
   beforeMount: function() {

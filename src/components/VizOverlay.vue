@@ -44,7 +44,6 @@
 import InfoHeader from '@/components/InfoHeader.vue'
 import ObjectInfoBox from '@/components/overlay/ObjectInfoBox.vue'
 import OverlayIcon from '@/components/overlay/OverlayIcon.vue'
-
 export default {
   name: 'viz-overlay',
   components: { InfoHeader, ObjectInfoBox, OverlayIcon },

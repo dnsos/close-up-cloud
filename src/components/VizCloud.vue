@@ -17,6 +17,7 @@
 
 <script>
 import * as PIXI from 'pixi.js'
+import { TweenLite, Power2 } from 'gsap/TweenMax'
 import { mapState } from 'vuex'
 import VizCloudItem from './VizCloudItem'
 import { durations } from '../variables'
@@ -29,7 +30,7 @@ export default {
     items: { type: Array, required: true }
   },
   components: { VizCloudItem },
-  computed: mapState(['canvas', 'viewport']),
+  computed: mapState(['canvas', 'viewport', 'renderer']),
   data: () => {
     return {
       cloudContainer: null,
@@ -49,31 +50,10 @@ export default {
       if(this.cloudContainer) {
         this.cloudContainer.position.set(canvas.width/2, canvas.height/2)
       }
-
-      const cloudBox = this.$store.getters.cloudBBox(this.cloudname)
-
-      // information for which axis is relevant for snapZoom
-      const remainders = {
-        x: canvas.width - cloudBox.width,
-        y: canvas.height - cloudBox.height
-      }
-      //console.table(remainders)
-
-      // evaluate relevant axis for snapZoom
-      // TODO: #1 double check if logic is correct
-      // TODO: #2 make padding value less arbitrary
-      const relevantDimension = {
-        ...(remainders.x < remainders.y && { width: cloudBox.width + 100 }),
-        ...(remainders.y < remainders.x && { height: cloudBox.height + 100 })
-      }
-
-      // zoom to fit and center
-      this.viewport.snapZoom({
-        ...relevantDimension,
-        center: new PIXI.Point(canvas.width/2, canvas.height/2),
-        removeOnComplete: true,
-        removeOnInterrupt: true
-      })
+      
+      //zoom to fit
+      const cloudBox = this.$store.getters.cloudBBox(this.cloudname);
+      this.renderer.zoomToFitBBox(cloudBox);
     },
     initForceLayout() {
 
@@ -97,20 +77,20 @@ export default {
         for(let sample of item.samples) {
           const fileName = sample.origin;
           const thumbName = `${sample.id}.jpg`;
-          const cutoutPath = `${process.env.VUE_APP_URL_IMG}/${fileName}/${thumbName}`;
+          const cutoutPath = `${process.env.VUE_APP_URL_SAMPLE}/${fileName}/${thumbName}`;
           yield cutoutPath;
         }
       }
     },
     loadSampleChunks() {
       
-      const loader = PIXI.Loader.shared;
+      const loader = new PIXI.Loader();
       
       //pre-load samples
       this.items.forEach((item, i) => {
         const sampleUrl = this.sampleGenerators[i].next().value;
-        if(sampleUrl && !loader.resources[sampleUrl]) {
-          loader.add(sampleUrl)
+        if(sampleUrl && !PIXI.utils.TextureCache[sampleUrl]) {
+          loader.add(sampleUrl);
         }
       });
       
@@ -121,18 +101,25 @@ export default {
       })
 
       this.loadChunkTimeout = window.setTimeout(this.loadSampleChunks, durations.sampleVisible * 1000);
+    },
+    hideOtherItems(id) {
+
+      window.clearTimeout(this.loadChunkTimeout);
+
+      for(let clouditem of this.$refs.clouditems) {
+        if(clouditem.item.id !== id) {
+          TweenLite.to(clouditem.itemContainer, 0.5, { alpha: 0 }, Power2.easeOut);
+        }
+      }
     }
   },
   beforeMount: function() {
     console.log("hello this is a cloud")
 
     // create container for tag cloud
-    //@todo implications of only created once?
-    if(!this.cloudContainer) {
-      this.cloudContainer = new PIXI.Container()
-      this.cloudContainer.name = `cloud-${this.cloudname}`
-      this.cloudContainer.sortableChildren = true // necessary for enabling zIndex sorting of children
-    }
+    this.cloudContainer = new PIXI.Container()
+    this.cloudContainer.name = `cloud-${this.cloudname}`
+    this.cloudContainer.sortableChildren = true // necessary for enabling zIndex sorting of children
 
     //create cloud overview force layout
     this.initForceLayout();
@@ -142,7 +129,13 @@ export default {
     this.createSampleGenerators();
     this.loadSampleChunks();
 
-
+    //if we came here with a spread transition that skips fade-in, enable fade-in again
+    if(this.$store.state.skipFadeIn) {
+      this.$nextTick(() => {
+        this.$store.commit('skipFadeIn', false);
+      });
+    }
+    
     //pause and resume loading sample chunks on window blur/focus
     window.addEventListener('blur', () => {
       window.clearTimeout(this.loadChunkTimeout);
@@ -151,7 +144,6 @@ export default {
       this.loadChunkTimeout = window.setTimeout(this.loadSampleChunks, durations.sampleVisible * 1000);
     })
 
-    //@todo prevent double resize call
     this.resize(this.canvas);
 
     this.viewport.addChild(this.cloudContainer);

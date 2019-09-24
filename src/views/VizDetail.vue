@@ -7,12 +7,13 @@
 <script>
 import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
-import { TweenLite, TimelineLite } from 'gsap/TweenMax'
+import { TweenLite, TimelineLite, Power2 } from 'gsap/TweenMax'
 import PolyBool from 'polybooljs';
+import { durations } from '../variables.js'
 
 export default {
   name: 'viz-detail',
-  computed: mapState(['PIXIApp', 'canvas', 'viewport']),
+  computed: mapState(['PIXIApp', 'canvas', 'viewport', 'renderer']),
   props: {
     object: {
       //in case we get no object prop passed down, try to fetch it from the store
@@ -20,7 +21,7 @@ export default {
         if (this.$route.params.id) {
           return this.$store.getters.object(this.$route.params.id)
         } else {
-          console.warning('initialized VizDetail without id')
+          console.error('initialized VizDetail without id')
         }
       }
     }
@@ -40,160 +41,176 @@ export default {
   },
   methods: {
     resize(canvas) {
+      
+      //center container on canvas
+      if(this.detailContainer) {
+        this.detailContainer.position.set(canvas.width/2, canvas.height/2)
+      }
 
-      if(!this.sprite || !this.sprite.texture) return;
+      const frameBBox = this.object.tags.find(tag => tag.title === "Frame").geometry[0];
+  
+      //zoom to fit and center
+      this.renderer.zoomToFitBBox(canvas);
 
-      const textureHeight = this.sprite.texture.baseTexture.height
-      const textureWidth = this.sprite.texture.baseTexture.width
-       
-      // retrieve orientations
-      const landscapeScreen = this.canvas.width > this.canvas.height
-      const landscapeTexture = textureWidth > textureHeight
+      //apply scaling to stay within viewport dimensions
+      const scaleFactor = this.renderer.getDetailScaleFactor(frameBBox);
+      this.sprite.width = frameBBox.width * scaleFactor;
+      this.sprite.height = frameBBox.height * scaleFactor;
+    },
 
-      // evaluate ratio based on orientations
-      const relevantDimension = landscapeScreen ? this.canvas.height : this.canvas.width
-      const ratio = relevantDimension * 0.9 / (landscapeTexture ? textureWidth : textureHeight) // 0.9 for padding
+    buildInteractiveCutouts() {
+      
+      const frame = this.object.tags.find(tag => tag.title === "Frame").geometry[0];
+      const scaleFactor = this.renderer.getDetailScaleFactor(frame);
+      let cutoutCounter = 0;
 
-      this.detailContainer.width = textureWidth * ratio
-      this.detailContainer.height = textureHeight * ratio
-      this.detailContainer.position.set(this.canvas.width/2 - this.detailContainer.width/2, this.canvas.height/2 - this.detailContainer.height/2)
+      //add interactive cutouts
+      this.object.tags.forEach(tag => {
 
-      this.viewport.setZoom(1, true)
+        const tagMask = new PIXI.Graphics();
+        const tagCutouts = new PIXI.Graphics();
+        tagMask.position.set(-(frame.width/2)*scaleFactor, -(frame.height/2)*scaleFactor)
+        tagCutouts.position.set(-(frame.width/2)*scaleFactor, -(frame.height/2)*scaleFactor)
+        tagCutouts.alpha = 0;
+        tagMask.alpha = 0;
+        
+        const polyRegions = [];
+
+        tag.geometry.forEach(geo => {                
+
+          //scale down coordinates
+          const x = (geo.x - frame.x) * scaleFactor, 
+                y = (geo.y - frame.y) * scaleFactor, 
+                w = geo.size * scaleFactor,
+                h = geo.size * scaleFactor;
+
+          polyRegions.push({
+            regions: [
+                [
+                    [x, y],
+                    [x+w, y],
+                    [x+w, y+h],
+                    [x, y+h]
+                ]
+            ],
+            inverted: false
+          })
+
+          cutoutCounter++;
+        })
+
+        //combine all regions via PolyBool
+        let result = polyRegions[0];
+        for (let i=1; i < polyRegions.length; i++) {
+          result = PolyBool.union(result, polyRegions[i]);
+        }
+
+        tagCutouts.beginFill(0xFFFFFF, 0.1);
+        tagCutouts.lineStyle(2, 0xFFFFFF);
+        tagMask.beginFill(0xFFFFFF);
+        
+        tagMask.drawRect(0, 0, frame.width * scaleFactor, frame.height * scaleFactor);
+        tagMask.beginHole();
+
+        //convert PolyBool regions to PIXI Polygons
+        for(let i=0; i<result.regions.length; i++) {
+
+          const region = result.regions[i];
+
+          const pixiPoly = [];
+          for(let k=0; k<region.length; k++) {
+            pixiPoly.push(...region[k])
+          }
+
+          tagMask.drawPolygon(pixiPoly);
+          tagCutouts.drawPolygon(pixiPoly);
+        }
+      
+        tagMask.endHole();
+        tagMask.endFill();
+
+        tagCutouts.interactive = true;
+        tagCutouts.buttonMode = true;
+        tagCutouts.on('pointertap', () => {
+            if(this.$store.state.isDragging) return;
+            console.log('detail cutout tap!', tag, `viz/tag/${tag.title}`);
+            this.$router.push({ path: `/viz/tag/${tag.title}` });
+          })
+        tagCutouts.on('pointerout', () => {
+          TweenLite.to(tagMask, 0.2, {alpha: 0});
+        })
+        tagCutouts.on('pointerover', () => {
+          TweenLite.to(tagMask, 0.2, {alpha: 0.55});
+        })
+
+        this.masks.push(tagCutouts);
+
+        this.detailContainer.addChild(tagMask);
+        this.detailContainer.addChild(tagCutouts);
+      })
+      
+      //console.log('cutoutCounter', cutoutCounter);
+
     }
   },
   beforeMount: function() {
     console.log("hello this is a detail view")
 
     const detailContainer = this.detailContainer = new PIXI.Container();
-    detailContainer.alpha = 0;
-
     const sprite = this.sprite = new PIXI.Sprite()
+    sprite.anchor.set(0.5);
     detailContainer.addChild(sprite);
 
     const frame = this.object.tags.find(tag => tag.title === 'Frame').geometry[0];
 
-    const loader = new PIXI.Loader()
-    loader
-      .add(this.object.id, `${process.env.VUE_APP_URL_IMG}/${this.object.id}/${this.object.id}-Frame.jpg`)
-      .load((loader, resources) => {
+    // add interactivity
+    sprite.interactive = true;
+    sprite.buttonMode = true;
+    sprite.on('pointertap', () => {
+      if(this.$store.state.isDragging) return;
+      console.log('detail tap!');
 
-        const texture = resources[this.object.id].texture
-        sprite.texture = texture;
+      for(let mask of this.masks) {
+        new TimelineLite()
+          .from(mask, 0, {alpha: 0})
+          .to(mask, 0.2, {alpha: 0.66})
+          .to(mask, 0.2, {alpha: 0})
+          .to(mask, 0.2, {alpha: 0.66})
+          .to(mask, 0.2, {alpha: 0})
+      }
+    });
 
-        sprite.interactive = true;
-        sprite.buttonMode = true;
-        sprite.on('pointertap', () => {
-          if(this.$store.state.isDragging) return;
-          console.log('detail tap!');
+    this.buildInteractiveCutouts();
 
-          for(let mask of this.masks) {
-            new TimelineLite()
-              .from(mask, 0, {alpha: 0})
-              .to(mask, 0.2, {alpha: 0.66})
-              .to(mask, 0.2, {alpha: 0})
-              .to(mask, 0.2, {alpha: 0.66})
-              .to(mask, 0.2, {alpha: 0})
+    //load texture
+    if(!PIXI.utils.TextureCache[this.object.id]) {
+      const loader = new PIXI.Loader();
+      loader
+        .add(this.object.id, `${process.env.VUE_APP_URL_DETAIL}/${this.object.id}/${this.object.id}-Frame.jpg`)
+        .load((loader, resources) => {
+          sprite.texture = PIXI.utils.TextureCache[this.object.id];
+          
+          if(!this.$store.state.skipFadeIn) {
+            detailContainer.alpha = 0;
+            TweenLite.to(detailContainer, durations.detailFadeIn, {alpha: 1, ease: Power2.easeInOut})
           }
         });
+    } else {
+      sprite.texture = PIXI.utils.TextureCache[this.object.id];
+    }
 
-        this.resize(this.canvas);        
-        TweenLite.to(detailContainer, 1, {alpha: 1});
-        
-        const textureWidth = texture.baseTexture.width;
-        const textureScale = textureWidth / frame.width;
-
-        let cutoutCounter = 0;
-
-        //add interactive cutouts
-        this.object.tags.forEach(tag => {
-
-          const tagMask = new PIXI.Graphics();
-          const tagCutouts = new PIXI.Graphics();
-          tagCutouts.alpha = 0;
-          tagMask.alpha = 0;
-          
-          const polyRegions = [];
-
-          tag.geometry.forEach(geo => {                
-
-            //scale down coordinates
-            const x = (geo.x - frame.x) * textureScale, 
-                  y = (geo.y - frame.y) * textureScale, 
-                  w = geo.size * textureScale,
-                  h = geo.size * textureScale;
-
-            polyRegions.push({
-              regions: [
-                  [
-                      [x, y],
-                      [x+w, y],
-                      [x+w, y+h],
-                      [x, y+h]
-                  ]
-              ],
-              inverted: false
-            })
-
-            cutoutCounter++;
-          })
-
-          //combine all regions via PolyBool
-          let result = polyRegions[0];
-          for (let i=1; i < polyRegions.length; i++) {
-            result = PolyBool.union(result, polyRegions[i]);
-          }
-
-          tagCutouts.beginFill(0xFFFFFF, 0.1);
-          tagCutouts.lineStyle(2, 0xFFFFFF);
-          tagMask.beginFill(0xFFFFFF);
-          
-          tagMask.drawRect(0, 0, frame.width * textureScale, frame.height * textureScale);
-          tagMask.beginHole();
-
-          //convert PolyBool regions to PIXI Polygons
-          for(let i=0; i<result.regions.length; i++) {
-
-            const region = result.regions[i];
-
-            const pixiPoly = [];
-            for(let k=0; k<region.length; k++) {
-              pixiPoly.push(...region[k])
-            }
-
-            tagMask.drawPolygon(pixiPoly);
-            tagCutouts.drawPolygon(pixiPoly);
-          }
-        
-          tagMask.endHole();
-          tagMask.endFill();
-
-          tagCutouts.interactive = true;
-          tagCutouts.buttonMode = true;
-          tagCutouts.on('pointertap', () => {
-              if(this.$store.state.isDragging) return;
-              console.log('detail cutout tap!', tag, `viz/tag/${tag.title}`);
-              this.$router.push({ path: `/viz/tag/${tag.title}` });
-            })
-          tagCutouts.on('pointerout', () => {
-            TweenLite.to(tagMask, 0.2, {alpha: 0});
-          })
-          tagCutouts.on('pointerover', () => {
-            TweenLite.to(tagMask, 0.2, {alpha: 0.55});
-          })
-
-          this.masks.push(tagCutouts);
-
-          detailContainer.addChild(tagMask);
-          detailContainer.addChild(tagCutouts);
-        })
-
-        console.log('Total Cutouts in ', this.object.id, ':', cutoutCounter)
-
-      });
+    this.resize(this.canvas);
   },
   mounted: function () {
 
     this.viewport.addChild(this.detailContainer) 
+
+    //if we came here with a spread transition that skips fade-in, enable fade-in again
+    if(this.$store.state.skipFadeIn) {
+      this.$nextTick(() => {
+        this.$store.commit('skipFadeIn', false);
+      });
+    }
 
     //htmlviz
     this.$refs.detail.style.backgroundImage = `url(${process.env.VUE_APP_URL_IMG}/${this.object.id}/${this.object.id}.jpg)`;

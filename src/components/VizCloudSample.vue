@@ -23,7 +23,6 @@ export default {
     //console.log("hello this is a sample");
 
     let sprite = this.sprite = new PIXI.Sprite(PIXI.Texture.WHITE)
-    sprite.alpha = 0
 
     //@debug add a random tint that will be removed on load
     //sprite.tint = '0x' + Math.floor(Math.random()*16777215).toString(16);
@@ -34,14 +33,18 @@ export default {
 
     const fileName = this.sample.origin;
     const thumbName = `${this.sample.id}.jpg`;
-    const cutoutPath = `${process.env.VUE_APP_URL_IMG}/${fileName}/${thumbName}`;
+    const cutoutPath = `${process.env.VUE_APP_URL_SAMPLE}/${fileName}/${thumbName}`;
 
-    //load texture and fade in
-    const loader = PIXI.Loader.shared;
-    if(loader.resources[cutoutPath]) {
-      sprite.texture = loader.resources[cutoutPath].texture
+    //assuming the texture is already preloaded
+    if(PIXI.utils.TextureCache[cutoutPath]) {
+      sprite.texture = PIXI.utils.TextureCache[cutoutPath]
       this.$parent.samplesContainer.addChild(sprite)
-      TweenLite.to(sprite, durations.sampleFadeIn, {alpha: 1, ease: Power2.easeIn})
+
+      if(!this.$store.state.skipFadeIn) {
+        sprite.alpha = 0
+        TweenLite.to(sprite, durations.sampleFadeIn, {alpha: 1, ease: Power2.easeInOut})
+      }
+      
     } else {
       console.error('Texture not found', cutoutPath)
     }

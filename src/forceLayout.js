@@ -17,9 +17,9 @@ export class ForceLayout {
     constructor(data, options) {
 
         this.options = Object.assign({
-            rectPadding: 5,
+            rectPadding: 4,
             ticks: 400,
-            scaleFactor: 8,
+            scaleFactor: 8, //item size = scalingFunction(item weight) * scaleFactor
             canvasWidth: 1280,
             canvasHeight: 800
         }, options);
@@ -87,10 +87,6 @@ export class ForceLayout {
         const { data, options } = this;
 
         const weightList = data.map(tag => tag.weight)
-        const logScale = d3.scaleLog()
-            .base(5)
-            .domain(d3.extent(weightList))
-            .range([1000,10000])
 
         let totalRad = Math.random()*Math.PI*2;
         let spiralDist = 50;
@@ -139,8 +135,15 @@ export class ForceLayout {
         //scale linear by area
         return Math.sqrt(weight); 
         
-        //scale logarithmic by area
-        //let size = Math.sqrt(weight)
+        //scale logarithmic by weight
+        //return Math.log(1+weight)
+
+        
+        //scale logarithmic with d3
+        /*const logScale = d3.scaleLog()
+            .base(5)
+            .domain(d3.extent(weightList))
+            .range([1000,10000])*/
     }
 
     getLayoutData() {
