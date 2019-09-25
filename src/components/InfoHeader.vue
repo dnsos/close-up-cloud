@@ -1,17 +1,19 @@
 <template>
-  <header>
-    <router-link to="/viz" exact>Close-Up Cloud</router-link>
-    <h1>{{ headerData.title }}</h1>
-    <div class="count__wrapper" v-if="headerData.closeupCount != null">
-      <span>
-        <span class="count">{{ headerData.closeupCount }}</span>
-        Close-Ups
-        <span v-if="headerData.objectCount">
-          in
-          <span class="count">{{ headerData.objectCount }}</span>
-          {{ headerData.objectCount > 1 ? 'Objekten' : 'Objekt' }}
+  <header class="info-header">
+    <router-link to="/viz" exact class="info-header__cuc">Close-Up Cloud</router-link>
+    <div class="info-header__data" v-if="headerDataAvailable">
+      <h1 class="info-header__title">{{ headerData.title }}</h1>
+      <div class="info-header__counter">
+        <span>
+          <span class="count">{{ headerData.closeupCount }}</span>
+          Close-Ups
+          <span v-if="headerData.objectCount">
+            in
+            <span class="count">{{ headerData.objectCount }}</span>
+            {{ headerData.objectCount > 1 ? 'Objekten' : 'Objekt' }}
+          </span>
         </span>
-      </span>
+      </div>
     </div>
   </header>
 </template>
@@ -23,6 +25,7 @@ export default {
   name: 'info-header',
   data: function () {
     return {
+      headerDataAvailable: false,
       headerData: {
         title: null,
         closeupCount: null,
@@ -35,6 +38,7 @@ export default {
   },
   methods: {
     getHeaderData: function (route) {
+      this.headerDataAvailable = false
 
       if (route.name === 'viz-overview') {
         this.headerData.title = 'Wilhelm Weimars Glasnegative'
@@ -59,10 +63,12 @@ export default {
         this.headerData.closeupCount = count
         this.headerData.objectCount = null
       }
+
+      this.headerDataAvailable = true
     }
   },
   watch: {
-    $route: function (newRoute) {
+    $route: function (newRoute) { 
       // call getHeaderData whenever user navigates within app
       this.getHeaderData(newRoute)
     },
@@ -75,23 +81,28 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-header {
+.info-header {
   position: absolute;
   top: var(--padding-outer);
   left: var(--padding-outer);
-  > * {
+
+  .info-header__cuc,
+  .info-header__counter {
     margin: 0;
-  }
-  > *:not(h1) {
     text-transform: uppercase;
     letter-spacing: .05rem;
   }
-  a, .router-link-active {
+
+  .info-header__cuc {
     color: var(--color-ui-primary);
   }
-  .count__wrapper {
-    padding-left: var(--grid-spacing);
 
+  .info-header__title {
+    margin: 0;
+  }
+
+  .info-header__counter {
+    padding-left: var(--grid-spacing);
     .count {
       font-weight: var(--font-weight-bold);
     }
