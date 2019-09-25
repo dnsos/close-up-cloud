@@ -5,6 +5,7 @@
         hello this is a single renderer
       </router-link>
       <router-view /> <!-- here goes VitOverview, VizTag, VizDetail via router -->
+      <VizTransition />
     </div>
   </div>
   
@@ -15,11 +16,14 @@ import * as PIXI from 'pixi.js'
 import { Viewport } from 'pixi-viewport'
 import { TweenLite, Power1, Power2 } from 'gsap/TweenMax'
 import { mapState } from 'vuex'
+import VizTransition from './VizTransition.vue'
 import { durations, minZoomFactor, maxZoomFactor } from '../variables.js'
+import EventBus from '../eventbus.js';
 
 export default {
   name: 'viz-renderer',
-  computed: mapState(['canvas', 'taglist', 'inverted']),
+  computed: mapState(['canvas', 'taglist', 'inverted', 'vizTransition']),
+  components: { VizTransition },
   data: () => {
     return {
       PIXIApp: null,
@@ -29,13 +33,13 @@ export default {
     };
   },
   watch: {
-    $route(to, from) {
-      //console.log('viz route changed', to, from);
-    },
     inverted: function (newValue, previousValue) {
       const targetAlpha = (newValue === true) ? 1 : 0;
       TweenLite.to(this.PIXIApp.stage.filters[0], durations.invert, { alpha: targetAlpha, ease: Power1.easeInOut } )
     },
+    vizTransition: function() {
+      this.moveToPoint(); //viz transition - move viewport to center
+    }
   },
   methods: {
     handleResize() {
@@ -71,8 +75,6 @@ export default {
       //default screen center
       if(!point) point = {x: this.canvas.width/2, y: this.canvas.height/2};
 
-      console.log(point);
-
       TweenLite.to(this.viewportCenter, 1, { 
         x: point.x, 
         y: point.y,
@@ -105,21 +107,6 @@ export default {
           return -c * (t /= d) * (t - 2) + b; // = easeOutQuad = Power2.easeOut 
         },
       })
-    },
-    getDetailScaleFactor(frameBBox) {
-      
-      const padding = 0;
-      const canvasRatio = this.canvas.width / this.canvas.height;
-      const frameRatio = frameBBox.width / frameBBox.height;
-
-      let scaleFactor;
-      if(frameRatio > canvasRatio) {
-        scaleFactor = (this.canvas.width - (padding*2)) / (frameBBox.width);
-      } else {
-        scaleFactor = (this.canvas.height - (padding*2)) / (frameBBox.height);
-      }
-
-      return scaleFactor;
     },
     //@debug show viewport grid
     appendDebugGrid() {
@@ -214,13 +201,14 @@ export default {
 
     this.$store.commit('setPIXIApp', this.PIXIApp);
     this.$store.commit('setViewport', this.viewport);
-    this.$store.commit('setRenderer', this);
     
     //already put the assumed canvas-size in the store, so that forceLayout can respect it
     this.$store.dispatch('updateCanvasSize', {
       width: this.$parent.$refs.main.clientWidth, 
       height: this.$parent.$refs.main.clientHeight
     });
+
+    EventBus.$on('zoomToBBox', this.zoomToFitBBox);
   },
   mounted: function() {
     

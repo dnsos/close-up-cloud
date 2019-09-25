@@ -140,3 +140,16 @@ items: [{
     ]
 }]
 ```
+
+
+
+
+
+// Order of Spread Animation:
+// [1] Center the selected CloudItem
+// [2] Hide all other CloudItems
+// [3] Pre-Load Samples
+// [4] Zoom viewport to fit the next view
+// [5] Align Samples with the next view
+// [6] Spread out all VizCloudSamples
+// [7] Route to the target view

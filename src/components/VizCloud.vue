@@ -21,6 +21,7 @@ import { TweenLite, Power2 } from 'gsap/TweenMax'
 import { mapState } from 'vuex'
 import VizCloudItem from './VizCloudItem'
 import { durations } from '../variables'
+import EventBus from '../eventbus.js';
 
 export default {
   name: 'viz-cloud',
@@ -30,7 +31,7 @@ export default {
     items: { type: Array, required: true }
   },
   components: { VizCloudItem },
-  computed: mapState(['canvas', 'viewport', 'renderer']),
+  computed: mapState(['canvas', 'viewport', 'vizTransition']),
   data: () => {
     return {
       cloudContainer: null,
@@ -41,6 +42,9 @@ export default {
   watch: {
     canvas(newval) {   
       this.resize(newval);
+    },
+    vizTransition(newval) {
+      this.hideOtherItems(newval.trigger.id);
     }
   },
   methods: {
@@ -53,7 +57,7 @@ export default {
       
       //zoom to fit
       const cloudBox = this.$store.getters.cloudBBox(this.cloudname);
-      this.renderer.zoomToFitBBox(cloudBox);
+      EventBus.$emit('zoomToBBox', cloudBox);
     },
     initForceLayout() {
 

@@ -11,8 +11,14 @@ export default new Vuex.Store({
     skipFadeIn: false,
     data: [], //original data
     taglist: [],
+    vizTransition: {
+      from: null, 
+      to: null, 
+      trigger: null 
+    },
     input: {
-      isDragging: false
+      isDragging: false,
+      spreadCloudItem: null
     },
     canvas: {
       width: 1280,
@@ -86,6 +92,17 @@ export default new Vuex.Store({
       if(!state.clouds[cloud]) throw new Error(`there is no cloud named ${cloud}`)
       return state.clouds[cloud].find(el => el.id === id)
     },
+    /*positionInDetail: (state, getters) => (objectId, geometry) => {
+
+      const object = getters.object(objectId);
+      //objectsampleId
+      
+    },*/
+    detailFrameBBox: (state, getters) => (objectId) => {
+      const object = getters.object(objectId);
+      const frame = object.tags.find(tag => tag.title === 'Frame');
+      return frame.geometry[0];
+    }
   },
   mutations: {
     setData: (state, data) => {
@@ -99,9 +116,6 @@ export default new Vuex.Store({
     },
     setViewport: (state, payload) => {
       state.viewport = payload
-    },
-    setRenderer: (state, payload) => {
-      state.renderer = payload
     },
     skipFadeIn: (state, payload) => {
       state.skipFadeIn = payload
@@ -127,6 +141,12 @@ export default new Vuex.Store({
     },
     updateCanvasSize: (state, payload) => {
       state.canvas = payload
+    },
+    setVizTransition: (state, payload) => {
+      state.vizTransition = payload
+    },
+    endVizTransition: (state, payload) => {
+      state.transitioning = false
     },
     buildTaglist: (state) => {
       
@@ -188,6 +208,14 @@ export default new Vuex.Store({
   actions: {
     updateCanvasSize: ({ commit }, payload) => {
       commit('updateCanvasSize', payload)
+    },
+    beginVizTransition: ({ commit }, payload) => {
+      
+      commit('setVizTransition', payload);
+      commit('skipFadeIn', true);
+    },
+    endVizTransition: ({ commit }, payload) => {
+      commit('skipFadeIn', false);
     },
     computeForceLayout({ commit, state }, payload) {
       console.log('computeForceLayout:', payload);

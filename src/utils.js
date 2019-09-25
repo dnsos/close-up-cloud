@@ -54,3 +54,26 @@ export function convertTagOccurencesToCloudItems(tag) {
     }
   });
 }
+
+
+/**
+ * getBBoxScaleFactor
+ * calcs a factor for frameBBox to fit into canvas
+ * @param {*} canvas {width, height}
+ * @param {*} frameBBox {width, height}
+ */
+export function getBBoxScaleFactor(canvas, frameBBox, padding) {
+      
+  if(!padding) padding = 0;
+  const canvasRatio = canvas.width / canvas.height;
+  const frameRatio = frameBBox.width / frameBBox.height;
+
+  let scaleFactor;
+  if(frameRatio > canvasRatio) {
+    scaleFactor = (canvas.width - (padding*2)) / (frameBBox.width);
+  } else {
+    scaleFactor = (canvas.height - (padding*2)) / (frameBBox.height);
+  }
+
+  return scaleFactor;
+}
