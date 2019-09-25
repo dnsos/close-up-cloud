@@ -21,7 +21,27 @@ export default new Vuex.Store({
     PIXIApp: null,
     viewport: null,
     renderer: null,
-    clouds: {}
+    clouds: {},
+    tooltip: {
+      isVisible: false,
+      coordinates: {
+        x: 16,
+        y: window.innerHeight/2
+      },
+      content: {
+        overview: {
+          text: '',
+          count: null
+        },
+        tag: {
+          text: '',
+          count: null
+        },
+        detail: {
+          text: ''
+        }
+      }
+    }
   },
   getters: {
     tag: (state) => (title) => {
@@ -88,6 +108,13 @@ export default new Vuex.Store({
     },
     toggleColors: (state) => {
       state.inverted = !state.inverted
+    },
+    setTooltip: (state, payload) => {
+      state.tooltip.isVisible = true
+      state.tooltip.content[payload.view] = payload.content
+    },
+    neutraliseTooltip: (state) => {
+      state.tooltip.isVisible = false
     },
     dragStart: (state) => {
       state.isDragging = true

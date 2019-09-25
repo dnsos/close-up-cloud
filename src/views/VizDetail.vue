@@ -133,13 +133,21 @@ export default {
         tagCutouts.buttonMode = true;
         tagCutouts.on('pointertap', () => {
             if(this.$store.state.isDragging) return;
+            this.$store.commit('neutraliseTooltip')
             console.log('detail cutout tap!', tag, `viz/tag/${tag.title}`);
             this.$router.push({ path: `/viz/tag/${tag.title}` });
           })
         tagCutouts.on('pointerout', () => {
+          this.$store.commit('neutraliseTooltip')
           TweenLite.to(tagMask, 0.2, {alpha: 0});
         })
         tagCutouts.on('pointerover', () => {
+          this.$store.commit('setTooltip', {
+            view: 'detail',
+            content: {
+              text: tag.title
+            }
+          })
           TweenLite.to(tagMask, 0.2, {alpha: 0.55});
         })
 

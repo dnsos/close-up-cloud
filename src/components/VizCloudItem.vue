@@ -115,6 +115,11 @@ export default {
     samplesContainer.interactive = false;
     samplesContainer.buttonMode = false;
 
+    // remove interactivity of all cloud items
+    // so that tooltip can't be triggered during spread animation
+    this.$parent.cloudContainer.interactiveChildren = false
+    // hide/empty current tooltip
+    this.$store.commit('neutraliseTooltip')
 
     // #########################################################
     // ########## big mess for spread animation START ##########
@@ -327,12 +332,23 @@ export default {
 
 
   })
-  samplesContainer.on('pointerover', () => {    
-    itemContainer.zIndex = 1 // rendered above all other itemContainer's to ensure textBox visibility
+  samplesContainer.on('pointerover', () => {
+    // remove 'viz-' from route name
+    const view = this.$route.name.slice(4,this.$route.name.length)
+    
+    this.$store.commit('setTooltip', {
+      view: view,
+      content: {
+        text: view === 'overview' ? this.item.id : this.$store.getters.object(this.item.id).title,
+        count: this.item.weight
+      }
+    })
+    //itemContainer.zIndex = 1 // rendered above all other itemContainer's to ensure textBox visibility
     this.isHovered = true
   })
   samplesContainer.on('pointerout', () => {
-    itemContainer.zIndex = 0 // back to default zIndex layer
+    this.$store.commit('neutraliseTooltip')
+    //itemContainer.zIndex = 0 // back to default zIndex layer
     this.isHovered = false
   })
 

@@ -65,7 +65,7 @@ export default {
   },
 
   mounted: function() {
-    this.$parent.itemContainer.addChild(this.textBox)
+    //this.$parent.itemContainer.addChild(this.textBox)
   }
 }
 </script>

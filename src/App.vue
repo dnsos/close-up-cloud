@@ -132,7 +132,7 @@ h3 {
   color: var(--color-ui-primary);
 }
 
-p, span {
+p {
   color: var(--color-ui-primary);
 }
 a {

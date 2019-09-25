@@ -1,5 +1,6 @@
 <template>
   <div class="overlay">
+    <Tooltip />
     <InfoHeader/>
     <div @click="toggleColors()">
       <OverlayIcon
@@ -44,9 +45,11 @@
 import InfoHeader from '@/components/InfoHeader.vue'
 import ObjectInfoBox from '@/components/overlay/ObjectInfoBox.vue'
 import OverlayIcon from '@/components/overlay/OverlayIcon.vue'
+import Tooltip from '@/components/Tooltip.vue'
+
 export default {
   name: 'viz-overlay',
-  components: { InfoHeader, ObjectInfoBox, OverlayIcon },
+  components: { InfoHeader, ObjectInfoBox, OverlayIcon, Tooltip },
   data: function () {
     return {
       objectInfoVisible: true
