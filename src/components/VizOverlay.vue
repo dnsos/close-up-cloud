@@ -52,7 +52,7 @@ export default {
   components: { InfoHeader, ObjectInfoBox, OverlayIcon, Tooltip },
   data: function () {
     return {
-      objectInfoVisible: true
+      objectInfoVisible: false
     }
   },
   computed: {

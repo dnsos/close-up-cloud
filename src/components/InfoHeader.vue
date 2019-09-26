@@ -71,11 +71,10 @@ export default {
     $route: function (newRoute) { 
       // call getHeaderData whenever user navigates within app
       this.getHeaderData(newRoute)
-    },
-    dataFetched: function () {
-      // ensure that data and taglist exist, then getHeaderData
-      this.getHeaderData(this.$route)
     }
+  },
+  beforeMount: function() {
+    this.getHeaderData(this.$route)
   }
 }
 </script>

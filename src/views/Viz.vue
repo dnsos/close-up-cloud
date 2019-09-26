@@ -3,7 +3,7 @@
     <main class="layer__viz" ref="main">
       <VizRenderer v-if="dataFetched" />
     </main>
-    <VizOverlay class="layer__overlay" />
+    <VizOverlay class="layer__overlay" v-if="dataFetched" />
   </div>
 </template>
 
