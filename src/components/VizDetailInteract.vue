@@ -42,10 +42,10 @@ export default {
       background: null,
 
       //geometries: array of rectangular close-ups per tag
-      geometries: [], //content: {tagTitle: 'abc', geometry: [{x, y, size}]}, sorted by area size
+      geometries: [], //content: {tagTitle: 'abc', geometry: [{x, y, size}]}
 
       //polygons are combined geometry rectangles into polygons per tag
-      polygons: [], //content: {tagTitle: 'abc', geometry: [pixi polygon coordinates]}, sorted by area size
+      polygons: [], //content: {tagTitle: 'abc', geometry: [pixi polygon coordinates]}
 
       //tag highlights are containers of label outlines (individual rectangles)
       highlights: {}, //key tagTitle, content: PIXI.Container
@@ -167,7 +167,7 @@ export default {
     },
 
 
-    buildEmpty() {
+    buildBackground() {
       const rect = this.background = new PIXI.Graphics();
       rect.alpha = 0;
       rect.beginFill(0x0000FF);
@@ -185,12 +185,12 @@ export default {
       });
     },
 
-
+    //outlines
     buildHighlights() {
 
       this.geometries.forEach(tagGeo => {
         
-        const highlightContainer = new PIXI.Container(); //outlines for all labels of one tag
+        const highlightContainer = new PIXI.Container(); 
         highlightContainer.alpha = 0;
 
         tagGeo.geometry.forEach(geo => {
@@ -260,19 +260,31 @@ export default {
           });*/
         })
         clickPoly.on('pointerover', (e) => {
-          TweenLite.to(this.masks[tagPoly.tagTitle], 0.2, {alpha: 0.5});
-          TweenLite.to(this.highlights[tagPoly.tagTitle], 0.2, {alpha: 1});
+          TweenLite.to(this.masks[tagPoly.tagTitle], 0.2, {alpha: 0.66});
+          //TweenLite.to(this.highlights[tagPoly.tagTitle], 0.2, {alpha: 1});
+
+          for(let key in this.highlights) {
+            if(key === tagPoly.tagTitle) {
+            //  TweenLite.to(this.highlights[key], 0.2, {alpha: 1});
+            } else {
+              TweenLite.to(this.highlights[key], 0.2, {alpha: 0.25});
+            }
+          }
 
           const local = e.data.getLocalPosition(this.background);
           const hoverGeo = this.getHoverGeometry(tagPoly.tagTitle, local.x, local.y);
 
           //@todo attach tooltip to this coordinate
-          //the data is currently in original size, not scaled down ... 
-          console.log('Hovering Rect Geometry at', hoverGeo.x, hoverGeo.y)
+          //the data is currently in original size, no screen coords :(
+          //console.log('Hovering Rect Geometry at', hoverGeo.x, hoverGeo.y)
         })
         clickPoly.on('pointerout', () => {
           TweenLite.to(this.masks[tagPoly.tagTitle], 0.2, {alpha: 0, ease: Power2.easeIn});
-          TweenLite.to(this.highlights[tagPoly.tagTitle], 0.2, {alpha: 0, ease: Power2.easeIn});
+          //TweenLite.to(this.highlights[tagPoly.tagTitle], 0.2, {alpha: 0, ease: Power2.easeIn});
+          
+          for(let key in this.highlights) {
+            TweenLite.to(this.highlights[key], 0.2, {alpha: 0, ease: Power2.easeIn});
+          }
         })
         
         this.interactContainer.addChild(clickPoly);
@@ -289,7 +301,7 @@ export default {
     this.collectGeometry();
     this.createPolygons();
     
-    this.buildEmpty();
+    this.buildBackground();
     this.buildMasks();
     this.buildHighlights();
     this.buildClickpolys();
