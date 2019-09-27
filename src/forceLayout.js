@@ -1,10 +1,32 @@
 import * as d3 from 'd3';
 
 export default function forceLayout(data, options) {
-    
-    return new ForceLayout(data, options)
+
+    const layoutData = new ForceLayout(data, options)
         .calculate()
         .getLayoutData();
+
+    //re-center layout according to bounding box
+    const x = Math.min(...layoutData.map(d => d.x)),
+      y = Math.min(...layoutData.map(d => d.y)),
+      w = Math.max(...layoutData.map(d => d.x+d.size)),
+      h = Math.max(...layoutData.map(d => d.y+d.size));
+    const bbox = {    
+        x: x,
+        y: y,
+        width: Math.abs(x - w),
+        height: Math.abs(y - h) 
+    };
+    const offset = {
+        x: (bbox.width/2) - Math.abs(bbox.x),
+        y: (bbox.height/2) - Math.abs(bbox.y)
+    }
+    layoutData.forEach(d => {
+        d.x -= offset.x;
+        d.y -= offset.y;
+    })
+
+    return layoutData;
 }
 
 export class ForceLayout {
@@ -35,23 +57,19 @@ export class ForceLayout {
         this
             .initNodes()
             .initD3()
+            .runD3()
             .getLayoutData();
 
         return this;
     }
 
     initD3() {
-
-        const options = this.options;
-
-        let collisionForce = rectCollide()
-            .size(function (d) { return [d.size, d.size] })
         
         this.svg = d3.select('body')
             .append('svg')
             .attr('id', 'd3debug')
-            .attr('width', options.canvasWidth)
-            .attr('height', options.canvasHeight)
+            .attr('width', this.options.canvasWidth)
+            .attr('height', this.options.canvasHeight)
 
         this.rects = this.svg
             .selectAll('rect')
@@ -63,13 +81,21 @@ export class ForceLayout {
                 .attr('height', function (d) { return d.size })
                 .attr('x', function (d) { return d.x })
                 .attr('y', function (d) { return d.y })
+
+        return this;
+    }
+
+    runD3() {
+
+        let collisionForce = rectCollide()
+            .size(function (d) { return [d.size, d.size] })
         
         let simulation = d3.forceSimulation(this.nodes)
             .velocityDecay(0.15)
             .force("x", d3.forceX().strength(0.01))
             .force("y", d3.forceY().strength(0.01))
             .force("collide", collisionForce)
-            .force("center", d3.forceCenter(options.canvasWidth/2, options.canvasHeight/2))
+            .force("center", d3.forceCenter(this.options.canvasWidth/2, this.options.canvasHeight/2))
             
         simulation
             .on("tick", () => {
@@ -77,7 +103,7 @@ export class ForceLayout {
                     .attr("x", d => d.x)
                     .attr("y", d => d.y)
             })
-            .tick(options.ticks);
+            .tick(this.options.ticks);
 
         return this;
     }
@@ -85,8 +111,6 @@ export class ForceLayout {
     initNodes() {
 
         const { data, options } = this;
-
-        const weightList = data.map(tag => tag.weight)
 
         let totalRad = Math.random()*Math.PI*2;
         let spiralDist = 50;
@@ -97,20 +121,22 @@ export class ForceLayout {
 
             let size = this.scalingFunction(data[i].weight);
             size *= options.scaleFactor;
-
-            const itemRadius = size/2;
             spiralDist += size/2;
             
+            const itemRadius = size/2;
             const hypothenuse = Math.hypot(size, itemRadius);
             const rad = Math.sin(itemRadius/hypothenuse);
 
             totalRad += rad;
             
-            let x = options.canvasWidth/2;
-            let y = options.canvasHeight/2;
+            //center
+            let x = (options.canvasWidth/2);
+            let y = (options.canvasHeight/2);
+            //spiral position 
             x += Math.sin(totalRad) * spiralDist;
             y += Math.cos(totalRad) * spiralDist;
             
+            //consider canvas aspect ratio
             const aspect = options.canvasWidth / options.canvasHeight;
             x *= aspect;
 
@@ -140,7 +166,8 @@ export class ForceLayout {
 
         
         //scale logarithmic with d3
-        /*const logScale = d3.scaleLog()
+        /*const weightList = data.map(tag => tag.weight)
+        const logScale = d3.scaleLog()
             .base(5)
             .domain(d3.extent(weightList))
             .range([1000,10000])*/
