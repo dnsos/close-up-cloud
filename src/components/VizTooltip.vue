@@ -20,7 +20,6 @@ export default {
     }
   },
   computed: {
-    ...mapState(['viewport']),
     isHovered: function () {
       /*
         TODO: Resolve bug:
@@ -32,7 +31,7 @@ export default {
     },
     viewportScale: function () {
       // keep track of main viewport scale
-      return this.viewport.transform.scale.x
+      return this.$store.getters.viewportScale;
     }
   },
   watch: {

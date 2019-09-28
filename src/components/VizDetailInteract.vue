@@ -11,7 +11,6 @@ import { TweenLite, TimelineLite, Power2 } from 'gsap/TweenMax'
 import PolyBool from 'polybooljs';
 import EventBus from '../eventbus.js';
 import { durations, mkgGold } from '../variables.js'
-import { getBBoxScaleFactor } from '../utils.js'
 
 export default {
   name: 'viz-detail',

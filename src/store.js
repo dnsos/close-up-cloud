@@ -93,6 +93,9 @@ export default new Vuex.Store({
       if(!state.clouds[cloud]) throw new Error(`there is no cloud named ${cloud}`)
       return state.clouds[cloud].find(el => el.id === id)
     },
+    viewportScale: (state) => {
+      return state.viewport.transform.scale.x;
+    },
     detailFrameBBox: (state, getters) => (objectId) => {
       const object = getters.object(objectId);
       const frame = object.tags.find(tag => tag.title === 'Frame');
