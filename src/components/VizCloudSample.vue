@@ -10,8 +10,7 @@ import { durations } from '../variables.js'
 export default {
   name: 'viz-cutout',
   props: {
-    sample: { type: Object, required: true },
-    item: { type: Object, required: true }
+    sample: { type: Object, required: true }
   },
   data: function() {
     return {

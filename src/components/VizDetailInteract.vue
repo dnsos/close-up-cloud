@@ -41,13 +41,13 @@ export default {
       //full-size rectangle for flashing highlights on tap
       background: null,
 
-      //geometries: array of rectangular close-ups per tag
+      //geometries: array of single close-up geometries per tag
       geometries: [], //content: {tagTitle: 'abc', geometry: [{x, y, size}]}
 
       //polygons are combined geometry rectangles into polygons per tag
-      polygons: [], //content: {tagTitle: 'abc', geometry: [pixi polygon coordinates]}
+      polygons: [], //content: {tagTitle: 'abc', geometry: [PIXI polygon coordinates]}
 
-      //tag highlights are containers of label outlines (individual rectangles)
+      //tag highlights are containers of label outlines (individual PIXI rectangles)
       highlights: {}, //key tagTitle, content: PIXI.Container
       
       //tag masks are the semi-transparent overlays (merged into a polygon)

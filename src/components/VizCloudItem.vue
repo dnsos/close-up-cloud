@@ -3,8 +3,7 @@
     <router-link :to="`/viz/tag/${item.id}`">Cloud item {{item.id}}</router-link>
 
     <VizCloudSample v-for="sample in renderStack" ref="cloudsamples"
-      :sample="sample" 
-      :item="item" 
+      :sample="sample"
       :key="`${sample.id}`" />
     <VizTooltip
       :content="tooltipContent"

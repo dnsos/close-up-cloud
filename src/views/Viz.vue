@@ -22,6 +22,9 @@ export default {
   mounted: function() {
     console.log('Hello this is a Viz')
     
+    //only ever fetch data once
+    if(this.dataFetched) return;
+
     this.$store.dispatch('fetchData').then(() => {
       this.$store.commit('setDataFetched')
     });

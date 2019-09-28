@@ -92,12 +92,6 @@ export default new Vuex.Store({
       if(!state.clouds[cloud]) throw new Error(`there is no cloud named ${cloud}`)
       return state.clouds[cloud].find(el => el.id === id)
     },
-    /*positionInDetail: (state, getters) => (objectId, geometry) => {
-
-      const object = getters.object(objectId);
-      //objectsampleId
-      
-    },*/
     detailFrameBBox: (state, getters) => (objectId) => {
       const object = getters.object(objectId);
       const frame = object.tags.find(tag => tag.title === 'Frame');
@@ -218,7 +212,7 @@ export default new Vuex.Store({
       commit('skipFadeIn', false);
     },
     computeForceLayout({ commit, state }, payload) {
-      console.log('computeForceLayout:', payload);
+      //console.log('computeForceLayout:', payload);
       commit('setForceLayout', {
         key: payload.key,
         data: forceLayout(payload.data, {
