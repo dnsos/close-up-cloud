@@ -4,6 +4,7 @@
 
 <script>
 import { Container, Sprite, Texture, Point, Text } from 'pixi.js'
+import { mapState } from 'vuex'
 import { textStyle } from '../variables'
 import { TweenLite, Power2 } from 'gsap/TweenMax'
 
@@ -19,6 +20,7 @@ export default {
     }
   },
   computed: {
+    ...mapState(['viewport']),
     isHovered: function () {
       /*
         TODO: Resolve bug:
@@ -30,7 +32,7 @@ export default {
     },
     viewportScale: function () {
       // keep track of main viewport scale
-      return this.$parent.$parent.viewport.transform.scale.x
+      return this.viewport.transform.scale.x
     }
   },
   watch: {

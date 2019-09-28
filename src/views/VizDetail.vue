@@ -17,7 +17,7 @@ import { getBBoxScaleFactor } from '../utils.js'
 
 export default {
   name: 'viz-detail',
-  computed: mapState(['PIXIApp', 'canvas', 'viewport']),
+  computed: mapState(['PIXIApp', 'canvas', 'vizContainer']),
   components: { VizDetailInteract },
   props: {
     object: {
@@ -44,22 +44,14 @@ export default {
   },
   methods: {
     resize(canvas) {
-      
-      //center container on canvas
-      if(this.detailContainer) {
-        this.detailContainer.position.set(canvas.width/2, canvas.height/2)
-      }
 
-      const frameBBox = this.object.tags.find(tag => tag.title === "Frame").geometry[0];
-  
       //zoom to fit and center
       EventBus.$emit('zoomToBBox', canvas);
 
       //apply scaling to stay within viewport dimensions
+      const frameBBox = this.object.tags.find(tag => tag.title === "Frame").geometry[0];
       const scaleFactor = getBBoxScaleFactor(this.canvas, frameBBox);
       this.detailContainer.scale.set(scaleFactor);
-      //this.sprite.width = frameBBox.width * scaleFactor;
-      //this.sprite.height = frameBBox.height * scaleFactor;
     },
   },
   beforeMount: function() {
@@ -91,7 +83,7 @@ export default {
   },
   mounted: function () {
 
-    this.viewport.addChild(this.detailContainer) 
+    this.vizContainer.addChild(this.detailContainer) 
 
     //if we came here with a spread transition that skips fade-in, enable fade-in again
     if(this.$store.state.skipFadeIn) {
@@ -104,7 +96,7 @@ export default {
     this.$refs.detail.style.backgroundImage = `url(${process.env.VUE_APP_URL_IMG}/${this.object.id}/${this.object.id}.jpg)`;
   },
   beforeDestroy: function () {
-    this.viewport.removeChild(this.detailContainer)
+    this.vizContainer.removeChild(this.detailContainer)
   }
 }
 </script>

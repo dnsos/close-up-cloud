@@ -11,6 +11,7 @@ export default new Vuex.Store({
     skipFadeIn: false,
     data: [], //original data
     taglist: [],
+    vizContainer: null,
     vizTransition: {
       from: null, 
       to: null, 
@@ -110,6 +111,9 @@ export default new Vuex.Store({
     },
     setViewport: (state, payload) => {
       state.viewport = payload
+    },
+    setVizContainer: (state, payload) => {
+      state.vizContainer = payload
     },
     skipFadeIn: (state, payload) => {
       state.skipFadeIn = payload

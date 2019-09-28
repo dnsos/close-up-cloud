@@ -28,8 +28,10 @@ export default {
     return {
       PIXIApp: null,
       viewport: null,
-      viewportCenter: {x: 0, y: 0}, //helper point for center animation
-      debugContainer: null
+      vizContainer: null,
+      debugContainer: null,
+      //helper object for "camera" transitions
+      viewportCenter: { x: 0, y: 0 }, 
     };
   },
   watch: {
@@ -50,10 +52,11 @@ export default {
       this.PIXIApp.renderer.resize(width, height);
       this.viewport.resize(width, height, width, height);
       this.$store.dispatch('updateCanvasSize', {width, height});
+      this.vizContainer.position.set(width/2, height/2);
 
       //update viewport zoom range
-      const minZoomFactor = 0.75;
-      const maxZoomFactor = 10;
+      const minZoomFactor = 1;//0.75;
+      const maxZoomFactor = 4;
       this.viewport
         .clamp({
           direction: 'all'
@@ -193,6 +196,8 @@ export default {
       this.viewportCenter.y = this.viewport.center.y;
     })
 
+    this.vizContainer = new PIXI.Container();
+
     // init invert filter
     const colorMatrix = new PIXI.filters.ColorMatrixFilter()
     colorMatrix.negative()
@@ -201,31 +206,33 @@ export default {
 
     this.$store.commit('setPIXIApp', this.PIXIApp);
     this.$store.commit('setViewport', this.viewport);
+    this.$store.commit('setVizContainer', this.vizContainer);
+    
     
     //already put the assumed canvas-size in the store, so that forceLayout can respect it
     this.$store.dispatch('updateCanvasSize', {
-      width: this.$parent.$refs.main.clientWidth, 
-      height: this.$parent.$refs.main.clientHeight
+      width: document.body.clientWidth, 
+      height: document.body.clientHeight
     });
 
     EventBus.$on('zoomToBBox', this.zoomToFitBBox);
   },
   mounted: function() {
-    
-    const wrap = this.$refs.rendererWrapper;
-    wrap.appendChild(this.PIXIApp.view)
-    this.PIXIApp.stage.addChild(this.viewport)
+
+    //handle resize
+    this.PIXIApp.renderer.autoResize = true;
+    window.addEventListener('resize', this.handleResize);
+    this.handleResize();
     
     this.viewport
         .drag()
         .pinch()
         .wheel()
         .decelerate()
-    
-    //handle resize
-    this.PIXIApp.renderer.autoResize = true;
-    window.addEventListener('resize', this.handleResize);
-    this.handleResize();
+
+    this.viewport.addChild(this.vizContainer);
+    this.PIXIApp.stage.addChild(this.viewport);
+    this.$refs.rendererWrapper.appendChild(this.PIXIApp.view);
   }
 }
 </script>

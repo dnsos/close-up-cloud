@@ -31,7 +31,7 @@ export default {
     items: { type: Array, required: true }
   },
   components: { VizCloudItem },
-  computed: mapState(['canvas', 'viewport', 'vizTransition']),
+  computed: mapState(['canvas', 'vizContainer', 'vizTransition']),
   data: () => {
     return {
       cloudContainer: null,
@@ -49,11 +49,6 @@ export default {
   },
   methods: {
     resize(canvas) {
-
-      //center overview cloud
-      if(this.cloudContainer) {
-        this.cloudContainer.position.set(canvas.width/2, canvas.height/2)
-      }
       
       //zoom to fit
       const cloudBox = this.$store.getters.cloudBBox(this.cloudname);
@@ -150,10 +145,10 @@ export default {
 
     this.resize(this.canvas);
 
-    this.viewport.addChild(this.cloudContainer);
+    this.vizContainer.addChild(this.cloudContainer);
   },
   beforeDestroy: function () {
-    this.viewport.removeChild(this.cloudContainer)
+    this.vizContainer.removeChild(this.cloudContainer)
     window.clearTimeout(this.loadChunkTimeout);
   }
 }

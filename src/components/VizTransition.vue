@@ -22,7 +22,7 @@ export default {
     }
   },
   computed: {
-  ...mapState(['canvas', 'viewport', 'vizTransition']),
+  ...mapState(['canvas', 'vizContainer', 'vizTransition']),
   },
   watch: {
     vizTransition({from, to, trigger, targetPath}) {
@@ -215,7 +215,6 @@ export default {
       const sprite = this.fauxDetail = new PIXI.Sprite()
       sprite.alpha = 0;
       sprite.anchor.set(0.5);
-      sprite.position.set(this.canvas.width/2, this.canvas.height/2)
       sprite.texture = PIXI.utils.TextureCache[detailId]
       
       //apply scaling to stay within viewport dimensions
@@ -225,7 +224,7 @@ export default {
       sprite.height = detailFrameBBox.height * detailScaleFactor;
       
       //fade-in detail image
-      this.viewport.addChild(sprite) 
+      this.vizContainer.addChild(sprite) 
       TweenLite.to(sprite, durations.detailFadeIn, {
         alpha: 1,
         delay: durations.sampleSpread,
@@ -234,7 +233,7 @@ export default {
     },
 
     destroyFauxDetail() {
-      if(this.fauxDetail) this.viewport.removeChild(this.fauxDetail);
+      if(this.fauxDetail) this.vizContainer.removeChild(this.fauxDetail);
       this.fauxDetail = null;
     }
 
