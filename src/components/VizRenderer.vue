@@ -48,15 +48,24 @@ export default {
 
       //@todo bugfix: sometimes while resizing browser says "Cannot read property 'clientWidth' of undefined" – wtf?
       if(!this.$refs.rendererWrapper) return;
+
+      //expected detail image size: 4800x4800
+
+      const worldWidth = 4800/4;
+      const worldHeight = 4800/4;
+
+
       const { clientWidth: width, clientHeight: height } = this.$refs.rendererWrapper;
       this.PIXIApp.renderer.resize(width, height);
-      this.viewport.resize(width, height, width, height);
+      this.viewport.resize(width, height, worldWidth, worldHeight);
       this.$store.dispatch('updateCanvasSize', {width, height});
-      this.vizContainer.position.set(width/2, height/2);
+      this.vizContainer.position.set(worldWidth/2, worldHeight/2);
 
       //update viewport zoom range
-      const minZoomFactor = 1;//0.75;
+      //the minimum zoom factor depends on screen resolution
       const maxZoomFactor = 4;
+      const minZoomFactor = height/worldHeight;
+      
       this.viewport
         .clamp({
           direction: 'all'
@@ -72,11 +81,11 @@ export default {
       this.moveToPoint();
 
       //@debug show viewport grid
-      //this.appendDebugGrid();
+      this.appendDebugGrid();
     },
     moveToPoint(point) {
       //default screen center
-      if(!point) point = {x: this.canvas.width/2, y: this.canvas.height/2};
+      if(!point) point = {x: this.viewport.worldWidth/2, y: this.viewport.worldHeight/2};
 
       TweenLite.to(this.viewportCenter, 1, { 
         x: point.x, 
@@ -102,7 +111,7 @@ export default {
 
       this.viewport.snapZoom({
         ...relevantDimension,
-        center: new PIXI.Point(this.canvas.width/2, this.canvas.height/2),
+        center: new PIXI.Point(this.viewport.worldWidth/2, this.viewport.worldHeight/2),
         removeOnComplete: true,
         removeOnInterrupt: true,
         time: durations.sampleSpread * 1000,
@@ -130,7 +139,7 @@ export default {
 
       //@debug blue tinted background with viewport.screenWidth dimensions
       /*bg = new PIXI.Sprite(PIXI.Texture.WHITE)
-      bg.tint = 0x000ff000
+      bg.tint = 0x0000ff
       bg.alpha = 0.2
       bg.x = 0
       bg.y = 0
@@ -191,7 +200,7 @@ export default {
       console.log(this.viewport.center.x, this.viewport.center.y)
     })*/
     .on('zoomed', (e) => {
-      //console.log('Current scale:', e.viewport.transform.scale.x)
+      console.log('Current scale:', e.viewport.transform.scale.x)
       this.viewportCenter.x = this.viewport.center.x;
       this.viewportCenter.y = this.viewport.center.y;
     })

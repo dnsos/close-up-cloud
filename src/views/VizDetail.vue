@@ -49,9 +49,11 @@ export default {
       EventBus.$emit('zoomToBBox', canvas);
 
       //apply scaling to stay within viewport dimensions
-      const frameBBox = this.object.tags.find(tag => tag.title === "Frame").geometry[0];
+      /*const frameBBox = this.object.tags.find(tag => tag.title === "Frame").geometry[0];
       const scaleFactor = getBBoxScaleFactor(this.canvas, frameBBox);
-      this.detailContainer.scale.set(scaleFactor);
+      this.detailContainer.scale.set(scaleFactor);*/
+      const frameBBox = this.object.tags.find(tag => tag.title === "Frame").geometry[0];
+      this.detailContainer.scale.set((4800/4)/frameBBox.height);
     },
   },
   beforeMount: function() {

@@ -44,7 +44,6 @@ export default {
   },
   components: { VizCloudSample, VizTooltip },
   computed: {
-    ...mapState(['canvas']),
     position: function () {
       return this.$store.getters.positionInCloud(this.cloudname, this.item.id)
     },
