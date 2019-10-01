@@ -34,6 +34,8 @@ export default {
 
 <style lang="scss" scoped>
 .view__viz {
+  width: 100%;
+  height: 100%;
   overflow: hidden;
 }
 

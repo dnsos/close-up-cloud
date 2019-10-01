@@ -66,6 +66,10 @@ export default {
   --color-ui-primary: var(--color-neutral-5);
   --color-ui-secondary: var(--color-neutral-50);
   --color-ui-highlighted: var(--color-gold-medium);
+
+  .filter-invert {
+    filter: invert(100%);
+  }
 }
 
 html {
@@ -91,10 +95,6 @@ body {
   height: 100vh;
   color: var(--color-ui-primary);
   font-weight: var(--font-weight-medium);
-  >* {
-    width: 100%;
-    height: 100%;
-  }
 }
 
 /* CLASSES
@@ -120,13 +120,13 @@ h1 {
   color: var(--color-ui-highlighted);
 }
 h2 {
-  font-size: var(--font-size);
-  font-weight: var(--font-weight-regular);
-  color: var(--color-ui-primary);
+  font-size: calc(var(--font-size)*1.5);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-ui-highlighted);
 }
 h3 {
   font-size: var(--font-size-small);
-  text-transform: uppercase;
+  text-transform: uppercase !important;
   letter-spacing: .05rem;
   font-weight: var(--font-weight-medium);
   color: var(--color-ui-primary);
@@ -153,22 +153,22 @@ a {
 
 button, .button {
   font-weight: 600;
+  padding: calc(var(--grid-spacing)/4);
   color: var(--color-ui-primary);
-  background-color: var(--color-ui-bg);
-  border: var(--border-width) solid;
+  border: none;
+  text-transform: uppercase;
+  letter-spacing: .05rem;
   cursor: pointer;
 
   &:not(.button--primary) {
-    padding: 0;
-    border-color: transparent;
+    background-color: transparent;
     &:focus {
       outline: var(--border-dotted);
     }
   }
 
   &.button--primary {
-    padding: calc(var(--grid-spacing)/4);
-    border-color: var(--color-ui-primary);
+    background-color: var(--color-ui-bg);
     &:focus {
       outline: var(--border-dotted);
     }
