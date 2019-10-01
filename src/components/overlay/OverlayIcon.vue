@@ -7,7 +7,9 @@
       class="icon button"
       @mouseover="toggleTooltipVisibility()"
       @mouseleave="toggleTooltipVisibility()"
-    >i</div>
+    >
+      <img :src="iconFile" :alt="tooltip.title" class="filter-invert">
+    </div>
     <div v-if="tooltip">
       <transition :name="tooltip.side === 'right' ? 'fade-slide-right' : 'fade-slide-left'">
         <div
@@ -57,6 +59,9 @@ export default {
         'tooltip-right': this.tooltip.side === 'right',
         'tooltip-left': this.tooltip.side === 'left'
       }
+    },
+    iconFile: function () {
+      return `${process.env.VUE_APP_URL_ICONS}/${this.iconFileName}`
     }
   },
   methods: {
@@ -96,6 +101,11 @@ export default {
     width: var(--icon-size);
     height: var(--icon-size);
     padding: 0;
+    background-color: var(--color-ui-bg);
+
+    img {
+      pointer-events: none;
+    }
   }
   .tooltip {
     position: absolute;
