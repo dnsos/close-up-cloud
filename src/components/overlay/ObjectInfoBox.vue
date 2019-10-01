@@ -1,38 +1,9 @@
 <template>
   <div class="object-info">
     <div class="object-info__wrapper" v-if="isVisible">
-      <div
-        class="tab tab__tags"
-        :class="metadataIsActive ? 'tab--inactive' : ''"
-        @click="metadataIsActive = false"
-      >
-        <h3>Schlagwörter</h3>
-      </div>
-      <div
-        class="tab tab__metadata"
-        :class="metadataIsActive ? '' : 'tab--inactive'"
-        @click="metadataIsActive = true"
-      >
-        <h3>Datenblatt</h3>
-      </div>
       <div class="content">
         <transition name="fade">
-          <div v-show="!metadataIsActive">
-            <ul>
-              <li
-                v-for="tag in filteredTags"
-                :key="tag.title"
-                class="tag__item"
-              >
-                {{ tag.title }}&nbsp;&nbsp;<span class="tag-count">{{ tag.geometry.length }}</span>
-              </li>
-            </ul>
-          </div>
-        </transition>
-        <transition name="fade">
-          <ul
-            v-show="metadataIsActive"
-          >
+          <ul>
             <li>
               <span class="metadata__key">Titel</span><br>
               <span class="metadata__value">{{objectInfo.title}}</span>
@@ -67,16 +38,6 @@ export default {
       type: Boolean,
       required: true
     }
-  },
-  data: function () {
-    return {
-      metadataIsActive: false
-    }
-  },
-  computed: {
-    filteredTags: function () {
-      return this.objectInfo.tags.filter(tag => tag.title != 'Frame')
-    }
   }
 }
 </script>
@@ -94,12 +55,12 @@ export default {
   .object-info__wrapper {
     width: auto;
     display: grid;
-    grid-template-columns: auto auto;
+    grid-template-columns: auto;
     grid-template-rows: auto auto;
     grid-gap: 0;
     grid-template-areas:
-      "tab-left tab-right"
-      "content content";
+      "heading"
+      "content";
     
     /* TRIANGLE ARROW
     ---------------------------------- */
@@ -115,28 +76,12 @@ export default {
       transform-origin: center;
     }
 
-    /* TABS
+    /* HEADING
     ---------------------------------- */
-    .tab {
-      padding: var(--padding-outer) var(--padding-outer) calc(var(--padding-outer)/2);
-      > h3 {
-        margin-bottom: 0;
-        &:hover {
-          cursor: pointer;
-        }
-      }
-      &.tab__tags {
-        grid-area: tab-left;
-        border-right: var(--border-width) solid var(--color-canvas);
-      }
-      &.tab__metadata {
-        grid-area: tab-right;
-      }
-      &.tab--inactive {
-        border-bottom: var(--border-width) solid var(--color-canvas);
-        > h3 {
-          color: var(--color-ui-secondary);
-        }
+    h3 {
+      margin-bottom: 0;
+      &:hover {
+        cursor: pointer;
       }
     }
 
@@ -158,19 +103,6 @@ export default {
             margin-bottom: 0;
           }
         }
-      }
-    }
-
-    /* TAGS LIST
-    ---------------------------------- */
-    .tag__item {
-      text-transform: uppercase;
-      letter-spacing: .05rem;
-      color: var(--color-ui-highlighted);
-
-      .tag-count {
-        font-weight: var(--font-weight-bold);
-        color: var(--color-ui-highlighted);
       }
     }
 
