@@ -45,65 +45,25 @@
         </div>
       </div>
     </section>
-    <section class="home__section">
-      <div class="section__wrapper grid-12-columns">
-        <h2 class="team__heading">Beteiligte</h2>
-        <p class="team__intro">Eine Kooperation zwischen der <a href="https://www.fh-potsdam.de/" target="_blank">Fachhochschule Potsdam</a> und dem <a href="https://www.mkg-hamburg.de/de/home.html" target="_blank">Museum für Kunst und Gewerbe Hamburg</a>. Gefördert durch das <a href="http://www.zem-brandenburg.de/" target="_blank">Brandenburgische Zentrum für Medienwissenschaften (ZeM)</a>.</p>
-        <div class="team__core">
-          <ul class="list__team">
-            <li>
-              <span class="person__name">Pauline Junginger</span>
-              <span class="person__field">Konzeption, Theoriearbeit</span>
-            </li>
-            <li>
-              <span class="person__name">Dennis Ostendorf</span>
-              <span class="person__field">Konzeption, Gestaltung, Entwicklung</span>
-            </li>
-            <li>
-              <span class="person__name">Anastasia Voloshina</span>
-              <span class="person__field">Konzeption, Gestaltung, Video</span>
-            </li>
-            <li>
-              <span class="person__name">Barbara Vissirini</span>
-              <span class="person__field">Konzeption, Gestaltung, Erschließung</span>
-            </li>
-          </ul>
-        </div>
-        <div class="team__extended">
-          <ul class="list__team">
-            <li>
-              <span class="person__name">Timo Hausmann</span>
-              <span class="person__field">Software-Entwicklung Web</span>
-            </li>
-            <li>
-              <span class="person__name">Christopher Pietsch</span>
-              <span class="person__field">Software-Entwicklung Ausstellung</span>
-            </li>
-            <li>
-              <span class="person__name">Sarah Kreiseler</span>
-              <span class="person__field">Kulturhistorische Betreuung</span>
-            </li>
-            <li>
-              <span class="person__name">Prof. Dr. Marian Dörk</span>
-              <span class="person__field">Wissenschaftliche Leitung</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </section>
+    <Participants />
+    <CreditsFooter />
   </div>
 </template>
 
 <script>
+import Participants from '@/components/home/Participants.vue'
+import CreditsFooter from '@/components/home/CreditsFooter.vue'
+
 export default {
   name: 'home',
+  components: { Participants, CreditsFooter },
   beforeMount: function () {
     this.$store.commit('setBrightColors')
   }
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
 .view__home {
   width: 100%;
   height: auto;
@@ -173,41 +133,6 @@ export default {
 ------------------------------------------ */
 .collection__figure, .collection__text {
   grid-column: span 6;
-}
-
-/* TEAM
------------------------------------------- */
-.team__heading {
-  grid-column: 1 / 13;
-  margin-bottom: 0;
-}
-
-.team__intro {
-  grid-column: 1 / 4;
-  font-size: var(--font-size-small);
-}
-
-.team__core {
-  grid-column: 5 / 9;
-}
-.team__extended {
-  grid-column: 9 / 13;
-}
-
-.list__team {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-
-  li {
-    margin-bottom: calc(var(--grid-spacing)/2);
-    .person__name, .person__field {
-      display: block;
-    }
-    .person__field {
-      font-size: var(--font-size-small);
-    }
-  }
 }
 
 /* GRIDS
