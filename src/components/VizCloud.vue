@@ -44,7 +44,7 @@ export default {
       this.resize(newval);
     },
     vizTransition(newval) {
-      this.hideOtherItems(newval.trigger.id);
+      this.hideOtherItems(newval.targetId);
     }
   },
   methods: {
@@ -67,17 +67,17 @@ export default {
     createSampleGenerators() {
 
       this.items.forEach((item) => {
-        const gen = sampleGenerator(item);
-        this.sampleGenerators.push(gen);
+        this.sampleGenerators.push(sampleGenerator(item));
       });
 
-      //harvesting the sampleUrls per item in order
+      //harvesting samples per item step by step for preloading and appending
       function * sampleGenerator(item) {
         for(let sample of item.samples) {
-          const fileName = sample.origin;
-          const thumbName = `${sample.id}.jpg`;
-          const cutoutPath = `${process.env.VUE_APP_URL_SAMPLE}/${fileName}/${thumbName}`;
-          yield cutoutPath;
+          const origin = sample.id.split('-')[0];
+          yield {
+            id: sample.id,
+            url: `${process.env.VUE_APP_URL_SAMPLE}/${origin}/${sample.id}.jpg`
+          };
         }
       }
     },
@@ -87,9 +87,9 @@ export default {
       
       //pre-load samples
       this.items.forEach((item, i) => {
-        const sampleUrl = this.sampleGenerators[i].next().value;
-        if(sampleUrl && !PIXI.utils.TextureCache[sampleUrl]) {
-          loader.add(sampleUrl);
+        const sample = this.sampleGenerators[i].next().value;
+        if(sample && !PIXI.utils.TextureCache[sample.id]) {
+          loader.add(sample.id, sample.url);
         }
       });
       
@@ -143,8 +143,11 @@ export default {
       this.loadChunkTimeout = window.setTimeout(this.loadSampleChunks, durations.sampleVisible * 1000);
     })
 
-    this.resize(this.canvas);
+    
+    const cloudBBox = this.$store.getters.cloudBBox(this.cloudname);
+    this.$store.dispatch('computeWorldSize', cloudBBox);
 
+    this.resize(this.canvas);
     this.vizContainer.addChild(this.cloudContainer);
   },
   beforeDestroy: function () {

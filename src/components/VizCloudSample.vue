@@ -10,7 +10,8 @@ import { durations } from '../variables.js'
 export default {
   name: 'viz-cutout',
   props: {
-    sample: { type: Object, required: true }
+    id: { type: String, required: true },
+    size: { type: Number }
   },
   data: function() {
     return {
@@ -22,22 +23,14 @@ export default {
     //console.log("hello this is a sample");
 
     let sprite = this.sprite = new PIXI.Sprite(PIXI.Texture.WHITE)
-
+    sprite.width = this.size;
+    sprite.height = this.size;
     //@debug add a random tint that will be removed on load
     //sprite.tint = '0x' + Math.floor(Math.random()*16777215).toString(16);
 
-    //inherit size
-    sprite.width = this.$parent.samplesContainer._width
-    sprite.height = this.$parent.samplesContainer._height
-
-    const fileName = this.sample.origin;
-    const thumbName = `${this.sample.id}.jpg`;
-    const cutoutPath = `${process.env.VUE_APP_URL_SAMPLE}/${fileName}/${thumbName}`;
-
     //assuming the texture is already preloaded
-    if(PIXI.utils.TextureCache[cutoutPath]) {
-      sprite.texture = PIXI.utils.TextureCache[cutoutPath]
-      this.$parent.samplesContainer.addChild(sprite)
+    if(PIXI.utils.TextureCache[this.id]) {
+      sprite.texture = PIXI.utils.TextureCache[this.id]
 
       if(!this.$store.state.skipFadeIn) {
         sprite.alpha = 0
@@ -45,15 +38,15 @@ export default {
       }
       
     } else {
-      console.error('Texture not found', cutoutPath)
+      console.error('Texture not found', this.id)
     }
   },
 
   mounted: function() {
+    this.$parent.samplesContainer.addChild(this.sprite)
+
     //htmlviz
-    const fileName = this.sample.origin;
-    const thumbName = `${this.sample.id}.jpg`;
-    this.$refs.cutout.style.backgroundImage = `url(${process.env.VUE_APP_URL_IMG}/${fileName}/${thumbName})`;
+    //this.$refs.cutout.style.backgroundImage = `url(${this.url})`;
   },
   beforeDestroy: function () {
     this.$parent.samplesContainer.removeChild(this.sprite)

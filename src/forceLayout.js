@@ -39,9 +39,9 @@ export class ForceLayout {
     constructor(data, options) {
 
         this.options = Object.assign({
-            rectPadding: 4,
+            rectPadding: 24,
             ticks: 400,
-            scaleFactor: 8, //item size = scalingFunction(item weight) * scaleFactor
+            scaleFactor: 64, //item size = scalingFunction(item weight) * scaleFactor
             canvasWidth: 1280,
             canvasHeight: 800
         }, options);

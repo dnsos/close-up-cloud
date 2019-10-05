@@ -8,7 +8,7 @@
 
 <script>
 import VizCloud from '../components/VizCloud'
-import { getCutoutUID, convertTagOccurencesToCloudItems } from '../utils.js'
+import { convertTagOccurencesToCloudItems } from '../utils.js'
 
 export default {
   name: 'viz-tag',

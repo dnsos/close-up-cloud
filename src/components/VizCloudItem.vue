@@ -3,8 +3,9 @@
     <router-link :to="`/viz/tag/${item.id}`">Cloud item {{item.id}}</router-link>
 
     <VizCloudSample v-for="sample in renderStack" ref="cloudsamples"
-      :sample="sample"
-      :key="`${sample.id}`" />
+      :id="sample.id"
+      :size="position.size"
+      :key="`viz-clouditem-${sample.id}`" />
     <VizTooltip
       :content="tooltipContent"
       :yOffset="position.size"
@@ -20,7 +21,6 @@ import { TweenLite, Power2, Sine } from 'gsap/TweenMax'
 import VizCloudSample from './VizCloudSample.vue'
 import VizTooltip from './VizTooltip.vue'
 import EventBus from '../eventbus.js';
-import { getCutoutUID, convertTagOccurencesToCloudItems } from '../utils.js'
 import { durations } from '../variables.js'
 
 export default {
@@ -116,8 +116,6 @@ export default {
       if(this.$store.state.isDragging) return;
       console.log('itemContainer tap!', this.item);
 
-      const from = this.$route.name;
-      const to = (from === 'viz-overview') ? 'viz-tag' : (from === 'viz-tag') ? 'viz-detail' : '';
 
       //deactivate interaction, animation only from this point
       this.samplesContainer.interactive = false;
@@ -132,10 +130,13 @@ export default {
       });
 
       //start the transition
+      const from = this.$route.name;
+      const to = (from === 'viz-overview') ? 'viz-tag' : (from === 'viz-tag') ? 'viz-detail' : '';
+
       this.$store.dispatch('beginVizTransition', { 
         from, to, 
-        targetPath: `${this.subpath}/${this.item.id}`,
-        trigger: this.item 
+        targetId: this.item.id,
+        targetPath: `${this.subpath}/${this.item.id}`
       });
 
       //after some preparations, beginVizTransition will trigger spreadCloudItemSamples
@@ -157,13 +158,7 @@ export default {
       //Spread out all VizCloudSamples
       this.$refs.cloudsamples.forEach((cloudSample) => {
 
-        //@todo unify
-        let newPosition;
-        if(this.$route.name === 'viz-overview') {
-          newPosition = targetPositions.find(el => el.id === cloudSample.sample.origin);
-        } else if(this.$route.name === 'viz-tag') {
-          newPosition = targetPositions.find(el => el.id === cloudSample.sample.id);
-        }
+        const newPosition = targetPositions.find(el => cloudSample.id.indexOf(el.id) > -1);
 
         TweenLite.to(cloudSample.sprite, durations.sampleSpread, {
           x: newPosition.x,

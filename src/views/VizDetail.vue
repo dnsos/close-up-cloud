@@ -17,7 +17,12 @@ import { getBBoxScaleFactor } from '../utils.js'
 
 export default {
   name: 'viz-detail',
-  computed: mapState(['PIXIApp', 'canvas', 'vizContainer']),
+  computed: {
+    ...mapState(['PIXIApp', 'canvas', 'vizContainer', 'vizTransition']),
+    frameBBox() {
+      return this.object.tags.find(tag => tag.title === "Frame").geometry[0];
+    },
+  },
   components: { VizDetailInteract },
   props: {
     object: {
@@ -31,29 +36,24 @@ export default {
       }
     }
   },
-  watch: {
-    canvas(newval) {
-      this.resize(newval);
-    }
-  },
   data: function() {
     return {
       detailContainer: null,
       sprite: null
     }
   },
+  watch: {
+    canvas(newval) {
+      this.resize(newval);
+    },
+    vizTransition(newval) {
+      TweenLite.to(this.detailContainer, 0.5, { alpha: 0 }, Power2.easeOut);
+    }
+  },
   methods: {
     resize(canvas) {
-
       //zoom to fit and center
       EventBus.$emit('zoomToBBox', canvas);
-
-      //apply scaling to stay within viewport dimensions
-      /*const frameBBox = this.object.tags.find(tag => tag.title === "Frame").geometry[0];
-      const scaleFactor = getBBoxScaleFactor(this.canvas, frameBBox);
-      this.detailContainer.scale.set(scaleFactor);*/
-      const frameBBox = this.object.tags.find(tag => tag.title === "Frame").geometry[0];
-      this.detailContainer.scale.set((4800/4)/frameBBox.height);
     },
   },
   beforeMount: function() {
@@ -63,6 +63,9 @@ export default {
     const sprite = this.sprite = new PIXI.Sprite()
     sprite.anchor.set(0.5);
     detailContainer.addChild(sprite);
+
+    //set world size for viewport
+    this.$store.dispatch('computeWorldSize', this.frameBBox);
 
     //load texture
     if(!PIXI.utils.TextureCache[this.object.id]) {

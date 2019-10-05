@@ -75,8 +75,8 @@ export default {
       for(let i=0; i<tagGeometries.geometry.length; i++) {
 
         const geo = tagGeometries.geometry[i];
-        if(mouseX > geo.x && mouseX < geo.x + geo.size &&
-          mouseY > geo.y && mouseY < geo.y + geo.size) {
+        if(mouseX >= geo.x && mouseX <= geo.x + geo.size &&
+          mouseY >= geo.y && mouseY <= geo.y + geo.size) {
             return geo;
           }
       }
@@ -250,13 +250,13 @@ export default {
           console.log('detail cutout tap!', tagPoly.tagTitle);
           
           //start the transition
-          this.$router.push({ path: `/viz/tag/${tagPoly.tagTitle}` });
-          /*this.$store.dispatch('beginVizTransition', { 
+          //this.$router.push({ path: `/viz/tag/${tagPoly.tagTitle}` });
+          this.$store.dispatch('beginVizTransition', { 
             from: 'viz-detail', 
             to: 'viz-tag', 
-            targetPath: `/viz/tag/${tagPoly.tagTitle}`,
-            trigger: clickPoly
-          });*/
+            targetId: tagPoly.tagTitle,
+            targetPath: `/viz/tag/${tagPoly.tagTitle}`
+          });
         })
         clickPoly.on('pointerover', (e) => {
           TweenLite.to(this.masks[tagPoly.tagTitle], 0.2, {alpha: 0.66});

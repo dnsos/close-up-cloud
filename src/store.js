@@ -6,12 +6,12 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    inverted: false,
-    dataFetched: false,
-    skipFadeIn: false,
-    data: [], //original data
+    inverted: false,    //boolean
+    dataFetched: false, //boolean
+    skipFadeIn: false,  //boolean
+    data: [],           //json data
     taglist: [],
-    vizContainer: null,
+    vizContainer: null, //PIXI.Container
     vizTransition: {
       from: null, 
       to: null, 
@@ -22,6 +22,10 @@ export default new Vuex.Store({
       spreadCloudItem: null
     },
     canvas: {
+      width: 1280,
+      height: 800
+    },
+    world: {
       width: 1280,
       height: 800
     },
@@ -94,7 +98,7 @@ export default new Vuex.Store({
       return state.clouds[cloud].find(el => el.id === id)
     },
     viewportScale: (state) => {
-      return state.viewport.transform.scale.x;
+      return 1;//state.viewport.transform.scale.x;
     },
     detailFrameBBox: (state, getters) => (objectId) => {
       const object = getters.object(objectId);
@@ -117,6 +121,9 @@ export default new Vuex.Store({
     },
     setVizContainer: (state, payload) => {
       state.vizContainer = payload
+    },
+    setWorld: (state, payload) => {
+      state.world = payload
     },
     skipFadeIn: (state, payload) => {
       state.skipFadeIn = payload
@@ -226,6 +233,29 @@ export default new Vuex.Store({
           canvasWidth: state.canvas.width,
           canvasHeight: state.canvas.height
         })
+      })
+    },
+    computeWorldSize({ commit, state }, payload) {
+
+      let { width, height } = payload;
+
+      //min world size: canvas
+      width = Math.max(width, state.canvas.width);
+      height = Math.max(height, state.canvas.height);
+
+      //make the world same aspect ratio as screen
+      const canvasRatio = state.canvas.width / state.canvas.height;
+      width = height * canvasRatio;
+
+      //make world*1.25 to enable some panning at 100%
+      width *= 1.25;
+      height *= 1.25;
+
+      console.log('computeWorldSize ...', width, height)
+
+      commit('setWorld', {
+        width: width,
+        height: height
       })
     },
     async fetchData({commit}) {
