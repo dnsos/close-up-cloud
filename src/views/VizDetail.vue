@@ -45,15 +45,12 @@ export default {
   watch: {
     canvas(newval) {
       this.resize(newval);
-    },
-    vizTransition(newval) {
-      TweenLite.to(this.detailContainer, 0.5, { alpha: 0 }, Power2.easeOut);
     }
   },
   methods: {
     resize(canvas) {
       //zoom to fit and center
-      EventBus.$emit('zoomToBBox', canvas);
+      EventBus.$emit('zoomToWorld');
     },
   },
   beforeMount: function() {
@@ -97,8 +94,13 @@ export default {
       });
     }
 
+    EventBus.$on('fadeOutDetail', () => {
+      TweenLite.to(this.detailContainer, durations.detailFadeOut, { alpha: 0 }, Power2.easeOut);
+    });
+    
+
     //htmlviz
-    this.$refs.detail.style.backgroundImage = `url(${process.env.VUE_APP_URL_IMG}/${this.object.id}/${this.object.id}.jpg)`;
+    //this.$refs.detail.style.backgroundImage = `url(${process.env.VUE_APP_URL_IMG}/${this.object.id}/${this.object.id}.jpg)`;
   },
   beforeDestroy: function () {
     this.vizContainer.removeChild(this.detailContainer)

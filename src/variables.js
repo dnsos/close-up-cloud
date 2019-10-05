@@ -7,6 +7,8 @@ export const durations = {
   sampleSpread: 1.5,    //CloudSamples spread duration
   sampleSpreadDelay: 1, //CloudSamples spread delay after loading
   detailFadeIn: 1.5,    //CloudDetail fade in animation duration 
+  detailFadeOut: 1,     //CloudDetail fade out animation duration 
+  worldZoom: 2,         //VizRenderer zoom to fit duration
   move: .4,
   invert: 2             //invert colors animation duration 
 }

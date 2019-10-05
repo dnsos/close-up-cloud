@@ -31,7 +31,7 @@ export default {
       vizContainer: null,
       debugContainer: null,
       //helper object for "camera" transitions
-      camera: { x: 0, y: 0 }, 
+      camera: { x: 0, y: 0, zoom: 0.5 }, 
     };
   },
   watch: {
@@ -45,7 +45,7 @@ export default {
     world: function(newval) {
       console.log('VizRenderer: world changed', newval);
 
-      this.updateDebugGrid();
+      //this.updateDebugGrid();
     }
   },
   methods: {
@@ -63,7 +63,7 @@ export default {
         height: clientHeight});
 
       //@debug show viewport grid
-      this.updateDebugGrid();
+      //this.updateDebugGrid();
     },
     /*moveToPoint(point) {
       //default screen center
@@ -77,31 +77,32 @@ export default {
         },
         ease: Power2.easeOut
       })
-    },
-    zoomToFitBBox(boundingBox) {
-
-      const padding = 64;
-      const canvasRatio = this.canvas.width / this.canvas.height;
-      const frameRatio = boundingBox.width / boundingBox.height;
-
-      let relevantDimension;
-      if(frameRatio > canvasRatio) {
-        relevantDimension = { width: boundingBox.width + (padding*2) };
-      } else {
-        relevantDimension = { height: boundingBox.height + (padding*2) };
-      }
-
-      this.viewport.snapZoom({
-        ...relevantDimension,
-        center: new PIXI.Point(this.viewport.worldWidth/2, this.viewport.worldHeight/2),
-        removeOnComplete: true,
-        removeOnInterrupt: true,
-        time: durations.sampleSpread * 1000,
-        ease:  function(t, b, c, d) {
-          return -c * (t /= d) * (t - 2) + b; // = easeOutQuad = Power2.easeOut 
-        },
-      })
     },*/
+    /*zoomToBBox(boundingBox) {
+    },*/
+    zoomToWorld() {
+
+      const canvasRatio = this.canvas.width / this.canvas.height;
+      const frameRatio = this.world.width / this.world.height;
+
+      let desiredZoom;
+      if(frameRatio > canvasRatio) {
+        desiredZoom = this.canvas.width / this.world.width;
+      } else {
+        desiredZoom = this.canvas.height / this.world.height;
+      }
+      
+      desiredZoom = Math.max(desiredZoom, 0.01);
+      desiredZoom = Math.min(desiredZoom, 1);
+
+      TweenLite.to(this.camera, durations.worldZoom, { 
+        zoom: desiredZoom,
+        onUpdate: () => {
+          this.vizContainer.scale.set(this.camera.zoom);
+        },
+        ease: Power2.easeOut
+      })
+    },
     //@debug show viewport grid
     updateDebugGrid() {
       
@@ -144,7 +145,7 @@ export default {
     })
 
     this.vizContainer = new PIXI.Container();
-    this.vizContainer.scale.set(0.125);
+    //this.vizContainer.scale.set(0.125);
 
     // init invert filter
     const colorMatrix = new PIXI.filters.ColorMatrixFilter()
@@ -162,6 +163,7 @@ export default {
     });
 
     //EventBus.$on('zoomToBBox', this.zoomToFitBBox);
+    EventBus.$on('zoomToWorld', this.zoomToWorld);
   },
   mounted: function() {
 

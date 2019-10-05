@@ -30,7 +30,6 @@ export default new Vuex.Store({
       height: 800
     },
     PIXIApp: null,
-    viewport: null,
     renderer: null,
     clouds: {},
     tooltip: {
@@ -97,9 +96,6 @@ export default new Vuex.Store({
       if(!state.clouds[cloud]) throw new Error(`there is no cloud named ${cloud}`)
       return state.clouds[cloud].find(el => el.id === id)
     },
-    viewportScale: (state) => {
-      return 1;//state.viewport.transform.scale.x;
-    },
     detailFrameBBox: (state, getters) => (objectId) => {
       const object = getters.object(objectId);
       const frame = object.tags.find(tag => tag.title === 'Frame');
@@ -115,9 +111,6 @@ export default new Vuex.Store({
     },
     setPIXIApp: (state, payload) => {
       state.PIXIApp = payload
-    },
-    setViewport: (state, payload) => {
-      state.viewport = payload
     },
     setVizContainer: (state, payload) => {
       state.vizContainer = payload

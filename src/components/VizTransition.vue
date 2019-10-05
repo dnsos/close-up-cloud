@@ -33,8 +33,8 @@ export default {
   ...mapState(['canvas', 'viewport', 'world', 'vizContainer', 'vizTransition']),
   },
   watch: {
-    vizTransition({from, to, targetPath}) {
-      console.log('Hi this is Viz Transition Watcher to', to);
+    vizTransition({from, to}) {
+      console.log('Hi this is Viz Transition Watcher');
 
       //@todo pause viewport interactions while transitioning
 
@@ -65,17 +65,20 @@ export default {
           id: getCutoutUID(occ.origin, tag.title, occ.geometry[0].x, occ.geometry[0].y)
         }
       });
+      this.stageSamples(loader, samples);
 
       this.prepareForceLayout();
-      this.stageSamples(loader, samples);
-      
       const targetPositions = this.$store.state.clouds[tagTitle];
+      
       const targetBBox = this.$store.getters.cloudBBox(tagTitle);
+      this.$store.dispatch('computeWorldSize', targetBBox);
 
       loader.load(() => {
         window.setTimeout(() => {
+          
           //Zoom viewport to fit the next view
-          EventBus.$emit('zoomToBBox', targetBBox);
+          EventBus.$emit('zoomToWorld');
+          
           //Spread out target VizCloudSamples
           EventBus.$emit('spreadCloudItemSamples', {
             targetId: tagTitle,
@@ -111,8 +114,12 @@ export default {
 
       loader.load(() => {
         window.setTimeout(() => {
+
           //Zoom viewport to fit the next view
-          EventBus.$emit('zoomToBBox', this.canvas);
+          const frameBBox = this.$store.getters.detailFrameBBox(objectId);
+          this.$store.dispatch('computeWorldSize', frameBBox);
+          EventBus.$emit('zoomToWorld');
+          
           //Spread out target VizCloudSamples
           EventBus.$emit('spreadCloudItemSamples', {
             targetId: tagTitle,
@@ -143,6 +150,7 @@ export default {
       
       const spawnPositions = this.getDetailPositions(objectId, tagTitle);
       const targetPositions = this.$store.state.clouds[tagTitle];
+      const targetPosition = targetPositions.find(el => el.id === objectId);
 
       //preloading: collect all geometries of one tag in one object as sample ids
       const object = this.$store.getters.object(objectId);
@@ -151,23 +159,22 @@ export default {
           id: getCutoutUID(objectId, tagTitle, geo.x, geo.y)
         }
       });
-
       
       this.stageSamples(loader, samples);
-
+      
       loader.load(() => {
-        
-        //Zoom viewport to fit the next view
-        EventBus.$emit('zoomToBBox', this.canvas);
 
+        EventBus.$emit('fadeOutDetail');
+
+        //mount VizCloudSamples for transition animation
         this.renderStack = samples.map(sample => {
           const origin = sample.id.split('-')[0];
           return {
             id: sample.id,
-            size: targetPositions.find(el => el.id === origin).size
+            size: targetPosition.size
           };
         });
-
+        //render first item on top
         const firstItem = this.renderStack.shift();
         this.renderStack.push(firstItem);
 
@@ -175,10 +182,8 @@ export default {
         this.$nextTick(() => {
 
           this.$refs.cloudsamples.forEach((cloudSample) => {
-            
-            const origin = cloudSample.id.split('-')[0];
+
             const spawnPosition = spawnPositions.find(el => el.id === cloudSample.id);
-            const targetPosition = targetPositions.find(el => el.id === origin);
 
             TweenLite
               .fromTo(cloudSample.sprite, durations.sampleSpread, {
@@ -187,14 +192,42 @@ export default {
                 width: spawnPosition.size,
                 height: spawnPosition.size
               }, {
-                //x: -targetPosition.size/2,
-                //y: -targetPosition.size/2,
                 x: targetPosition.x,
                 y: targetPosition.y,
                 width: targetPosition.size,
                 height: targetPosition.size,
+                ease: Sine.easeInOut,
+                onComplete: () => {
+                  const targetBBox = this.$store.getters.cloudBBox(tagTitle);
+                  this.$store.dispatch('computeWorldSize', targetBBox);
+                  EventBus.$emit('zoomToWorld');
+                }
+              })
+
+            //center
+            /*TweenLite
+              .fromTo(cloudSample.sprite, durations.sampleSpread, {
+                x: spawnPosition.x,
+                y: spawnPosition.y,
+                width: spawnPosition.size,
+                height: spawnPosition.size
+              }, {
+                x: -targetPosition.size/2,
+                y: -targetPosition.size/2,
+                width: targetPosition.size,
+                height: targetPosition.size,
                 ease: Sine.easeInOut
               })
+            
+            TweenLite
+              .to(cloudSample.sprite, 1, {
+                x: targetPosition.x,
+                y: targetPosition.y,
+                width: targetPosition.size,
+                height: targetPosition.size,
+                ease: Sine.easeInOut,
+                delay: durations.sampleSpread
+              })*/
           });
         });
 
@@ -203,7 +236,7 @@ export default {
           this.$router.push({ path: this.vizTransition.targetPath })
           //this.$store.dispatch('endVizTransition');  
           //EventBus.$emit('endVizTransition');
-        }, (durations.sampleSpread +  durations.detailFadeIn) * 1000);
+        }, (durations.sampleSpread + durations.worldZoom) * 1000);
       });
     },
 

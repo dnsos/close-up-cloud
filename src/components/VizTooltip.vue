@@ -31,7 +31,7 @@ export default {
     },
     viewportScale: function () {
       // keep track of main viewport scale
-      return this.$store.getters.viewportScale;
+      return 1;//this.$store.getters.viewportScale;
     }
   },
   watch: {
@@ -41,7 +41,7 @@ export default {
     },
     viewportScale: function (newValue) {
       // update textBox scale to inverted value of main viewport scale
-      const scaleInverted = 1 / newValue
+      const scaleInverted = 1 / 1;//newValue
       this.textBox.scale = new Point(scaleInverted, scaleInverted)
     }
   },

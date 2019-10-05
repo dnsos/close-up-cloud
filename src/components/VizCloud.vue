@@ -52,7 +52,7 @@ export default {
       
       //zoom to fit
       const cloudBox = this.$store.getters.cloudBBox(this.cloudname);
-      EventBus.$emit('zoomToBBox', cloudBox);
+      EventBus.$emit('zoomToWorld');
     },
     initForceLayout() {
 
