@@ -122,7 +122,7 @@ export default {
       this.samplesContainer.buttonMode = false;
 
       //center the selected CloudItem
-      //@todo it would probably be better to move the camera to the item, but I don't get pixi-viewport configured correctly
+      //@todo maybe it would be better to move the camera to the item
       TweenLite.to(this.itemContainer, 1, {
         x: -this.position.size/2,
         y: -this.position.size/2,

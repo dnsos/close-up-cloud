@@ -6,6 +6,7 @@
       </router-link>
       <router-view /> <!-- here goes VitOverview, VizTag, VizDetail via router -->
       <VizTransition />
+      <VizInput />
     </div>
   </div>
   
@@ -17,13 +18,14 @@ import { Viewport } from 'pixi-viewport'
 import { TweenLite, Power1, Power2 } from 'gsap/TweenMax'
 import { mapState } from 'vuex'
 import VizTransition from './VizTransition.vue'
+import VizInput from './VizInput.vue'
 import { durations, minZoomFactor, maxZoomFactor } from '../variables.js'
 import EventBus from '../eventbus.js';
 
 export default {
   name: 'viz-renderer',
   computed: mapState(['canvas', 'world', 'taglist', 'inverted', 'vizTransition']),
-  components: { VizTransition },
+  components: { VizTransition, VizInput },
   data: () => {
     return {
       PIXIApp: null,
@@ -80,6 +82,32 @@ export default {
     },*/
     /*zoomToBBox(boundingBox) {
     },*/
+    zoomIn() {
+
+      let desiredZoom = this.camera.zoom + (this.camera.zoom/4);
+      desiredZoom = Math.min(desiredZoom, 1);
+      TweenLite.to(this.camera, durations.mouseZoom, { 
+        zoom: desiredZoom,
+        onUpdate: () => {
+          this.vizContainer.scale.set(this.camera.zoom);
+        },
+        ease: Power2.easeOut
+      })
+    },
+    zoomOut() {
+
+      let desiredZoom = this.camera.zoom - (this.camera.zoom/4);
+      //@todo limit zoom out to world size
+      desiredZoom = Math.max(desiredZoom, 0.01);
+      TweenLite.to(this.camera, durations.mouseZoom, { 
+        zoom: desiredZoom,
+        onUpdate: () => {
+          this.vizContainer.scale.set(this.camera.zoom);
+        },
+        ease: Power2.easeOut
+      })
+
+    },
     zoomToWorld() {
 
       const canvasRatio = this.canvas.width / this.canvas.height;
@@ -164,6 +192,8 @@ export default {
 
     //EventBus.$on('zoomToBBox', this.zoomToFitBBox);
     EventBus.$on('zoomToWorld', this.zoomToWorld);
+    EventBus.$on('zoomIn', this.zoomIn);
+    EventBus.$on('zoomOut', this.zoomOut);
   },
   mounted: function() {
 

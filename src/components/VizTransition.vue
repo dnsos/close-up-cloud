@@ -113,6 +113,9 @@ export default {
       this.stageDetail(loader);
 
       loader.load(() => {
+        
+        this.createFauxDetail();
+
         window.setTimeout(() => {
 
           //Zoom viewport to fit the next view
@@ -127,7 +130,11 @@ export default {
           });
 
           //Fade-In Faux Detail
-          this.createFauxDetail();
+          TweenLite.to(this.fauxDetail, durations.detailFadeIn, {
+            alpha: 1,
+            delay: durations.sampleSpread,
+            ease: Power2.easeIn
+          });
 
           //Route to the target view
           window.setTimeout(() => {
@@ -315,11 +322,6 @@ export default {
       
       //fade-in detail image
       this.vizContainer.addChild(sprite) 
-      TweenLite.to(sprite, durations.detailFadeIn, {
-        alpha: 1,
-        delay: durations.sampleSpread,
-        ease: Power2.easeIn
-      });
     },
 
     destroyFauxDetail() {
