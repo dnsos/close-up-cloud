@@ -49,10 +49,8 @@ export default {
   },
   methods: {
     resize(canvas) {
-      
       //zoom to fit
-      const cloudBox = this.$store.getters.cloudBBox(this.cloudname);
-      EventBus.$emit('zoomToWorld');
+      //EventBus.$emit('zoomToWorld');
     },
     initForceLayout() {
 
@@ -143,9 +141,10 @@ export default {
       this.loadChunkTimeout = window.setTimeout(this.loadSampleChunks, durations.sampleVisible * 1000);
     })
 
-    
+    //Zoom to fit
     const cloudBBox = this.$store.getters.cloudBBox(this.cloudname);
     this.$store.dispatch('computeWorldSize', cloudBBox);
+    EventBus.$emit('zoomToWorld');
 
     this.resize(this.canvas);
     this.vizContainer.addChild(this.cloudContainer);

@@ -19,13 +19,13 @@ import { TweenLite, Power1, Power2 } from 'gsap/TweenMax'
 import { mapState } from 'vuex'
 import VizTransition from './VizTransition.vue'
 import VizInput from './VizInput.vue'
-import { durations, minZoomFactor, maxZoomFactor } from '../variables.js'
+import { durations } from '../variables.js'
 import { getBBoxScaleFactor } from '../utils.js'
 import EventBus from '../eventbus.js';
 
 export default {
   name: 'viz-renderer',
-  computed: mapState(['canvas', 'world', 'camera', 'taglist', 'inverted', 'vizTransition']),
+  computed: mapState(['canvas', 'world', 'camera', 'cameraZoom', 'taglist', 'inverted', 'vizTransition']),
   components: { VizTransition, VizInput },
   data: () => {
     return {
@@ -36,18 +36,30 @@ export default {
     };
   },
   watch: {
-    inverted: function (newValue, previousValue) {
+    inverted: function (newValue) {
       const targetAlpha = (newValue === true) ? 1 : 0;
       TweenLite.to(this.PIXIApp.stage.filters[0], durations.invert, { alpha: targetAlpha, ease: Power1.easeInOut } )
     },
+    camera: function(newValue) {
+      this.vizContainer.position.set((this.canvas.width/2) + newValue.x, (this.canvas.height/2) + newValue.y);
+    },
+    cameraZoom: function(newValue, previousValue) {
+      let tmp = { ... previousValue };
+      TweenLite.to(tmp, newValue.time, { 
+        zoom: newValue.zoom,
+        onUpdate: () => {
+          this.vizContainer.scale.set(tmp.zoom);
+        },
+        ease: Power2.easeOut
+      })
+    },
     vizTransition: function() {
       //this.moveToPoint(); //viz transition - move viewport to center
-    },
+    }/*,
     world: function(newval) {
       console.log('VizRenderer: world changed', newval);
-
-      //this.updateDebugGrid();
-    }
+      this.updateDebugGrid();
+    }*/
   },
   methods: {
     handleResize() {
@@ -81,7 +93,7 @@ export default {
     },*/
     /*zoomToBBox(boundingBox) {
     },*/
-    zoomIn() {
+    /*zoomIn() {
 
       let desiredZoom = this.camera.zoom + (this.camera.zoom/4);
       desiredZoom = Math.min(desiredZoom, 1);
@@ -105,7 +117,7 @@ export default {
         ease: Power2.easeOut
       })
 
-    },
+    },*/
     zoomToWorld() {
 
       const canvasRatio = this.canvas.width / this.canvas.height;
@@ -119,18 +131,27 @@ export default {
       }
 
       const minZoom = getBBoxScaleFactor(this.canvas, this.world);
-      this.$store.commit('updateCamera', { minZoom });
+      this.$store.commit('setCameraMinZoom', minZoom);
 
       desiredZoom = Math.max(desiredZoom, minZoom);
       desiredZoom = Math.min(desiredZoom, 1);
 
-      TweenLite.to(this.camera, durations.worldZoom, { 
+      this.$store.commit('setCameraZoom', {
+        zoom: desiredZoom,
+        time: durations.worldZoom
+      });
+
+      /*let tmp = { zoom: this.cameraZoom };
+      TweenLite.to(tmp, durations.worldZoom, { 
         zoom: desiredZoom,
         onUpdate: () => {
-          this.vizContainer.scale.set(this.camera.zoom);
+          this.vizContainer.scale.set(tmp.zoom);
+        },
+        onComplete: () => {
+          this.$store.commit('setCameraZoom', tmp.zoom);
         },
         ease: Power2.easeOut
-      })
+      })*/
     },
     //@debug show viewport grid
     updateDebugGrid() {
@@ -192,8 +213,8 @@ export default {
 
     //EventBus.$on('zoomToBBox', this.zoomToFitBBox);
     EventBus.$on('zoomToWorld', this.zoomToWorld);
-    EventBus.$on('zoomIn', this.zoomIn);
-    EventBus.$on('zoomOut', this.zoomOut);
+    //EventBus.$on('zoomIn', this.zoomIn);
+    //EventBus.$on('zoomOut', this.zoomOut);
   },
   mounted: function() {
 

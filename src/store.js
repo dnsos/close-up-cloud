@@ -17,16 +17,16 @@ export default new Vuex.Store({
       to: null,
       targetPath: ''
     },
-    input: {
-      isDragging: false,
-      spreadCloudItem: null
-    },
     camera: { 
       x: 0, 
-      y: 0, 
-      zoom: 0.1,
-      minZoom: 0.1
-    }, 
+      y: 0
+    },
+    cameraZoom: {
+      zoom: 0.1, //current zoom
+      time: 0.5  //zoom transition duration
+    },
+    cameraMinZoom: 0.1,
+    isDragging: false,
     canvas: {
       width: 1280,
       height: 800
@@ -118,11 +118,14 @@ export default new Vuex.Store({
     setPIXIApp: (state, payload) => {
       state.PIXIApp = payload
     },
-    updateCamera: (state, payload) => {
-      for(let key in payload) {
-        state.camera[key] = payload[key];
-      }
-      
+    setCamera: (state, payload) => {
+      state.camera = payload;
+    },
+    setCameraZoom: (state, payload) => {
+      state.cameraZoom = payload;
+    },
+    setCameraMinZoom: (state, payload) => {
+      state.cameraMinZoom = payload;
     },
     setVizContainer: (state, payload) => {
       state.vizContainer = payload
