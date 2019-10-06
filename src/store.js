@@ -14,13 +14,19 @@ export default new Vuex.Store({
     vizContainer: null, //PIXI.Container
     vizTransition: {
       from: null, 
-      to: null, 
-      trigger: null 
+      to: null,
+      targetPath: ''
     },
     input: {
       isDragging: false,
       spreadCloudItem: null
     },
+    camera: { 
+      x: 0, 
+      y: 0, 
+      zoom: 0.1,
+      minZoom: 0.1
+    }, 
     canvas: {
       width: 1280,
       height: 800
@@ -111,6 +117,12 @@ export default new Vuex.Store({
     },
     setPIXIApp: (state, payload) => {
       state.PIXIApp = payload
+    },
+    updateCamera: (state, payload) => {
+      for(let key in payload) {
+        state.camera[key] = payload[key];
+      }
+      
     },
     setVizContainer: (state, payload) => {
       state.vizContainer = payload
@@ -243,8 +255,6 @@ export default new Vuex.Store({
       //make world*1.25 to enable some panning at 100%
       width *= 1.25;
       height *= 1.25;
-
-      console.log('computeWorldSize ...', width, height)
 
       commit('setWorld', {
         width: width,

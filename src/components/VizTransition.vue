@@ -132,7 +132,7 @@ export default {
           //Fade-In Faux Detail
           TweenLite.to(this.fauxDetail, durations.detailFadeIn, {
             alpha: 1,
-            delay: durations.sampleSpread,
+            delay: durations.sampleSpread+0.5,
             ease: Power2.easeIn
           });
 
@@ -141,7 +141,7 @@ export default {
             this.$router.push({ path: this.vizTransition.targetPath })
             //this.$store.dispatch('endVizTransition');  
             //EventBus.$emit('endVizTransition');
-          }, (durations.sampleSpread +  durations.detailFadeIn) * 1000);
+          }, (durations.sampleSpread + 0.5 + durations.detailFadeIn) * 1000);
         }, durations.sampleSpreadDelay * 1000)
       });
     },
@@ -155,41 +155,42 @@ export default {
 
       this.prepareForceLayout();
       
-      const spawnPositions = this.getDetailPositions(objectId, tagTitle);
-      const targetPositions = this.$store.state.clouds[tagTitle];
-      const targetPosition = targetPositions.find(el => el.id === objectId);
+      const spawnPositions = this.getDetailPositions(objectId, tagTitle);      
 
-      //preloading: collect all geometries of one tag in one object as sample ids
+      //preloading: collect all geometries of this tag in this object
       const object = this.$store.getters.object(objectId);
       const samples = object.tags.find(el => el.title === tagTitle).geometry.map(geo => {
         return {
           id: getCutoutUID(objectId, tagTitle, geo.x, geo.y)
         }
       });
-      
       this.stageSamples(loader, samples);
+
+      //preloading: also add first geometries of this tag in all other objects
+      const tag = this.$store.getters.tag(tagTitle);
+      const otherSamples = tag.occurrences.filter(occ => occ.origin !== objectId).map(occ => {
+        return {
+          id: getCutoutUID(occ.origin, tagTitle, occ.geometry[0].x, occ.geometry[0].y)
+        }
+      });
+      this.stageSamples(loader, otherSamples);
       
       loader.load(() => {
 
         EventBus.$emit('fadeOutDetail');
-
+        
         //mount VizCloudSamples for transition animation
-        this.renderStack = samples.map(sample => {
-          const origin = sample.id.split('-')[0];
-          return {
-            id: sample.id,
-            size: targetPosition.size
-          };
-        });
+        this.renderStack = samples;
         //render first item on top
-        const firstItem = this.renderStack.shift();
-        this.renderStack.push(firstItem);
+        const originSample = this.renderStack.shift();
+        this.renderStack.push(originSample);
 
-        //wait for vue to reflect the new renderStack as VizCloudSamples
+        //wait for vue to reflect the new renderStack
         this.$nextTick(() => {
-
+          
+          //centering
+          const originTargetPosition = this.$store.getters.positionInCloud(tagTitle, objectId);
           this.$refs.cloudsamples.forEach((cloudSample) => {
-
             const spawnPosition = spawnPositions.find(el => el.id === cloudSample.id);
 
             TweenLite
@@ -199,51 +200,63 @@ export default {
                 width: spawnPosition.size,
                 height: spawnPosition.size
               }, {
-                x: targetPosition.x,
-                y: targetPosition.y,
-                width: targetPosition.size,
-                height: targetPosition.size,
-                ease: Sine.easeInOut,
-                onComplete: () => {
-                  const targetBBox = this.$store.getters.cloudBBox(tagTitle);
-                  this.$store.dispatch('computeWorldSize', targetBBox);
-                  EventBus.$emit('zoomToWorld');
-                }
-              })
-
-            //center
-            /*TweenLite
-              .fromTo(cloudSample.sprite, durations.sampleSpread, {
-                x: spawnPosition.x,
-                y: spawnPosition.y,
-                width: spawnPosition.size,
-                height: spawnPosition.size
-              }, {
-                x: -targetPosition.size/2,
-                y: -targetPosition.size/2,
-                width: targetPosition.size,
-                height: targetPosition.size,
+                x: -originTargetPosition.size,
+                y: -originTargetPosition.size,
+                width: originTargetPosition.size*2,
+                height: originTargetPosition.size*2,
                 ease: Sine.easeInOut
               })
-            
-            TweenLite
-              .to(cloudSample.sprite, 1, {
-                x: targetPosition.x,
-                y: targetPosition.y,
-                width: targetPosition.size,
-                height: targetPosition.size,
-                ease: Sine.easeInOut,
-                delay: durations.sampleSpread
-              })*/
           });
-        });
+          
+          
+          window.setTimeout(() => {
+            //now that all samples are centered, lets switch the renderStack to otherSamples 
+            const originSample = this.renderStack.pop();
+            otherSamples.push(originSample);
 
-        //Route to the target view
-        window.setTimeout(() => {
-          this.$router.push({ path: this.vizTransition.targetPath })
-          //this.$store.dispatch('endVizTransition');  
-          //EventBus.$emit('endVizTransition');
-        }, (durations.sampleSpread + durations.worldZoom) * 1000);
+            //Zoom viewport to fit the next view
+            const targetBBox = this.$store.getters.cloudBBox(tagTitle);
+            this.$store.dispatch('computeWorldSize', targetBBox);
+            EventBus.$emit('zoomToWorld');
+
+
+            //force vue to remount the VizCloudSamples
+            this.renderStack = [];
+            //wait for vue to reflect the new renderStack
+            this.$nextTick(() => {
+              
+              this.renderStack = otherSamples;
+                
+              //wait for vue to reflect the new renderStack
+              this.$nextTick(() => {
+
+                //Spread samples
+                this.$refs.cloudsamples.forEach((cloudSample) => {
+                  const objectId = cloudSample.id.split('-')[0];
+                  const targetPosition = this.$store.getters.positionInCloud(tagTitle, objectId);
+                  
+                  TweenLite
+                    .fromTo(cloudSample.sprite, durations.sampleSpread, {
+                      x: -originTargetPosition.size,
+                      y: -originTargetPosition.size,
+                      width: originTargetPosition.size*2,
+                      height: originTargetPosition.size*2
+                    }, {
+                      x: targetPosition.x,
+                      y: targetPosition.y,
+                      width: targetPosition.size,
+                      height: targetPosition.size,
+                      ease: Sine.easeInOut,
+                      onComplete: () => {
+                        this.$router.push({ path: this.vizTransition.targetPath })
+                      }
+                    })
+                })
+              })
+            })
+
+          }, (durations.sampleSpread + 0.5) * 1000);
+        });
       });
     },
 

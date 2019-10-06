@@ -20,20 +20,19 @@ import { mapState } from 'vuex'
 import VizTransition from './VizTransition.vue'
 import VizInput from './VizInput.vue'
 import { durations, minZoomFactor, maxZoomFactor } from '../variables.js'
+import { getBBoxScaleFactor } from '../utils.js'
 import EventBus from '../eventbus.js';
 
 export default {
   name: 'viz-renderer',
-  computed: mapState(['canvas', 'world', 'taglist', 'inverted', 'vizTransition']),
+  computed: mapState(['canvas', 'world', 'camera', 'taglist', 'inverted', 'vizTransition']),
   components: { VizTransition, VizInput },
   data: () => {
     return {
       PIXIApp: null,
       viewport: null,
       vizContainer: null,
-      debugContainer: null,
-      //helper object for "camera" transitions
-      camera: { x: 0, y: 0, zoom: 0.5 }, 
+      debugContainer: null
     };
   },
   watch: {
@@ -97,8 +96,7 @@ export default {
     zoomOut() {
 
       let desiredZoom = this.camera.zoom - (this.camera.zoom/4);
-      //@todo limit zoom out to world size
-      desiredZoom = Math.max(desiredZoom, 0.01);
+      desiredZoom = Math.max(desiredZoom, this.camera.minZoom);
       TweenLite.to(this.camera, durations.mouseZoom, { 
         zoom: desiredZoom,
         onUpdate: () => {
@@ -111,16 +109,19 @@ export default {
     zoomToWorld() {
 
       const canvasRatio = this.canvas.width / this.canvas.height;
-      const frameRatio = this.world.width / this.world.height;
+      const worldRatio = this.world.width / this.world.height;
 
       let desiredZoom;
-      if(frameRatio > canvasRatio) {
+      if(worldRatio > canvasRatio) {
         desiredZoom = this.canvas.width / this.world.width;
       } else {
         desiredZoom = this.canvas.height / this.world.height;
       }
-      
-      desiredZoom = Math.max(desiredZoom, 0.01);
+
+      const minZoom = getBBoxScaleFactor(this.canvas, this.world);
+      this.$store.commit('updateCamera', { minZoom });
+
+      desiredZoom = Math.max(desiredZoom, minZoom);
       desiredZoom = Math.min(desiredZoom, 1);
 
       TweenLite.to(this.camera, durations.worldZoom, { 
@@ -173,7 +174,6 @@ export default {
     })
 
     this.vizContainer = new PIXI.Container();
-    //this.vizContainer.scale.set(0.125);
 
     // init invert filter
     const colorMatrix = new PIXI.filters.ColorMatrixFilter()

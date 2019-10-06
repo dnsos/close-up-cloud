@@ -11,7 +11,7 @@ export default {
   name: 'viz-cutout',
   props: {
     id: { type: String, required: true },
-    size: { type: Number }
+    size: { type: Number, required: true, default: 0 }
   },
   data: function() {
     return {
@@ -23,10 +23,7 @@ export default {
     //console.log("hello this is a sample");
 
     let sprite = this.sprite = new PIXI.Sprite(PIXI.Texture.WHITE)
-    sprite.width = this.size;
-    sprite.height = this.size;
-    //@debug add a random tint that will be removed on load
-    //sprite.tint = '0x' + Math.floor(Math.random()*16777215).toString(16);
+    sprite.width = sprite.height = this.size;
 
     //assuming the texture is already preloaded
     if(PIXI.utils.TextureCache[this.id]) {
