@@ -23,9 +23,14 @@ export default new Vuex.Store({
     },
     cameraZoom: {
       zoom: 0.1, //current zoom
-      time: 0.5  //zoom transition duration
+      center: {x: 0, y: 0}, //zoom center (relative to screen center)
+      time: 0.25  //zoom transition duration
     },
     cameraMinZoom: 0.1,
+    cursor: {
+      x: 0,
+      y: 0
+    },
     isDragging: false,
     canvas: {
       width: 1280,
@@ -106,6 +111,24 @@ export default new Vuex.Store({
       const object = getters.object(objectId);
       const frame = object.tags.find(tag => tag.title === 'Frame');
       return frame.geometry[0];
+    },
+    worldToScreen: (state) => (x, y) => {
+      //@todo
+      return {
+        x: x*state.cameraZoom.zoom,
+        y: y*state.cameraZoom.zoom
+      }
+    },
+    screenToWorld: (state) => (x, y) => {
+      x -= (state.canvas.width/2);
+      y -= (state.canvas.height/2);
+      x -= state.camera.x;
+      y -= state.camera.y;
+
+      return {
+        x: x/state.cameraZoom.zoom,
+        y: y/state.cameraZoom.zoom
+      }
     }
   },
   mutations: {
@@ -119,6 +142,17 @@ export default new Vuex.Store({
       state.PIXIApp = payload
     },
     setCamera: (state, payload) => {
+
+      const constrains = {
+        x: ((state.world.width/1.5) * state.cameraZoom.zoom) - (state.canvas.width/2),
+        y: ((state.world.height/1.5) * state.cameraZoom.zoom) - (state.canvas.height/2)
+      }
+
+      payload.x = Math.min(payload.x, constrains.x);
+      payload.x = Math.max(payload.x, -constrains.x);
+      payload.y = Math.min(payload.y, constrains.y);
+      payload.y = Math.max(payload.y, -constrains.y);
+
       state.camera = payload;
     },
     setCameraZoom: (state, payload) => {
@@ -151,6 +185,9 @@ export default new Vuex.Store({
     },
     dragEnd: (state) => {
       state.isDragging = false
+    },
+    cursor: (state, payload) => {
+      state.cursor = payload;
     },
     setForceLayout: (state, payload) => {
       state.clouds[payload.key] = payload.data

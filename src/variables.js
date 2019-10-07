@@ -9,7 +9,6 @@ export const durations = {
   detailFadeIn: 1.5,    //CloudDetail fade in animation duration 
   detailFadeOut: 1,     //CloudDetail fade out animation duration 
   worldZoom: 1.5,       //Renderer zoom to fit duration
-  mouseZoom: 0.5,       //Renderer mousewheel zoom duration
   move: .4,
   invert: 2             //invert colors animation duration 
 }

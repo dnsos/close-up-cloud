@@ -32,6 +32,7 @@ export default {
       PIXIApp: null,
       viewport: null,
       vizContainer: null,
+      centerContainer: null,
       debugContainer: null
     };
   },
@@ -41,25 +42,40 @@ export default {
       TweenLite.to(this.PIXIApp.stage.filters[0], durations.invert, { alpha: targetAlpha, ease: Power1.easeInOut } )
     },
     camera: function(newValue) {
-      this.vizContainer.position.set((this.canvas.width/2) + newValue.x, (this.canvas.height/2) + newValue.y);
+      this.vizContainer.position.set(newValue.x, newValue.y);
     },
     cameraZoom: function(newValue, previousValue) {
-      let tmp = { ... previousValue };
-      TweenLite.to(tmp, newValue.time, { 
-        zoom: newValue.zoom,
-        onUpdate: () => {
-          this.vizContainer.scale.set(tmp.zoom);
-        },
-        ease: Power2.easeOut
-      })
+
+      const { zoom, center } = newValue;      
+      this.vizContainer.scale.set(zoom);
+
+      /**
+       * preserve cursor position in world 
+       * @see http://embed.plnkr.co/II6lgj511fsQ7l0QCoRi/
+       */
+       
+      const x = center.x - (this.canvas.width/2);
+      const y = center.y - (this.canvas.height/2);
+      var worldPos = {
+        x: (x - this.camera.x) / previousValue.zoom, 
+        y: (y - this.camera.y) / previousValue.zoom
+      };
+      var newScreenPos = {
+        x: (worldPos.x * zoom) + this.camera.x, 
+        y: (worldPos.y * zoom) + this.camera.y
+      };
+      this.$store.commit('setCamera', { 
+        x: this.camera.x - (newScreenPos.x-x),
+        y: this.camera.y - (newScreenPos.y-y)
+      });
     },
     vizTransition: function() {
-      //this.moveToPoint(); //viz transition - move viewport to center
-    }/*,
+    //  this.moveToPoint(); //viz transition - move viewport to center
+    },
     world: function(newval) {
-      console.log('VizRenderer: world changed', newval);
-      this.updateDebugGrid();
-    }*/
+      console.log('new world', newval.width, newval.height)
+      //this.updateDebugGrid();
+    }
   },
   methods: {
     handleResize() {
@@ -70,53 +86,31 @@ export default {
       const { clientWidth, clientHeight } = this.$refs.rendererWrapper;
 
       this.PIXIApp.renderer.resize(clientWidth, clientHeight);
-      this.vizContainer.position.set(clientWidth/2, clientHeight/2);
+      this.centerContainer.position.set(clientWidth/2, clientHeight/2);
       this.$store.dispatch('updateCanvasSize', {
         width: clientWidth, 
         height: clientHeight});
 
+      //@todo probably world should update too on resize, bc right now world has initially the same aspect ratio as canvas
+
       //@debug show viewport grid
       //this.updateDebugGrid();
     },
-    /*moveToPoint(point) {
+    moveToPoint(point) {
       //default screen center
-      if(!point) point = {x: this.viewport.worldWidth/2, y: this.viewport.worldHeight/2};
+      if(!point) point = {x: 0, y: 0};
 
+      let tmp = { ... this.camera };
       TweenLite.to(this.camera, 1, { 
         x: point.x, 
         y: point.y,
         onUpdate: () => {
-          this.viewport.moveCenter(this.camera.x, this.camera.y);
-        },
-        ease: Power2.easeOut
-      })
-    },*/
-    /*zoomToBBox(boundingBox) {
-    },*/
-    /*zoomIn() {
-
-      let desiredZoom = this.camera.zoom + (this.camera.zoom/4);
-      desiredZoom = Math.min(desiredZoom, 1);
-      TweenLite.to(this.camera, durations.mouseZoom, { 
-        zoom: desiredZoom,
-        onUpdate: () => {
-          this.vizContainer.scale.set(this.camera.zoom);
+          this.$store.commit('setCamera', tmp);
         },
         ease: Power2.easeOut
       })
     },
-    zoomOut() {
-
-      let desiredZoom = this.camera.zoom - (this.camera.zoom/4);
-      desiredZoom = Math.max(desiredZoom, this.camera.minZoom);
-      TweenLite.to(this.camera, durations.mouseZoom, { 
-        zoom: desiredZoom,
-        onUpdate: () => {
-          this.vizContainer.scale.set(this.camera.zoom);
-        },
-        ease: Power2.easeOut
-      })
-
+    /*zoomToBBox(boundingBox) {
     },*/
     zoomToWorld() {
 
@@ -136,22 +130,24 @@ export default {
       desiredZoom = Math.max(desiredZoom, minZoom);
       desiredZoom = Math.min(desiredZoom, 1);
 
-      this.$store.commit('setCameraZoom', {
-        zoom: desiredZoom,
-        time: durations.worldZoom
-      });
-
-      /*let tmp = { zoom: this.cameraZoom };
+      //tween zoom
+      let tmp = { zoom: this.cameraZoom.zoom };
       TweenLite.to(tmp, durations.worldZoom, { 
         zoom: desiredZoom,
         onUpdate: () => {
           this.vizContainer.scale.set(tmp.zoom);
         },
         onComplete: () => {
-          this.$store.commit('setCameraZoom', tmp.zoom);
+          this.$store.commit('setCameraZoom', {
+            zoom: desiredZoom,
+            center: {
+              x: this.canvas.width/2, 
+              y: this.canvas.height/2 
+            }
+          })
         },
         ease: Power2.easeOut
-      })*/
+      })
     },
     //@debug show viewport grid
     updateDebugGrid() {
@@ -194,7 +190,9 @@ export default {
       resolution: 1
     })
 
-    this.vizContainer = new PIXI.Container();
+    this.centerContainer = new PIXI.Container(); //always stays centered
+    this.vizContainer = new PIXI.Container(); //viz root, zoom and pan
+    this.centerContainer.addChild(this.vizContainer);
 
     // init invert filter
     const colorMatrix = new PIXI.filters.ColorMatrixFilter()
@@ -211,10 +209,7 @@ export default {
       height: document.body.clientHeight
     });
 
-    //EventBus.$on('zoomToBBox', this.zoomToFitBBox);
     EventBus.$on('zoomToWorld', this.zoomToWorld);
-    //EventBus.$on('zoomIn', this.zoomIn);
-    //EventBus.$on('zoomOut', this.zoomOut);
   },
   mounted: function() {
 
@@ -223,8 +218,12 @@ export default {
     window.addEventListener('resize', this.handleResize);
     this.handleResize();
 
-    this.PIXIApp.stage.addChild(this.vizContainer);
+    this.PIXIApp.stage.addChild(this.centerContainer);
     this.$refs.rendererWrapper.appendChild(this.PIXIApp.view);
+  },
+  beforeDestroy: function () {
+    this.PIXIApp.stage.removeChild(this.centerContainer);
+    this.$refs.rendererWrapper.removeChild(this.PIXIApp.view);
   }
 }
 </script>
