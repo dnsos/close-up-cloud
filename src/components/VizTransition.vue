@@ -12,7 +12,7 @@
 <script>
 import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
-import { TweenLite, Power2, Sine } from 'gsap/TweenMax'
+import { TweenLite, Power2 } from 'gsap/TweenMax'
 import VizCloudSample from './VizCloudSample.vue'
 import VizTooltip from './VizTooltip.vue'
 import { convertTagOccurencesToCloudItems, getBBoxScaleFactor, getCutoutUID } from '../utils.js'
@@ -68,18 +68,19 @@ export default {
       this.stageSamples(loader, samples);
 
       this.prepareForceLayout();
-      const targetPositions = this.$store.state.clouds[tagTitle];
       
-      const targetBBox = this.$store.getters.cloudBBox(tagTitle);
-      this.$store.dispatch('computeWorldSize', targetBBox);
+      EventBus.$emit('centerWorld', durations.sampleSpreadDelay);
 
       loader.load(() => {
         window.setTimeout(() => {
-          
+
           //Zoom viewport to fit the next view
+          const targetBBox = this.$store.getters.cloudBBox(tagTitle);
+          this.$store.dispatch('computeWorldSize', targetBBox);
           EventBus.$emit('zoomToWorld');
           
           //Spread out target VizCloudSamples
+          const targetPositions = this.$store.state.clouds[tagTitle];
           EventBus.$emit('spreadCloudItemSamples', {
             targetId: tagTitle,
             targetPositions
@@ -87,8 +88,6 @@ export default {
           //Route to the target view
           window.setTimeout(() => {
             this.$router.push({ path: this.vizTransition.targetPath })
-            //this.$store.dispatch('endVizTransition');  
-            //EventBus.$emit('endVizTransition');
           }, durations.sampleSpread * 1000);
         }, durations.sampleSpreadDelay * 1000)
       });
@@ -111,6 +110,8 @@ export default {
 
       this.stageSamples(loader, samples);
       this.stageDetail(loader);
+      
+      EventBus.$emit('centerWorld', durations.sampleSpreadDelay);
 
       loader.load(() => {
         
@@ -139,8 +140,6 @@ export default {
           //Route to the target view
           window.setTimeout(() => {
             this.$router.push({ path: this.vizTransition.targetPath })
-            //this.$store.dispatch('endVizTransition');  
-            //EventBus.$emit('endVizTransition');
           }, (durations.sampleSpread + 0.5 + durations.detailFadeIn) * 1000);
         }, durations.sampleSpreadDelay * 1000)
       });
@@ -156,6 +155,7 @@ export default {
       this.prepareForceLayout();
       
       const spawnPositions = this.getDetailPositions(objectId, tagTitle);      
+      const largestSize = Math.max(... spawnPositions.map(el => el.size));
 
       //preloading: collect all geometries of this tag in this object
       const object = this.$store.getters.object(objectId);
@@ -173,7 +173,7 @@ export default {
           id: getCutoutUID(occ.origin, tagTitle, occ.geometry[0].x, occ.geometry[0].y)
         }
       });
-      this.stageSamples(loader, otherSamples);
+      this.stageSamples(loader, otherSamples);      
       
       loader.load(() => {
 
@@ -189,6 +189,7 @@ export default {
         this.$nextTick(() => {
           
           //centering
+          EventBus.$emit('centerWorld', durations.sampleSpread);
           const originTargetPosition = this.$store.getters.positionInCloud(tagTitle, objectId);
           this.$refs.cloudsamples.forEach((cloudSample) => {
             const spawnPosition = spawnPositions.find(el => el.id === cloudSample.id);
@@ -200,14 +201,13 @@ export default {
                 width: spawnPosition.size,
                 height: spawnPosition.size
               }, {
-                x: -originTargetPosition.size,
-                y: -originTargetPosition.size,
-                width: originTargetPosition.size*2,
-                height: originTargetPosition.size*2,
-                ease: Sine.easeInOut
+                x: -largestSize/2,
+                y: -largestSize/2,
+                width: largestSize,
+                height: largestSize,
+                ease: Power2.easeInOut
               })
           });
-          
           
           window.setTimeout(() => {
             //now that all samples are centered, lets switch the renderStack to otherSamples 
@@ -237,16 +237,16 @@ export default {
                   
                   TweenLite
                     .fromTo(cloudSample.sprite, durations.sampleSpread, {
-                      x: -originTargetPosition.size,
-                      y: -originTargetPosition.size,
-                      width: originTargetPosition.size*2,
-                      height: originTargetPosition.size*2
+                      x: -largestSize/2,
+                      y: -largestSize/2,
+                      width: largestSize,
+                      height: largestSize
                     }, {
                       x: targetPosition.x,
                       y: targetPosition.y,
                       width: targetPosition.size,
                       height: targetPosition.size,
-                      ease: Sine.easeInOut,
+                      ease: Power2.easeInOut,
                       onComplete: () => {
                         this.$router.push({ path: this.vizTransition.targetPath })
                       }

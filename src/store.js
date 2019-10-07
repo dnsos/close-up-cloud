@@ -8,7 +8,7 @@ export default new Vuex.Store({
   state: {
     inverted: false,    //boolean
     dataFetched: false, //boolean
-    skipFadeIn: false,  //boolean
+    isTransitioning: false,  //boolean
     data: [],           //json data
     taglist: [],
     vizContainer: null, //PIXI.Container
@@ -23,8 +23,7 @@ export default new Vuex.Store({
     },
     cameraZoom: {
       zoom: 0.1, //current zoom
-      center: {x: 0, y: 0}, //zoom center (relative to screen center)
-      time: 0.25  //zoom transition duration
+      center: {x: 0, y: 0}, //zoom center (screen coords)
     },
     cameraMinZoom: 0.1,
     cursor: {
@@ -143,15 +142,17 @@ export default new Vuex.Store({
     },
     setCamera: (state, payload) => {
 
-      const constrains = {
-        x: ((state.world.width/1.5) * state.cameraZoom.zoom) - (state.canvas.width/2),
-        y: ((state.world.height/1.5) * state.cameraZoom.zoom) - (state.canvas.height/2)
+      //constrain the the cameras pixel offset from center
+      if(!state.isTransitioning) {        
+        const constrains = {
+          x: Math.abs(((state.world.width/2) * state.cameraZoom.zoom) - (state.canvas.width/2)),
+          y: Math.abs(((state.world.height/2) * state.cameraZoom.zoom) - (state.canvas.height/2))
+        }
+        if(payload.x < -constrains.x) payload.x = -constrains.x;
+        if(payload.x > constrains.x) payload.x = constrains.x;
+        if(payload.y < -constrains.y) payload.y = -constrains.y;
+        if(payload.y > constrains.y) payload.y = constrains.y;
       }
-
-      payload.x = Math.min(payload.x, constrains.x);
-      payload.x = Math.max(payload.x, -constrains.x);
-      payload.y = Math.min(payload.y, constrains.y);
-      payload.y = Math.max(payload.y, -constrains.y);
 
       state.camera = payload;
     },
@@ -167,8 +168,8 @@ export default new Vuex.Store({
     setWorld: (state, payload) => {
       state.world = payload
     },
-    skipFadeIn: (state, payload) => {
-      state.skipFadeIn = payload
+    isTransitioning: (state, payload) => {
+      state.isTransitioning = payload
     },
     toggleColors: (state) => {
       state.inverted = !state.inverted
@@ -197,9 +198,6 @@ export default new Vuex.Store({
     },
     setVizTransition: (state, payload) => {
       state.vizTransition = payload
-    },
-    endVizTransition: (state, payload) => {
-      state.transitioning = false
     },
     buildTaglist: (state) => {
       
@@ -265,10 +263,10 @@ export default new Vuex.Store({
     beginVizTransition: ({ commit }, payload) => {
       
       commit('setVizTransition', payload);
-      commit('skipFadeIn', true);
+      commit('isTransitioning', true);
     },
     endVizTransition: ({ commit }, payload) => {
-      commit('skipFadeIn', false);
+      commit('isTransitioning', false);
     },
     computeForceLayout({ commit, state }, payload) {
       //console.log('computeForceLayout:', payload);
@@ -287,10 +285,6 @@ export default new Vuex.Store({
       //min world size: canvas
       width = Math.max(width, state.canvas.width);
       height = Math.max(height, state.canvas.height);
-
-      //make the world same aspect ratio as screen
-      const canvasRatio = state.canvas.width / state.canvas.height;
-      width = height * canvasRatio;
 
       //make world*1.25 to enable some panning at 100%
       width *= 1.25;

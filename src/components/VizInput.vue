@@ -19,14 +19,16 @@ export default {
     }
   },
   computed: {
-  ...mapState(['vizContainer', 'canvas', 'camera', 'cameraZoom', 'cameraMinZoom', 'cursor', 'isDragging']),
+  ...mapState(['vizContainer', 'canvas', 'camera', 'cameraZoom', 'cameraMinZoom', 'cursor', 'isDragging', 'isTransitioning']),
   },
   watch: {
   },
   methods: {
     handleScroll(e) {
+      if(this.isTransitioning) return;
+
       let desiredZoom = this.cameraZoom.zoom;
-      if( e.deltaY > 0 ) {		
+      if( e.deltaY > 0 ) {
         desiredZoom -= (this.cameraZoom.zoom/8);
         desiredZoom = Math.max(desiredZoom, this.cameraMinZoom);
       } else {
@@ -39,8 +41,8 @@ export default {
         center: this.cursor
       });
     },
+    
     handleCursorMove(e) {
-      
       this.$store.commit('cursor', {
         x: e.clientX,
         y: e.clientY
@@ -48,6 +50,8 @@ export default {
     },
 
     handlePanStart(e) {
+      if(this.isTransitioning) return;
+
       this.panStartPointer = { 
         x: e.clientX,
         y: e.clientY
@@ -60,6 +64,8 @@ export default {
       document.body.removeEventListener('mousemove', this.handlePanMove);
     },
     handlePanMove(e) {
+      if(this.isTransitioning) return;
+      
       if(this.isDragging) {
         const offset = {
           x: this.panStartCam.x + e.clientX - this.panStartPointer.x,

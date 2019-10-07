@@ -17,7 +17,7 @@
 <script>
 import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
-import { TweenLite, Power2, Sine } from 'gsap/TweenMax'
+import { TweenLite, Power2 } from 'gsap/TweenMax'
 import VizCloudSample from './VizCloudSample.vue'
 import VizTooltip from './VizTooltip.vue'
 import EventBus from '../eventbus.js';
@@ -112,18 +112,20 @@ export default {
       });
     },
     handlePointerTap() {
-
-      if(this.$store.state.isDragging) return;
-      console.log('itemContainer tap!', this.item);
-
+      
+      if(this.$store.state.isDragging) {
+        console.log('itemContainer tap canceled, seems like you are dragging');
+        return;
+      } 
+      //console.log('itemContainer tap!', this.item);
 
       //deactivate interaction, animation only from this point
       this.samplesContainer.interactive = false;
       this.samplesContainer.buttonMode = false;
 
       //center the selected CloudItem
-      //@todo maybe it would be better to move the camera to the item
-      TweenLite.to(this.itemContainer, 1, {
+      //@todo maybe it would be nicer to move the camera to the item
+      TweenLite.to(this.itemContainer, durations.sampleSpreadDelay, {
         x: -this.position.size/2,
         y: -this.position.size/2,
         ease: Power2.easeOut
@@ -142,32 +144,26 @@ export default {
       //after some preparations, beginVizTransition will trigger spreadCloudItemSamples
       EventBus.$once('spreadCloudItemSamples', ({targetId, targetPositions}) => {
         this.fillRenderStack(() => {
-          this.spreadSamples(targetPositions);
+          //Remove offset of previous centering
+          TweenLite.to(this.itemContainer, durations.sampleSpread, {
+            x: 0,
+            y: 0,
+            ease: Power2.easeInOut
+          });
+
+          //Spread out all VizCloudSamples
+          this.$refs.cloudsamples.forEach((cloudSample) => {
+            const newPosition = targetPositions.find(el => cloudSample.id.indexOf(el.id) > -1);
+            TweenLite.to(cloudSample.sprite, durations.sampleSpread, {
+              x: newPosition.x,
+              y: newPosition.y,
+              width: newPosition.size,
+              height: newPosition.size,
+              ease: Power2.easeInOut
+            })
+          });
         });
-      });
-    },
-    spreadSamples(targetPositions) {
-  
-      //Remove offset of previous centering
-      TweenLite.to(this.itemContainer, durations.sampleSpread, {
-        x: 0,
-        y: 0,
-        ease: Sine.easeInOut
-      });
-
-      //Spread out all VizCloudSamples
-      this.$refs.cloudsamples.forEach((cloudSample) => {
-
-        const newPosition = targetPositions.find(el => cloudSample.id.indexOf(el.id) > -1);
-
-        TweenLite.to(cloudSample.sprite, durations.sampleSpread, {
-          x: newPosition.x,
-          y: newPosition.y,
-          width: newPosition.size,
-          height: newPosition.size,
-          ease: Sine.easeInOut
-        })
-      });
+      }); //$once spreadCloudItemSamples
     }
   },
   beforeMount: function() {

@@ -29,7 +29,7 @@ export default {
     if(PIXI.utils.TextureCache[this.id]) {
       sprite.texture = PIXI.utils.TextureCache[this.id]
 
-      if(!this.$store.state.skipFadeIn) {
+      if(!this.$store.state.isTransitioning) {
         sprite.alpha = 0
         TweenLite.to(sprite, durations.sampleFadeIn, {alpha: 1, ease: Power2.easeInOut})
       }

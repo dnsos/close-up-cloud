@@ -50,7 +50,8 @@ export default {
   methods: {
     resize(canvas) {
       //zoom to fit and center
-      EventBus.$emit('zoomToWorld');
+      //EventBus.$emit('zoomToWorld');
+      //EventBus.$emit('moveToCenter');
     },
   },
   beforeMount: function() {
@@ -61,9 +62,6 @@ export default {
     sprite.anchor.set(0.5);
     detailContainer.addChild(sprite);
 
-    //set world size for viewport
-    this.$store.dispatch('computeWorldSize', this.frameBBox);
-
     //load texture
     if(!PIXI.utils.TextureCache[this.object.id]) {
       const loader = new PIXI.Loader();
@@ -72,7 +70,7 @@ export default {
         .load((loader, resources) => {
           sprite.texture = PIXI.utils.TextureCache[this.object.id];
           
-          if(!this.$store.state.skipFadeIn) {
+          if(!this.$store.state.isTransitioning) {
             detailContainer.alpha = 0;
             TweenLite.to(detailContainer, durations.detailFadeIn, {alpha: 1, ease: Power2.easeInOut})
           }
@@ -81,17 +79,23 @@ export default {
       sprite.texture = PIXI.utils.TextureCache[this.object.id];
     }
 
-    this.resize(this.canvas);
+    //this.resize(this.canvas);
   },
   mounted: function () {
 
     this.vizContainer.addChild(this.detailContainer) 
 
     //if we came here with a spread transition that skips fade-in, enable fade-in again
-    if(this.$store.state.skipFadeIn) {
+    if(this.$store.state.isTransitioning) {
       this.$nextTick(() => {
-        this.$store.commit('skipFadeIn', false);
+        //@todo vizTransition should commit this
+        this.$store.commit('isTransitioning', false);
       });
+    //if this is a fresh page load, zoom to fit (vizTransition takes care of that otherwise)
+    } else {
+      this.$store.dispatch('computeWorldSize', this.frameBBox);
+      EventBus.$emit('zoomToWorld');
+      EventBus.$emit('moveToCenter');
     }
 
     EventBus.$on('fadeOutDetail', () => {

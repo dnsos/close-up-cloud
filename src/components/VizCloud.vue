@@ -126,11 +126,18 @@ export default {
     this.createSampleGenerators();
     this.loadSampleChunks();
 
-    //if we came here with a spread transition that skips fade-in, enable fade-in again
-    if(this.$store.state.skipFadeIn) {
+    //if we came here with transition, enable fade-in again (vizCloudSamples)
+    if(this.$store.state.isTransitioning) {
       this.$nextTick(() => {
-        this.$store.commit('skipFadeIn', false);
+        //@todo vizTransition should commit this
+        this.$store.commit('isTransitioning', false);
       });
+    //if this is a fresh page load, zoom to fit (vizTransition takes care of that otherwise)
+    } else {
+      const cloudBBox = this.$store.getters.cloudBBox(this.cloudname);
+      this.$store.dispatch('computeWorldSize', cloudBBox);
+      EventBus.$emit('zoomToWorld');
+      EventBus.$emit('moveToCenter');
     }
     
     //pause and resume loading sample chunks on window blur/focus
@@ -140,11 +147,6 @@ export default {
     window.addEventListener('focus', () => {
       this.loadChunkTimeout = window.setTimeout(this.loadSampleChunks, durations.sampleVisible * 1000);
     })
-
-    //Zoom to fit
-    const cloudBBox = this.$store.getters.cloudBBox(this.cloudname);
-    this.$store.dispatch('computeWorldSize', cloudBBox);
-    EventBus.$emit('zoomToWorld');
 
     this.resize(this.canvas);
     this.vizContainer.addChild(this.cloudContainer);

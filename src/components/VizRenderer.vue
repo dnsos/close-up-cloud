@@ -25,7 +25,7 @@ import EventBus from '../eventbus.js';
 
 export default {
   name: 'viz-renderer',
-  computed: mapState(['canvas', 'world', 'camera', 'cameraZoom', 'taglist', 'inverted', 'vizTransition']),
+  computed: mapState(['canvas', 'world', 'camera', 'cameraZoom', 'inverted', 'vizTransition']),
   components: { VizTransition, VizInput },
   data: () => {
     return {
@@ -45,15 +45,13 @@ export default {
       this.vizContainer.position.set(newValue.x, newValue.y);
     },
     cameraZoom: function(newValue, previousValue) {
-
-      const { zoom, center } = newValue;      
+      const { zoom, center } = newValue;
       this.vizContainer.scale.set(zoom);
 
       /**
        * preserve cursor position in world 
        * @see http://embed.plnkr.co/II6lgj511fsQ7l0QCoRi/
        */
-       
       const x = center.x - (this.canvas.width/2);
       const y = center.y - (this.canvas.height/2);
       var worldPos = {
@@ -69,11 +67,8 @@ export default {
         y: this.camera.y - (newScreenPos.y-y)
       });
     },
-    vizTransition: function() {
-    //  this.moveToPoint(); //viz transition - move viewport to center
-    },
     world: function(newval) {
-      console.log('new world', newval.width, newval.height)
+      //@debug update viewport grid
       //this.updateDebugGrid();
     }
   },
@@ -92,61 +87,50 @@ export default {
         height: clientHeight});
 
       //@todo probably world should update too on resize, bc right now world has initially the same aspect ratio as canvas
-
-      //@debug show viewport grid
-      //this.updateDebugGrid();
     },
-    moveToPoint(point) {
-      //default screen center
-      if(!point) point = {x: 0, y: 0};
-
+    centerWorld(duration) {
       let tmp = { ... this.camera };
-      TweenLite.to(this.camera, 1, { 
-        x: point.x, 
-        y: point.y,
+      TweenLite.to(tmp, duration, { 
+        x: 0, y: 0,
         onUpdate: () => {
-          this.$store.commit('setCamera', tmp);
-        },
-        ease: Power2.easeOut
-      })
-    },
-    /*zoomToBBox(boundingBox) {
-    },*/
-    zoomToWorld() {
-
-      const canvasRatio = this.canvas.width / this.canvas.height;
-      const worldRatio = this.world.width / this.world.height;
-
-      let desiredZoom;
-      if(worldRatio > canvasRatio) {
-        desiredZoom = this.canvas.width / this.world.width;
-      } else {
-        desiredZoom = this.canvas.height / this.world.height;
-      }
-
-      const minZoom = getBBoxScaleFactor(this.canvas, this.world);
-      this.$store.commit('setCameraMinZoom', minZoom);
-
-      desiredZoom = Math.max(desiredZoom, minZoom);
-      desiredZoom = Math.min(desiredZoom, 1);
-
-      //tween zoom
-      let tmp = { zoom: this.cameraZoom.zoom };
-      TweenLite.to(tmp, durations.worldZoom, { 
-        zoom: desiredZoom,
-        onUpdate: () => {
-          this.vizContainer.scale.set(tmp.zoom);
+          this.vizContainer.position.set(tmp.x, tmp.y);
         },
         onComplete: () => {
+          //if I commit onUpdate here it breaks irregular  ...
+          this.$store.commit('setCamera', {x: 0, y: 0})
+        },
+        ease: Power2.easeInOut
+      })
+    },
+    zoomToWorld() {
+
+      const minZoom = getBBoxScaleFactor(this.canvas, this.world);
+      let desiredZoom = minZoom;
+      desiredZoom = Math.min(desiredZoom, 1);
+      
+      this.$store.commit('setCameraMinZoom', minZoom);
+
+      //tween a temporary object with camera vars, commit on complete
+      let tmp = { 
+        x: this.camera.x,
+        y: this.camera.y,
+        zoom: this.cameraZoom.zoom
+      };
+      TweenLite.to(tmp, durations.worldZoom, { 
+        x: 0, //center camera
+        y: 0,
+        zoom: desiredZoom,
+        onUpdate: () => {
+          this.$store.commit('setCamera', {x: tmp.x, y: tmp.y});
           this.$store.commit('setCameraZoom', {
-            zoom: desiredZoom,
+            zoom: tmp.zoom,
             center: {
               x: this.canvas.width/2, 
               y: this.canvas.height/2 
             }
           })
         },
-        ease: Power2.easeOut
+        ease: Power2.easeInOut
       })
     },
     //@debug show viewport grid
@@ -210,6 +194,7 @@ export default {
     });
 
     EventBus.$on('zoomToWorld', this.zoomToWorld);
+    EventBus.$on('centerWorld', this.centerWorld);
   },
   mounted: function() {
 
