@@ -2,16 +2,18 @@
   <section class="home__section">
     <div class="section__wrapper section__about grid-12-columns" id="about">
       <div class="about__text">
-        <h2>Das Projekt</h2>
-        <p>Text über das Projekt. Lorem ipsum dolor sit amet consectetur adipisicing elit. Dignissimos, ut eveniet quod ex pariatur eligendi debitis praesentium enim accusamus omnis consectetur quis veritatis earum hic odit. Consequatur possimus impedit quam. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repudiandae maxime sed iste illum rerum a facilis sit, eum optio! Neque odio quaerat numquam itaque vero fuga sequi quia? Quasi, aperiam?</p>
-        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Perspiciatis, provident quas cum, quaerat quis veritatis expedita amet tempore reprehenderit quod modi voluptatum id cupiditate aperiam corrupti voluptate accusamus asperiores deserunt.</p>
+        <div class="text-block">
+          <h2>Das Projekt</h2>
+          <p>Text über das Projekt. Lorem ipsum dolor sit amet consectetur adipisicing elit. Dignissimos, ut eveniet quod ex pariatur eligendi debitis praesentium enim accusamus omnis consectetur quis veritatis earum hic odit. Consequatur possimus impedit quam. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repudiandae maxime sed iste illum rerum a facilis sit, eum optio! Neque odio quaerat numquam itaque vero fuga sequi quia? Quasi, aperiam?</p>
+          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Perspiciatis, provident quas cum, quaerat quis veritatis expedita amet tempore reprehenderit quod modi voluptatum id cupiditate aperiam corrupti voluptate accusamus asperiores deserunt.</p>
+        </div>
       </div>
       <div class="about__video" ref="videoWrapper">
         <video controls :width="videoWrapperWidth">
           <source src="" type="video/webm">
           <source src="" type="video/mp4">
           Video
-      </video>
+         </video>
       </div>
     </div>
   </section>
@@ -36,6 +38,11 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.about__text, .about__video {
+  display: flex;
+  align-items: center;
+}
+
 @media screen and (max-width: 750px) {
   .about__text {
     grid-column: span 12;

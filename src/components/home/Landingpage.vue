@@ -1,9 +1,10 @@
 <template>
   <section class="home__section home__landingpage">
     <div class="section__wrapper section__landingpage">
-      <h1>Close-Up Cloud</h1>
+      <img class="logo--animated" :src="animatedLogo" alt="Logo Close-Up Cloud">
+      <!-- <h1>Close-Up Cloud</h1> -->
       <p>Die Close-Up Cloud ist eine experimentelle Visualisierungstechnologie für die Erkundung verschlagworteter Bildsammlungen.</p>
-      <button class="button--primary"><router-link to="/viz" exact>Zur Visualisierung</router-link></button>
+      <button class="button__viz button--primary"><router-link to="/viz" exact>Zur Visualisierung</router-link></button>
       <button class="button__about"><a href="#about">Über das Projekt</a></button>
     </div>
   </section>
@@ -11,7 +12,12 @@
 
 <script>
 export default {
-  name: 'landingpage'
+  name: 'landingpage',
+  computed: {
+    animatedLogo: function (id) {
+      return `${process.env.VUE_APP_URL_LOGOS}/CUC_Logo_Animation.gif`
+    }
+  }
 }
 </script>
 
@@ -22,12 +28,21 @@ export default {
   justify-content: center;
   align-items: center;
   text-align: center;
-  background-color: var(--color-canvas);
+  /* background-color: var(--color-canvas); */
 
   .section__landingpage {
-    width: 50%;
+    width: 80%;
+    max-width: 55rem;
     padding-top: 0;
   }
+}
+
+.logo--animated {
+  width: 100%;
+}
+
+.button__viz, .button__about {
+  margin-bottom: calc(var(--grid-spacing)/2);
 }
 .button__about {
   margin-left: calc(var(--grid-spacing)/2);
