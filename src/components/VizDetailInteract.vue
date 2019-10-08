@@ -306,6 +306,9 @@ export default {
   },
   beforeDestroy: function () {
     this.$parent.detailContainer.removeChild(this.interactContainer) 
+  },
+  destroyed: function() {
+    this.interactContainer.destroy(true);
   }
 }
 </script>

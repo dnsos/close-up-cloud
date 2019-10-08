@@ -92,6 +92,9 @@ export default {
   },
   beforeDestroy: function () {
     this.vizContainer.removeChild(this.detailContainer)
+  },
+  destroyed: function() {
+    this.detailContainer.destroy(true);
   }
 }
 </script>

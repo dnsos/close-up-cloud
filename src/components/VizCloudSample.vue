@@ -29,6 +29,7 @@ export default {
     if(PIXI.utils.TextureCache[this.id]) {
       sprite.texture = PIXI.utils.TextureCache[this.id]
 
+      //if we came via vizTransition, skip fade-in
       if(!this.$store.state.isTransitioning) {
         sprite.alpha = 0
         TweenLite.to(sprite, durations.sampleFadeIn, {alpha: 1, ease: Power2.easeInOut})
@@ -41,12 +42,13 @@ export default {
 
   mounted: function() {
     this.$parent.samplesContainer.addChild(this.sprite)
-
-    //htmlviz
-    //this.$refs.cutout.style.backgroundImage = `url(${this.url})`;
   },
   beforeDestroy: function () {
     this.$parent.samplesContainer.removeChild(this.sprite)
+  },
+  destroyed: function() {
+    //@todo this breaks stuff
+    //this.sprite.destroy(true);
   }
 }
 </script>

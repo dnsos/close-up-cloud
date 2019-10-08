@@ -143,9 +143,12 @@ export default {
 
     this.vizContainer.addChild(this.cloudContainer);
   },
-  beforeDestroy: function () {
+  beforeDestroy: function() {
     this.vizContainer.removeChild(this.cloudContainer)
     window.clearTimeout(this.loadChunkTimeout);
+  },
+  destroyed: function() {
+    this.cloudContainer.destroy(true);
   }
 }
 </script>

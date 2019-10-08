@@ -83,6 +83,7 @@ export default {
             targetPositions
           });
           //Route to the target view
+          //@todo no timeouts / better handling
           window.setTimeout(() => {
             this.$router.push({ path: this.vizTransition.targetPath })
           }, durations.sampleSpread * 1000);
