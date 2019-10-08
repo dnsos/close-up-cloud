@@ -40,18 +40,11 @@ export default {
     }
   },
   watch: {
-    canvas(newval) {   
-      this.resize(newval);
-    },
     vizTransition(newval) {
       this.hideOtherItems(newval.targetId);
     }
   },
   methods: {
-    resize(canvas) {
-      //zoom to fit
-      //EventBus.$emit('zoomToWorld');
-    },
     initForceLayout() {
 
       //only ever compute once
@@ -111,7 +104,7 @@ export default {
     }
   },
   beforeMount: function() {
-    console.log("hello this is a cloud")
+    //console.log("hello this is a cloud")
 
     // create container for tag cloud
     this.cloudContainer = new PIXI.Container()
@@ -127,10 +120,10 @@ export default {
     this.loadSampleChunks();
 
     //if we came here with transition, enable fade-in again (vizCloudSamples)
+    //@todo vizTransition should commit this
     if(this.$store.state.isTransitioning) {
       this.$nextTick(() => {
-        //@todo vizTransition should commit this
-        this.$store.commit('isTransitioning', false);
+        this.$store.dispatch('endVizTransition');
       });
     //if this is a fresh page load, zoom to fit (vizTransition takes care of that otherwise)
     } else {
@@ -148,7 +141,6 @@ export default {
       this.loadChunkTimeout = window.setTimeout(this.loadSampleChunks, durations.sampleVisible * 1000);
     })
 
-    this.resize(this.canvas);
     this.vizContainer.addChild(this.cloudContainer);
   },
   beforeDestroy: function () {

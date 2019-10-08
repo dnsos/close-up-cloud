@@ -14,7 +14,6 @@
 
 <script>
 import * as PIXI from 'pixi.js'
-import { Viewport } from 'pixi-viewport'
 import { TweenLite, Power1, Power2 } from 'gsap/TweenMax'
 import { mapState } from 'vuex'
 import VizTransition from './VizTransition.vue'
@@ -30,7 +29,6 @@ export default {
   data: () => {
     return {
       PIXIApp: null,
-      viewport: null,
       vizContainer: null,
       centerContainer: null,
       debugContainer: null
@@ -67,10 +65,8 @@ export default {
         y: this.camera.y - (newScreenPos.y-y)
       });
     },
-    world: function(newval) {
-      //@debug update viewport grid
-      //this.updateDebugGrid();
-    }
+    //@debug update viewport grid
+    //world: function() { this.updateDebugGrid(); }
   },
   methods: {
     handleResize() {
@@ -164,7 +160,7 @@ export default {
     }
   },
   beforeMount: function() {
-    console.log("hello this is a renderer")
+    //console.log("hello this is a renderer")
 
     this.PIXIApp = new PIXI.Application({
       width: 1280,

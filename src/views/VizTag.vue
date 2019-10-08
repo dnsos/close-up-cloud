@@ -27,7 +27,7 @@ export default {
     }
   },
   beforeMount: function() {
-    console.log("hello this is a single tag cloud")
+    //console.log("hello this is a single tag cloud")
   },
   mounted: function() {
   },

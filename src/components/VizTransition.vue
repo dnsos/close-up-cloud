@@ -14,8 +14,7 @@ import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
 import { TweenLite, Power2 } from 'gsap/TweenMax'
 import VizCloudSample from './VizCloudSample.vue'
-import VizTooltip from './VizTooltip.vue'
-import { convertTagOccurencesToCloudItems, getBBoxScaleFactor, getCutoutUID } from '../utils.js'
+import { convertTagOccurencesToCloudItems, getCutoutUID } from '../utils.js'
 import { durations } from '../variables.js'
 import EventBus from '../eventbus.js';
 
@@ -34,9 +33,7 @@ export default {
   },
   watch: {
     vizTransition({from, to}) {
-      console.log('Hi this is Viz Transition Watcher');
-
-      //@todo pause viewport interactions while transitioning
+      //console.log('Hi this is Viz Transition Watcher');
 
       if(from === 'viz-overview' && to === 'viz-tag') {
         this.transitionOverviewToTag();
@@ -190,7 +187,6 @@ export default {
           
           //centering
           EventBus.$emit('centerWorld', durations.sampleSpread);
-          const originTargetPosition = this.$store.getters.positionInCloud(tagTitle, objectId);
           this.$refs.cloudsamples.forEach((cloudSample) => {
             const spawnPosition = spawnPositions.find(el => el.id === cloudSample.id);
 
@@ -263,22 +259,18 @@ export default {
 
     getDetailPositions(objectId, tagTitle) {
 
-      const positions = [];      
       const object = this.$store.getters.object(objectId);
       const detailFrameBBox = this.$store.getters.detailFrameBBox(objectId);
       
       //collect all geometries of tag in one object as sample ids
-      const samples = object.tags.find(el => el.title === tagTitle).geometry.map(geo => {
-
-        positions.push({
+      return object.tags.find(el => el.title === tagTitle).geometry.map(geo => {
+        return {
           id: getCutoutUID(objectId, tagTitle, geo.x, geo.y),
           x: geo.x - detailFrameBBox.x - (detailFrameBBox.width/2),
           y: geo.y - detailFrameBBox.y - (detailFrameBBox.height/2),
           size: geo.size
-        })
+        }
       });
-      
-      return positions;
     },
 
     prepareForceLayout() {
@@ -328,10 +320,6 @@ export default {
       sprite.alpha = 0;
       sprite.anchor.set(0.5);
       sprite.texture = PIXI.utils.TextureCache[detailId]
-      
-      //apply scaling to stay within viewport dimensions
-      const detailFrameBBox = this.$store.getters.detailFrameBBox(detailId);
-      const detailScaleFactor = getBBoxScaleFactor(this.canvas, detailFrameBBox);
       
       //fade-in detail image
       this.vizContainer.addChild(sprite) 

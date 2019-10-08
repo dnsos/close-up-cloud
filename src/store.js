@@ -261,11 +261,10 @@ export default new Vuex.Store({
       commit('updateCanvasSize', payload)
     },
     beginVizTransition: ({ commit }, payload) => {
-      
       commit('setVizTransition', payload);
       commit('isTransitioning', true);
     },
-    endVizTransition: ({ commit }, payload) => {
+    endVizTransition: ({ commit }) => {
       commit('isTransitioning', false);
     },
     computeForceLayout({ commit, state }, payload) {

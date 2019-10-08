@@ -37,7 +37,7 @@ export default {
     }
   },
   beforeMount: function() {
-    console.log("hello this is a tag overview cloud")
+    //console.log("hello this is a tag overview cloud")
   },
   mounted: function() {
   },

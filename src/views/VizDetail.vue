@@ -8,12 +8,10 @@
 <script>
 import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
-import { TweenLite, TimelineLite, Power2 } from 'gsap/TweenMax'
-import PolyBool from 'polybooljs';
+import { TweenLite, Power2 } from 'gsap/TweenMax'
 import VizDetailInteract from '../components/VizDetailInteract.vue';
 import EventBus from '../eventbus.js';
-import { durations, mkgGold } from '../variables.js'
-import { getBBoxScaleFactor } from '../utils.js'
+import { durations } from '../variables.js'
 
 export default {
   name: 'viz-detail',
@@ -42,20 +40,8 @@ export default {
       sprite: null
     }
   },
-  watch: {
-    canvas(newval) {
-      this.resize(newval);
-    }
-  },
-  methods: {
-    resize(canvas) {
-      //zoom to fit and center
-      //EventBus.$emit('zoomToWorld');
-      //EventBus.$emit('moveToCenter');
-    },
-  },
   beforeMount: function() {
-    console.log("hello this is a detail view")
+    //console.log("hello this is a detail view")
 
     const detailContainer = this.detailContainer = new PIXI.Container();
     const sprite = this.sprite = new PIXI.Sprite()
@@ -67,7 +53,7 @@ export default {
       const loader = new PIXI.Loader();
       loader
         .add(this.object.id, `${process.env.VUE_APP_URL_DETAIL}/${this.object.id}/${this.object.id}-Frame.jpg`)
-        .load((loader, resources) => {
+        .load(() => {
           sprite.texture = PIXI.utils.TextureCache[this.object.id];
           
           if(!this.$store.state.isTransitioning) {
@@ -78,18 +64,16 @@ export default {
     } else {
       sprite.texture = PIXI.utils.TextureCache[this.object.id];
     }
-
-    //this.resize(this.canvas);
   },
   mounted: function () {
 
     this.vizContainer.addChild(this.detailContainer) 
 
-    //if we came here with a spread transition that skips fade-in, enable fade-in again
+    //if we came here with a spread transition, end it
+    //@todo vizTransition should do this
     if(this.$store.state.isTransitioning) {
       this.$nextTick(() => {
-        //@todo vizTransition should commit this
-        this.$store.commit('isTransitioning', false);
+        this.$store.dispatch('endVizTransition');
       });
     //if this is a fresh page load, zoom to fit (vizTransition takes care of that otherwise)
     } else {

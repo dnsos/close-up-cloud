@@ -16,7 +16,6 @@
 
 <script>
 import * as PIXI from 'pixi.js'
-import { mapState } from 'vuex'
 import { TweenLite, Power2 } from 'gsap/TweenMax'
 import VizCloudSample from './VizCloudSample.vue'
 import VizTooltip from './VizTooltip.vue'
@@ -142,7 +141,7 @@ export default {
       });
 
       //after some preparations, beginVizTransition will trigger spreadCloudItemSamples
-      EventBus.$once('spreadCloudItemSamples', ({targetId, targetPositions}) => {
+      EventBus.$once('spreadCloudItemSamples', ({targetPositions}) => {
         this.fillRenderStack(() => {
           //Remove offset of previous centering
           TweenLite.to(this.itemContainer, durations.sampleSpread, {
@@ -167,7 +166,7 @@ export default {
     }
   },
   beforeMount: function() {
-    console.log("hello this is a cloud item")
+    //console.log("hello this is a cloud item")
   
     // itemContainer stores samplesContainer and textBox
     const itemContainer = this.itemContainer = new PIXI.Container();

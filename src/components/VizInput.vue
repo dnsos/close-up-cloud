@@ -5,10 +5,7 @@
 </template>
 
 <script>
-import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
-import EventBus from '../eventbus.js';
-import { durations } from '../variables.js'
 
 export default {
   name: 'viz-transition',
@@ -59,7 +56,7 @@ export default {
       this.panStartCam = { ...this.camera };
       document.body.addEventListener('mousemove', this.handlePanMove);
     },
-    handlePanEnd(e) {
+    handlePanEnd() {
       this.$store.commit('dragEnd');
       document.body.removeEventListener('mousemove', this.handlePanMove);
     },
