@@ -8,7 +8,7 @@
 
 <script>
 import VizCloud from '../components/VizCloud'
-import { getCutoutUID, convertTagOccurencesToCloudItems } from '../utils.js'
+import { convertTagOccurencesToCloudItems } from '../utils.js'
 
 export default {
   name: 'viz-tag',
@@ -27,7 +27,7 @@ export default {
     }
   },
   beforeMount: function() {
-    console.log("hello this is a single tag cloud")
+    //console.log("hello this is a single tag cloud")
   },
   mounted: function() {
   },

@@ -9,9 +9,7 @@ import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
 import { TweenLite, TimelineLite, Power2 } from 'gsap/TweenMax'
 import PolyBool from 'polybooljs';
-import EventBus from '../eventbus.js';
-import { durations, mkgGold } from '../variables.js'
-import { getBBoxScaleFactor } from '../utils.js'
+import { mkgGold } from '../variables.js'
 
 export default {
   name: 'viz-detail',
@@ -76,8 +74,8 @@ export default {
       for(let i=0; i<tagGeometries.geometry.length; i++) {
 
         const geo = tagGeometries.geometry[i];
-        if(mouseX > geo.x && mouseX < geo.x + geo.size &&
-          mouseY > geo.y && mouseY < geo.y + geo.size) {
+        if(mouseX >= geo.x && mouseX <= geo.x + geo.size &&
+          mouseY >= geo.y && mouseY <= geo.y + geo.size) {
             return geo;
           }
       }
@@ -251,17 +249,16 @@ export default {
           console.log('detail cutout tap!', tagPoly.tagTitle);
           
           //start the transition
-          this.$router.push({ path: `/viz/tag/${tagPoly.tagTitle}` });
-          /*this.$store.dispatch('beginVizTransition', { 
+          //this.$router.push({ path: `/viz/tag/${tagPoly.tagTitle}` });
+          this.$store.dispatch('beginVizTransition', { 
             from: 'viz-detail', 
             to: 'viz-tag', 
-            targetPath: `/viz/tag/${tagPoly.tagTitle}`,
-            trigger: clickPoly
-          });*/
+            targetId: tagPoly.tagTitle,
+            targetPath: `/viz/tag/${tagPoly.tagTitle}`
+          });
         })
-        clickPoly.on('pointerover', (e) => {
+        clickPoly.on('pointerover', () => {
           TweenLite.to(this.masks[tagPoly.tagTitle], 0.2, {alpha: 0.66});
-          //TweenLite.to(this.highlights[tagPoly.tagTitle], 0.2, {alpha: 1});
 
           for(let key in this.highlights) {
             if(key === tagPoly.tagTitle) {
@@ -271,16 +268,14 @@ export default {
             }
           }
 
-          const local = e.data.getLocalPosition(this.background);
-          const hoverGeo = this.getHoverGeometry(tagPoly.tagTitle, local.x, local.y);
-
           //@todo attach tooltip to this coordinate
-          //the data is currently in original size, no screen coords :(
+          //the data is currently in original size
+          //const local = e.data.getLocalPosition(this.background);
+          //const hoverGeo = this.getHoverGeometry(tagPoly.tagTitle, local.x, local.y);
           //console.log('Hovering Rect Geometry at', hoverGeo.x, hoverGeo.y)
         })
         clickPoly.on('pointerout', () => {
           TweenLite.to(this.masks[tagPoly.tagTitle], 0.2, {alpha: 0, ease: Power2.easeIn});
-          //TweenLite.to(this.highlights[tagPoly.tagTitle], 0.2, {alpha: 0, ease: Power2.easeIn});
           
           for(let key in this.highlights) {
             TweenLite.to(this.highlights[key], 0.2, {alpha: 0, ease: Power2.easeIn});
@@ -293,7 +288,7 @@ export default {
   },
 
   beforeMount: function() {
-    console.log("hello this is a detail interaction layer")
+    //console.log("hello this is a detail interaction layer")
 
     this.interactContainer = new PIXI.Container();
     this.interactContainer.position.set(-(this.frame.width/2), -(this.frame.height/2))
@@ -311,6 +306,9 @@ export default {
   },
   beforeDestroy: function () {
     this.$parent.detailContainer.removeChild(this.interactContainer) 
+  },
+  destroyed: function() {
+    this.interactContainer.destroy(true);
   }
 }
 </script>

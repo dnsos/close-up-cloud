@@ -3,8 +3,9 @@
     <router-link :to="`/viz/tag/${item.id}`">Cloud item {{item.id}}</router-link>
 
     <VizCloudSample v-for="sample in renderStack" ref="cloudsamples"
-      :sample="sample"
-      :key="`${sample.id}`" />
+      :id="sample.id"
+      :size="position.size"
+      :key="`viz-clouditem-${sample.id}`" />
     <VizTooltip
       :content="tooltipContent"
       :yOffset="position.size"
@@ -15,12 +16,10 @@
 
 <script>
 import * as PIXI from 'pixi.js'
-import { mapState } from 'vuex'
-import { TweenLite, Power2, Sine } from 'gsap/TweenMax'
+import { TweenLite, Power2 } from 'gsap/TweenMax'
 import VizCloudSample from './VizCloudSample.vue'
 import VizTooltip from './VizTooltip.vue'
 import EventBus from '../eventbus.js';
-import { getCutoutUID, convertTagOccurencesToCloudItems } from '../utils.js'
 import { durations } from '../variables.js'
 
 export default {
@@ -44,7 +43,6 @@ export default {
   },
   components: { VizCloudSample, VizTooltip },
   computed: {
-    ...mapState(['canvas', 'viewport']),
     position: function () {
       return this.$store.getters.positionInCloud(this.cloudname, this.item.id)
     },
@@ -113,71 +111,62 @@ export default {
       });
     },
     handlePointerTap() {
-
-      if(this.$store.state.isDragging) return;
-      console.log('itemContainer tap!', this.item);
-
-      const from = this.$route.name;
-      const to = (from === 'viz-overview') ? 'viz-tag' : (from === 'viz-tag') ? 'viz-detail' : '';
+      
+      if(this.$store.state.isDragging) {
+        console.log('itemContainer tap canceled, seems like you are dragging');
+        return;
+      } 
+      //console.log('itemContainer tap!', this.item);
 
       //deactivate interaction, animation only from this point
       this.samplesContainer.interactive = false;
       this.samplesContainer.buttonMode = false;
 
       //center the selected CloudItem
-      //@todo it would probably be better to move the camera to the item, but I don't get pixi-viewport configured correctly
-      TweenLite.to(this.itemContainer, 1, {
+      //@todo maybe it would be nicer to move the camera to the item
+      TweenLite.to(this.itemContainer, durations.sampleSpreadDelay, {
         x: -this.position.size/2,
         y: -this.position.size/2,
         ease: Power2.easeOut
       });
 
       //start the transition
+      const from = this.$route.name;
+      const to = (from === 'viz-overview') ? 'viz-tag' : (from === 'viz-tag') ? 'viz-detail' : '';
+
       this.$store.dispatch('beginVizTransition', { 
         from, to, 
-        targetPath: `${this.subpath}/${this.item.id}`,
-        trigger: this.item 
+        targetId: this.item.id,
+        targetPath: `${this.subpath}/${this.item.id}`
       });
 
       //after some preparations, beginVizTransition will trigger spreadCloudItemSamples
-      EventBus.$once('spreadCloudItemSamples', ({targetId, targetPositions}) => {
+      EventBus.$once('spreadCloudItemSamples', ({targetPositions}) => {
         this.fillRenderStack(() => {
-          this.spreadSamples(targetPositions);
+          //Remove offset of previous centering
+          TweenLite.to(this.itemContainer, durations.sampleSpread, {
+            x: 0,
+            y: 0,
+            ease: Power2.easeInOut
+          });
+
+          //Spread out all VizCloudSamples
+          this.$refs.cloudsamples.forEach((cloudSample) => {
+            const newPosition = targetPositions.find(el => cloudSample.id.indexOf(el.id) > -1);
+            TweenLite.to(cloudSample.sprite, durations.sampleSpread, {
+              x: newPosition.x,
+              y: newPosition.y,
+              width: newPosition.size,
+              height: newPosition.size,
+              ease: Power2.easeInOut
+            })
+          });
         });
-      });
-    },
-    spreadSamples(targetPositions) {
-  
-      //Remove offset of previous centering
-      TweenLite.to(this.itemContainer, durations.sampleSpread, {
-        x: 0,
-        y: 0,
-        ease: Sine.easeInOut
-      });
-
-      //Spread out all VizCloudSamples
-      this.$refs.cloudsamples.forEach((cloudSample) => {
-
-        //@todo unify
-        let newPosition;
-        if(this.$route.name === 'viz-overview') {
-          newPosition = targetPositions.find(el => el.id === cloudSample.sample.origin);
-        } else if(this.$route.name === 'viz-tag') {
-          newPosition = targetPositions.find(el => el.id === cloudSample.sample.id);
-        }
-
-        TweenLite.to(cloudSample.sprite, durations.sampleSpread, {
-          x: newPosition.x,
-          y: newPosition.y,
-          width: newPosition.size,
-          height: newPosition.size,
-          ease: Sine.easeInOut
-        })
-      });
+      }); //$once spreadCloudItemSamples
     }
   },
   beforeMount: function() {
-    console.log("hello this is a cloud item")
+    //console.log("hello this is a cloud item")
   
     // itemContainer stores samplesContainer and textBox
     const itemContainer = this.itemContainer = new PIXI.Container();

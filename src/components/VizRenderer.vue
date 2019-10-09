@@ -6,6 +6,7 @@
       </router-link>
       <router-view /> <!-- here goes VitOverview, VizTag, VizDetail via router -->
       <VizTransition />
+      <VizInput />
     </div>
   </div>
   
@@ -13,150 +14,153 @@
 
 <script>
 import * as PIXI from 'pixi.js'
-import { Viewport } from 'pixi-viewport'
 import { TweenLite, Power1, Power2 } from 'gsap/TweenMax'
 import { mapState } from 'vuex'
 import VizTransition from './VizTransition.vue'
-import { durations, minZoomFactor, maxZoomFactor } from '../variables.js'
+import VizInput from './VizInput.vue'
+import { durations } from '../variables.js'
+import { getBBoxScaleFactor } from '../utils.js'
 import EventBus from '../eventbus.js';
 
 export default {
   name: 'viz-renderer',
-  computed: mapState(['canvas', 'taglist', 'inverted', 'vizTransition']),
-  components: { VizTransition },
+  computed: mapState(['canvas', 'world', 'camera', 'cameraZoom', 'inverted', 'vizTransition']),
+  components: { VizTransition, VizInput },
   data: () => {
     return {
       PIXIApp: null,
-      viewport: null,
-      viewportCenter: {x: 0, y: 0}, //helper point for center animation
+      vizContainer: null,
+      centerContainer: null,
       debugContainer: null
     };
   },
   watch: {
-    inverted: function (newValue, previousValue) {
+    inverted: function (newValue) {
       const targetAlpha = (newValue === true) ? 1 : 0;
       TweenLite.to(this.PIXIApp.stage.filters[0], durations.invert, { alpha: targetAlpha, ease: Power1.easeInOut } )
     },
-    vizTransition: function() {
-      this.moveToPoint(); //viz transition - move viewport to center
-    }
+    camera: function(newValue) {
+      this.vizContainer.position.set(newValue.x, newValue.y);
+    },
+    cameraZoom: function(newValue, previousValue) {
+      const { zoom, center } = newValue;
+      this.vizContainer.scale.set(zoom);
+
+      /**
+       * preserve cursor position in world 
+       * @see http://embed.plnkr.co/II6lgj511fsQ7l0QCoRi/
+       */
+      const x = center.x - (this.canvas.width/2);
+      const y = center.y - (this.canvas.height/2);
+      var worldPos = {
+        x: (x - this.camera.x) / previousValue.zoom, 
+        y: (y - this.camera.y) / previousValue.zoom
+      };
+      var newScreenPos = {
+        x: (worldPos.x * zoom) + this.camera.x, 
+        y: (worldPos.y * zoom) + this.camera.y
+      };
+      this.$store.commit('setCamera', { 
+        x: this.camera.x - (newScreenPos.x-x),
+        y: this.camera.y - (newScreenPos.y-y)
+      });
+    },
+    //@debug update viewport grid
+    //world: function() { this.updateDebugGrid(); }
   },
   methods: {
     handleResize() {
 
       //@todo bugfix: sometimes while resizing browser says "Cannot read property 'clientWidth' of undefined" – wtf?
       if(!this.$refs.rendererWrapper) return;
-      const { clientWidth: width, clientHeight: height } = this.$refs.rendererWrapper;
-      this.PIXIApp.renderer.resize(width, height);
-      this.viewport.resize(width, height, width, height);
-      this.$store.dispatch('updateCanvasSize', {width, height});
+      
+      const { clientWidth, clientHeight } = this.$refs.rendererWrapper;
 
-      //update viewport zoom range
-      const minZoomFactor = 0.75;
-      const maxZoomFactor = 10;
-      this.viewport
-        .clamp({
-          direction: 'all'
-        })
-        .clampZoom({
-          minWidth: width/maxZoomFactor,
-          minHeight: height/maxZoomFactor,
-          maxWidth: width/minZoomFactor,
-          maxHeight: height/minZoomFactor
-        })
+      this.PIXIApp.renderer.resize(clientWidth, clientHeight);
+      this.centerContainer.position.set(clientWidth/2, clientHeight/2);
+      this.$store.dispatch('updateCanvasSize', {
+        width: clientWidth, 
+        height: clientHeight});
 
-      //center view
-      this.moveToPoint();
-
-      //@debug show viewport grid
-      //this.appendDebugGrid();
+      //@todo probably world should update too on resize, bc right now world has initially the same aspect ratio as canvas
     },
-    moveToPoint(point) {
-      //default screen center
-      if(!point) point = {x: this.canvas.width/2, y: this.canvas.height/2};
-
-      TweenLite.to(this.viewportCenter, 1, { 
-        x: point.x, 
-        y: point.y,
+    centerWorld(duration) {
+      let tmp = { ... this.camera };
+      TweenLite.to(tmp, duration, { 
+        x: 0, y: 0,
         onUpdate: () => {
-          this.viewport.moveCenter(this.viewportCenter.x, this.viewportCenter.y);
+          this.vizContainer.position.set(tmp.x, tmp.y);
         },
-        ease: Power2.easeOut
+        onComplete: () => {
+          //if I commit onUpdate here it breaks irregular  ...
+          this.$store.commit('setCamera', {x: 0, y: 0})
+        },
+        ease: Power2.easeInOut
       })
     },
-    zoomToFitBBox(boundingBox) {
+    zoomToWorld() {
 
-      const padding = 64;
-      const canvasRatio = this.canvas.width / this.canvas.height;
-      const frameRatio = boundingBox.width / boundingBox.height;
+      const minZoom = getBBoxScaleFactor(this.canvas, this.world);
+      let desiredZoom = minZoom;
+      desiredZoom = Math.min(desiredZoom, 1);
+      
+      this.$store.commit('setCameraMinZoom', minZoom);
 
-      let relevantDimension;
-      if(frameRatio > canvasRatio) {
-        relevantDimension = { width: boundingBox.width + (padding*2) };
-      } else {
-        relevantDimension = { height: boundingBox.height + (padding*2) };
-      }
-
-      this.viewport.snapZoom({
-        ...relevantDimension,
-        center: new PIXI.Point(this.canvas.width/2, this.canvas.height/2),
-        removeOnComplete: true,
-        removeOnInterrupt: true,
-        time: durations.sampleSpread * 1000,
-        ease:  function(t, b, c, d) {
-          return -c * (t /= d) * (t - 2) + b; // = easeOutQuad = Power2.easeOut 
+      //tween a temporary object with camera vars, commit on complete
+      let tmp = { 
+        x: this.camera.x,
+        y: this.camera.y,
+        zoom: this.cameraZoom.zoom
+      };
+      TweenLite.to(tmp, durations.worldZoom, { 
+        x: 0, //center camera
+        y: 0,
+        zoom: desiredZoom,
+        onUpdate: () => {
+          this.$store.commit('setCamera', {x: tmp.x, y: tmp.y});
+          this.$store.commit('setCameraZoom', {
+            zoom: tmp.zoom,
+            center: {
+              x: this.canvas.width/2, 
+              y: this.canvas.height/2 
+            }
+          })
         },
+        ease: Power2.easeInOut
       })
     },
     //@debug show viewport grid
-    appendDebugGrid() {
+    updateDebugGrid() {
       
       if(this.debugContainer) this.debugContainer.parent.removeChild(this.debugContainer);
       this.debugContainer = new PIXI.Container();
-      this.viewport.addChild(this.debugContainer)
+      this.vizContainer.addChild(this.debugContainer)
 
-      //@debug red tinted background with viewport.worldWidth dimensions
+      //@debug red tinted background with world dimensions
       let bg = new PIXI.Sprite(PIXI.Texture.WHITE)
       bg.tint = 0xff0000
       bg.alpha = 0.2
       bg.x = 0
       bg.y = 0
-      bg.width = this.viewport.worldWidth
-      bg.height = this.viewport.worldHeight
+      bg.width = this.world.width
+      bg.height = this.world.height
+      bg.anchor.set(0.5);
       this.debugContainer.addChild(bg)
 
-      //@debug blue tinted background with viewport.screenWidth dimensions
-      /*bg = new PIXI.Sprite(PIXI.Texture.WHITE)
-      bg.tint = 0x000ff000
-      bg.alpha = 0.2
-      bg.x = 0
-      bg.y = 0
-      bg.width = this.viewport.screenWidth
-      bg.height = this.viewport.screenHeight
-      this.debugContainer.addChild(bg)*/
-      
-      
-      //@debug viewport grid
-      for(let x=1; x<12; x++) {
-        let sprite = this.debugContainer.addChild(new PIXI.Sprite(PIXI.Texture.WHITE))
-        sprite.tint = 0xff0000
-        if(x===6) sprite.tint = 0x0000ff
-        sprite.width = 2;
-        sprite.height = this.viewport.worldHeight;
-        sprite.position.set((this.viewport.worldWidth/12)*x, 0)
-      }
-      for(let y=1; y<12; y++) {
-        let sprite = this.debugContainer.addChild(new PIXI.Sprite(PIXI.Texture.WHITE))
-        sprite.tint = 0xff0000
-        if(y===6) sprite.tint = 0x0000ff
-        sprite.width = this.viewport.worldWidth;
-        sprite.height = 2;
-        sprite.position.set(0, (this.viewport.worldHeight/12)*y)
-      }
+      let sprite = this.debugContainer.addChild(new PIXI.Sprite(PIXI.Texture.WHITE))
+      sprite.tint = 0x0000ff
+      sprite.width = 12;
+      sprite.height = this.world.height;
+      sprite.anchor.set(0.5);
+      sprite = this.debugContainer.addChild(new PIXI.Sprite(PIXI.Texture.WHITE))
+      sprite.tint = 0x0000ff
+      sprite.height = 12;
+      sprite.width = this.world.width;
+      sprite.anchor.set(0.5);
     }
   },
   beforeMount: function() {
-    console.log("hello this is a renderer")
+    //console.log("hello this is a renderer")
 
     this.PIXIApp = new PIXI.Application({
       width: 1280,
@@ -166,32 +170,9 @@ export default {
       resolution: 1
     })
 
-    this.viewport = new Viewport({
-
-      // width/height values will be overwritten by handleResize
-      screenWidth: 1280,
-      screenHeight: 800,
-      worldWidth: 1280,
-      worldHeight: 1280,
-
-      interaction: this.PIXIApp.renderer.plugins.interaction
-    })
-    .on('drag-start', () => {
-      this.$store.commit('dragStart')
-    })
-    .on('drag-end', () => {
-      this.$store.commit('dragEnd')
-      this.viewportCenter.x = this.viewport.center.x;
-      this.viewportCenter.y = this.viewport.center.y;
-    })
-    /*.on('moved', () => {
-      console.log(this.viewport.center.x, this.viewport.center.y)
-    })*/
-    .on('zoomed', (e) => {
-      //console.log('Current scale:', e.viewport.transform.scale.x)
-      this.viewportCenter.x = this.viewport.center.x;
-      this.viewportCenter.y = this.viewport.center.y;
-    })
+    this.centerContainer = new PIXI.Container(); //always stays centered
+    this.vizContainer = new PIXI.Container(); //viz root, zoom and pan
+    this.centerContainer.addChild(this.vizContainer);
 
     // init invert filter
     const colorMatrix = new PIXI.filters.ColorMatrixFilter()
@@ -200,32 +181,30 @@ export default {
     this.PIXIApp.stage.filters = [colorMatrix]
 
     this.$store.commit('setPIXIApp', this.PIXIApp);
-    this.$store.commit('setViewport', this.viewport);
+    this.$store.commit('setVizContainer', this.vizContainer);
     
     //already put the assumed canvas-size in the store, so that forceLayout can respect it
     this.$store.dispatch('updateCanvasSize', {
-      width: this.$parent.$refs.main.clientWidth, 
-      height: this.$parent.$refs.main.clientHeight
+      width: document.body.clientWidth, 
+      height: document.body.clientHeight
     });
 
-    EventBus.$on('zoomToBBox', this.zoomToFitBBox);
+    EventBus.$on('zoomToWorld', this.zoomToWorld);
+    EventBus.$on('centerWorld', this.centerWorld);
   },
   mounted: function() {
-    
-    const wrap = this.$refs.rendererWrapper;
-    wrap.appendChild(this.PIXIApp.view)
-    this.PIXIApp.stage.addChild(this.viewport)
-    
-    this.viewport
-        .drag()
-        .pinch()
-        .wheel()
-        .decelerate()
-    
+
     //handle resize
     this.PIXIApp.renderer.autoResize = true;
     window.addEventListener('resize', this.handleResize);
     this.handleResize();
+
+    this.PIXIApp.stage.addChild(this.centerContainer);
+    this.$refs.rendererWrapper.appendChild(this.PIXIApp.view);
+  },
+  beforeDestroy: function () {
+    this.PIXIApp.stage.removeChild(this.centerContainer);
+    this.$refs.rendererWrapper.removeChild(this.PIXIApp.view);
   }
 }
 </script>

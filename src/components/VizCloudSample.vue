@@ -10,7 +10,8 @@ import { durations } from '../variables.js'
 export default {
   name: 'viz-cutout',
   props: {
-    sample: { type: Object, required: true }
+    id: { type: String, required: true },
+    size: { type: Number, required: true, default: 0 }
   },
   data: function() {
     return {
@@ -22,41 +23,32 @@ export default {
     //console.log("hello this is a sample");
 
     let sprite = this.sprite = new PIXI.Sprite(PIXI.Texture.WHITE)
-
-    //@debug add a random tint that will be removed on load
-    //sprite.tint = '0x' + Math.floor(Math.random()*16777215).toString(16);
-
-    //inherit size
-    sprite.width = this.$parent.samplesContainer._width
-    sprite.height = this.$parent.samplesContainer._height
-
-    const fileName = this.sample.origin;
-    const thumbName = `${this.sample.id}.jpg`;
-    const cutoutPath = `${process.env.VUE_APP_URL_SAMPLE}/${fileName}/${thumbName}`;
+    sprite.width = sprite.height = this.size;
 
     //assuming the texture is already preloaded
-    if(PIXI.utils.TextureCache[cutoutPath]) {
-      sprite.texture = PIXI.utils.TextureCache[cutoutPath]
-      this.$parent.samplesContainer.addChild(sprite)
+    if(PIXI.utils.TextureCache[this.id]) {
+      sprite.texture = PIXI.utils.TextureCache[this.id]
 
-      if(!this.$store.state.skipFadeIn) {
+      //if we came via vizTransition, skip fade-in
+      if(!this.$store.state.isTransitioning) {
         sprite.alpha = 0
         TweenLite.to(sprite, durations.sampleFadeIn, {alpha: 1, ease: Power2.easeInOut})
       }
       
     } else {
-      console.error('Texture not found', cutoutPath)
+      console.error('Texture not found', this.id)
     }
   },
 
   mounted: function() {
-    //htmlviz
-    const fileName = this.sample.origin;
-    const thumbName = `${this.sample.id}.jpg`;
-    this.$refs.cutout.style.backgroundImage = `url(${process.env.VUE_APP_URL_IMG}/${fileName}/${thumbName})`;
+    this.$parent.samplesContainer.addChild(this.sprite)
   },
   beforeDestroy: function () {
     this.$parent.samplesContainer.removeChild(this.sprite)
+  },
+  destroyed: function() {
+    //@todo this breaks stuff
+    //this.sprite.destroy(true);
   }
 }
 </script>

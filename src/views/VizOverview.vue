@@ -23,13 +23,9 @@ export default {
 
         //per tag: sample all occurrences (objects) by their first geometry
         const samples = tag.occurrences.map(occ => {
-          const sample = {
-            origin: occ.origin,
-            x: occ.geometry[0].x,
-            y: occ.geometry[0].y
+          return {
+            id: getCutoutUID(occ.origin, tag.title, occ.geometry[0].x, occ.geometry[0].y)
           }
-          sample.id = getCutoutUID(tag.title, sample);
-          return sample;
         });
 
         return {
@@ -41,7 +37,7 @@ export default {
     }
   },
   beforeMount: function() {
-    console.log("hello this is a tag overview cloud")
+    //console.log("hello this is a tag overview cloud")
   },
   mounted: function() {
   },
