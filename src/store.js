@@ -44,22 +44,14 @@ export default new Vuex.Store({
     clouds: {},
     tooltip: {
       isVisible: false,
-      coordinates: {
-        x: 16,
-        y: window.innerHeight/2
+      position: {
+        x: 0,
+        y: 0
       },
       content: {
-        overview: {
-          text: '',
-          count: null
-        },
-        tag: {
-          text: '',
-          count: null
-        },
-        detail: {
-          text: ''
-        }
+        id: '',
+        text: '',
+        count: null
       }
     }
   },
@@ -175,11 +167,15 @@ export default new Vuex.Store({
     toggleColors: (state) => {
       state.inverted = !state.inverted
     },
+    setBrightColors: (state) => {
+      state.inverted = false
+    },
     setTooltip: (state, payload) => {
       state.tooltip.isVisible = true
-      state.tooltip.content[payload.view] = payload.content
+      state.tooltip.position = payload.position
+      state.tooltip.content = payload.content
     },
-    neutraliseTooltip: (state) => {
+    unsetTooltip: (state) => {
       state.tooltip.isVisible = false
     },
     dragStart: (state) => {

@@ -6,10 +6,6 @@
       :id="sample.id"
       :size="position.size"
       :key="`viz-clouditem-${sample.id}`" />
-    <VizTooltip
-      :content="tooltipContent"
-      :yOffset="position.size"
-    />
   </div>
   
 </template>
@@ -19,7 +15,6 @@ import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
 import { TweenLite, Power2 } from 'gsap/TweenMax'
 import VizCloudSample from './VizCloudSample.vue'
-import VizTooltip from './VizTooltip.vue'
 import EventBus from '../eventbus.js';
 import { durations } from '../variables.js'
 
@@ -42,21 +37,11 @@ export default {
   watch: {
 
   },
-  components: { VizCloudSample, VizTooltip },
+  components: { VizCloudSample },
   computed: {
-  ...mapState(['canvas']),
+  ...mapState(['canvas', 'tooltip']),
     position: function () {
       return this.$store.getters.positionInCloud(this.cloudname, this.item.id)
-    },
-    tooltipContent: function () {
-      if (this.cloudname != 'overview') {
-        const tagData = this.$store.getters.tag(this.cloudname)
-        const originTitle = this.$store.getters.object(this.item.id).title
-        const originCount = tagData.occurrences.find(occurrence => occurrence.origin === this.item.id).geometry.length
-        return originCount + ' ' + tagData.title + '\n' + 'in ' + originTitle
-      } else {
-        return this.item.weight + ' ' + this.item.id
-      }
     }
   },
   methods: {
@@ -120,9 +105,14 @@ export default {
       } 
       //console.log('itemContainer tap!', this.item);
 
+      this.$store.commit('unsetTooltip')
+
       //deactivate interaction, animation only from this point
       this.samplesContainer.interactive = false;
       this.samplesContainer.buttonMode = false;
+
+      // also deactivate interaction for all other cloud items to prevent tooltip flashes during animation
+      this.$parent.cloudContainer.interactiveChildren = false;
 
       //center the selected CloudItem
       //@todo maybe it would be nicer to move the camera to the item
@@ -187,19 +177,32 @@ export default {
     samplesContainer.buttonMode = true;
     samplesContainer.on('pointertap', this.handlePointerTap);
     samplesContainer.on('pointerover', () => {    
-      itemContainer.zIndex = 1 // rendered above all other itemContainer's to ensure textBox visibility
       this.isHovered = true
 
       //@todo tooltip at this point
-      /*const tooltipPos = this.$store.getters.worldToScreen({
+      const tooltipPos = this.$store.getters.worldToScreen({
         x: this.position.x,
-        y: this.position.y + this.size
+        y: this.position.y + this.position.size
       })
-      console.log(tooltipPos);*/
+      console.log(tooltipPos);
+
+      this.$store.commit('setTooltip', {
+        position: tooltipPos,
+        content: {
+          id: this.item.id,
+          text: this.$route.name === 'viz-overview' ? this.item.id : this.$store.getters.object(this.item.id).title,
+          count: this.item.weight
+        }
+      })
+
     })
     samplesContainer.on('pointerout', () => {
-      itemContainer.zIndex = 0 // back to default zIndex layer
       this.isHovered = false
+
+      // if pointerover event on another item has already fired and replaced this item in tooltip,
+      // we are not unsetting the tooltip
+      if (this.item.id != this.tooltip.content.id) return
+      this.$store.commit('unsetTooltip')
     })
 
     //@debug adds a sprite and random tint that will be removed on load

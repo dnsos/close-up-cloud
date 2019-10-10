@@ -1,28 +1,30 @@
 <template>
   <div
-    v-if="tooltip.isVisible"
+    v-show="tooltip.isVisible"
     class="tooltip"
-    :style="'top:' + tooltip.coordinates.y + 'px;' + 'left:' + tooltip.coordinates.x + 'px;'"
+    :style="'top:' + tooltip.position.y + 'px;' + 'left:' + tooltip.position.x + 'px;'"
   >
     <div v-if="isView('viz-overview')">
-      {{tooltip.content.overview.text}}&nbsp;<span class="tooltip__content--highlighted">{{tooltip.content.overview.count}}</span>
+      {{ tooltip.content.text }}&nbsp;<span class="tooltip__content--highlighted">{{ tooltip.content.count }}</span>
     </div>
     <div v-else-if="isView('viz-tag')">
-      <span class="tooltip__content--highlighted">{{tooltip.content.tag.count}}</span>&nbsp;in&nbsp;{{tooltip.content.tag.text}}
+      <span class="tooltip__content--highlighted">{{ tooltip.content.count }}</span>
+      <span class="tooltip__content--lowercase">&nbsp;in&nbsp;</span>
+      <span>{{ tooltip.content.text }}</span>
     </div>
     <div v-else-if="isView('viz-detail')">
-      {{tooltip.content.detail.text}}
+      {{ tooltip.content.text }}
     </div>
   </div>
 </template>
 
 <script>
+import { mapState } from 'vuex'
+
 export default {
   name: 'tooltip',
   computed: {
-    tooltip: function () {
-      return this.$store.state.tooltip
-    }
+    ...mapState(['viewport', 'tooltip']),
   },
   methods: {
     isView: function (route) {
@@ -40,6 +42,7 @@ export default {
   background-color: var(--color-ui-bg);
   text-transform: uppercase;
   letter-spacing: .05rem;
+  pointer-events: none;
 
   &::before {
     position: absolute;
@@ -50,6 +53,10 @@ export default {
     background-color: var(--color-ui-bg);
     transform: rotate(45deg);
     transform-origin: center;
+  }
+
+  .tooltip__content--lowercase {
+    text-transform: none;
   }
 
   .tooltip__content--highlighted {
