@@ -1,6 +1,9 @@
 <template>
   <header class="info-header">
-    <router-link to="/viz" exact class="info-header__cuc"><img :src="logoFile" alt="Logo Close-Up Cloud" class="filter-invert">Close-Up Cloud</router-link>
+    <router-link to="/viz" exact class="info-header__cuc">
+      <img :src="logoFile" alt="Logo Close-Up Cloud" class="filter-invert">
+      <span class="logo-name">Close-Up Cloud</span>
+    </router-link>
     <div class="info-header__data" v-if="headerDataAvailable">
       <h1 class="info-header__title">{{ headerData.title }}</h1>
       <div class="info-header__counter">
@@ -99,6 +102,10 @@ export default {
     display: flex;
     align-items: center;
     color: var(--color-ui-primary);
+  }
+  .logo-name {
+    line-height: 1;
+    margin-left: 2px;
   }
 
   .info-header__data {

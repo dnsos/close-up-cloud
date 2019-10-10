@@ -111,19 +111,20 @@ export default new Vuex.Store({
       const frame = object.tags.find(tag => tag.title === 'Frame');
       return frame.geometry[0];
     },
-    worldToScreen: (state) => (x, y) => {
-      //@todo
-      return {
-        x: x*state.cameraZoom.zoom,
-        y: y*state.cameraZoom.zoom
-      }
+    worldToScreen: (state) => ({x, y}) => {
+      x *= state.cameraZoom.zoom;
+      y *= state.cameraZoom.zoom;
+      x += (state.canvas.width/2);
+      y += (state.canvas.height/2);
+      x += state.camera.x;
+      y += state.camera.y;
+      return { x, y }
     },
-    screenToWorld: (state) => (x, y) => {
+    screenToWorld: (state) => ({x, y}) => {
       x -= (state.canvas.width/2);
       y -= (state.canvas.height/2);
       x -= state.camera.x;
       y -= state.camera.y;
-
       return {
         x: x/state.cameraZoom.zoom,
         y: y/state.cameraZoom.zoom

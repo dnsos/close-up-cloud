@@ -81,8 +81,6 @@ export default {
       this.$store.dispatch('updateCanvasSize', {
         width: clientWidth, 
         height: clientHeight});
-
-      //@todo probably world should update too on resize, bc right now world has initially the same aspect ratio as canvas
     },
     centerWorld(duration) {
       let tmp = { ... this.camera };
@@ -92,7 +90,6 @@ export default {
           this.vizContainer.position.set(tmp.x, tmp.y);
         },
         onComplete: () => {
-          //if I commit onUpdate here it breaks irregular  ...
           this.$store.commit('setCamera', {x: 0, y: 0})
         },
         ease: Power2.easeInOut

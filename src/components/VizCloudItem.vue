@@ -16,6 +16,7 @@
 
 <script>
 import * as PIXI from 'pixi.js'
+import { mapState } from 'vuex'
 import { TweenLite, Power2 } from 'gsap/TweenMax'
 import VizCloudSample from './VizCloudSample.vue'
 import VizTooltip from './VizTooltip.vue'
@@ -43,6 +44,7 @@ export default {
   },
   components: { VizCloudSample, VizTooltip },
   computed: {
+  ...mapState(['canvas']),
     position: function () {
       return this.$store.getters.positionInCloud(this.cloudname, this.item.id)
     },
@@ -187,6 +189,13 @@ export default {
     samplesContainer.on('pointerover', () => {    
       itemContainer.zIndex = 1 // rendered above all other itemContainer's to ensure textBox visibility
       this.isHovered = true
+
+      //@todo tooltip at this point
+      /*const tooltipPos = this.$store.getters.worldToScreen({
+        x: this.position.x,
+        y: this.position.y + this.size
+      })
+      console.log(tooltipPos);*/
     })
     samplesContainer.on('pointerout', () => {
       itemContainer.zIndex = 0 // back to default zIndex layer
