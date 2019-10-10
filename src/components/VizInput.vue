@@ -26,16 +26,16 @@ export default {
       e.preventDefault();
 
       if(e.deltaY === 0) return;
-      let deltaZoom = Math.abs(e.deltaY);
+      let deltaZoom;
       
-      //on a touchpad or magic mouse, deltaY is around 1-6
-      //event is called way more often
+      //this is targeted at touchpads and magic mouses, 
+      //where deltaY is around 1-6 and wheel event is called very often
       if (navigator.userAgent.indexOf('Mac OS X') != -1) {
-        deltaZoom /= 500;
-      //on a default mouse on windows, deltaY is 100
-      //event is called with every wheel step
+        deltaZoom = Math.abs(e.deltaY)/500;
+      //deltaY values on windows range from 3 to 100 depending on the browser
+      //so let's not use deltaY but a value depending on current zoom
       } else {
-        deltaZoom /= 2500;
+        deltaZoom = this.cameraZoom.zoom/8;
       }
 
       let desiredZoom = this.cameraZoom.zoom;

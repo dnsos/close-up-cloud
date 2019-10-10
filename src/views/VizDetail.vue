@@ -52,7 +52,7 @@ export default {
     if(!PIXI.utils.TextureCache[this.object.id]) {
       const loader = new PIXI.Loader();
       loader
-        .add(this.object.id, `${process.env.VUE_APP_URL_DETAIL}/${this.object.id}/${this.object.id}-Frame.jpg`)
+        .add(this.object.id, `${process.env.VUE_APP_URL_DETAIL}/${this.object.id}.jpg`)
         .load(() => {
           sprite.texture = PIXI.utils.TextureCache[this.object.id];
           

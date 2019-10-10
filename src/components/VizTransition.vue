@@ -307,7 +307,7 @@ export default {
     stageDetail(loader) {
       const detailId = this.vizTransition.targetId;
       if(!PIXI.utils.TextureCache[detailId]) {
-        loader.add(detailId, `${process.env.VUE_APP_URL_DETAIL}/${detailId}/${detailId}-Frame.jpg`)
+        loader.add(detailId, `${process.env.VUE_APP_URL_DETAIL}/${detailId}.jpg`)
       }
     },
 
