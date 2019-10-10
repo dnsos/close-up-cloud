@@ -31,7 +31,7 @@ export default {
     items: { type: Array, required: true }
   },
   components: { VizCloudItem },
-  computed: mapState(['canvas', 'viewport', 'vizTransition']),
+  computed: mapState(['canvas', 'vizContainer', 'vizTransition']),
   data: () => {
     return {
       cloudContainer: null,
@@ -40,25 +40,11 @@ export default {
     }
   },
   watch: {
-    canvas(newval) {   
-      this.resize(newval);
-    },
     vizTransition(newval) {
-      this.hideOtherItems(newval.trigger.id);
+      this.hideOtherItems(newval.targetId);
     }
   },
   methods: {
-    resize(canvas) {
-
-      //center overview cloud
-      if(this.cloudContainer) {
-        this.cloudContainer.position.set(canvas.width/2, canvas.height/2)
-      }
-      
-      //zoom to fit
-      const cloudBox = this.$store.getters.cloudBBox(this.cloudname);
-      EventBus.$emit('zoomToBBox', cloudBox);
-    },
     initForceLayout() {
 
       //only ever compute once
@@ -72,17 +58,17 @@ export default {
     createSampleGenerators() {
 
       this.items.forEach((item) => {
-        const gen = sampleGenerator(item);
-        this.sampleGenerators.push(gen);
+        this.sampleGenerators.push(sampleGenerator(item));
       });
 
-      //harvesting the sampleUrls per item in order
+      //harvesting samples per item step by step for preloading and appending
       function * sampleGenerator(item) {
         for(let sample of item.samples) {
-          const fileName = sample.origin;
-          const thumbName = `${sample.id}.jpg`;
-          const cutoutPath = `${process.env.VUE_APP_URL_SAMPLE}/${fileName}/${thumbName}`;
-          yield cutoutPath;
+          const origin = sample.id.split('-')[0];
+          yield {
+            id: sample.id,
+            url: `${process.env.VUE_APP_URL_SAMPLE}/${origin}/${sample.id}.jpg`
+          };
         }
       }
     },
@@ -92,9 +78,9 @@ export default {
       
       //pre-load samples
       this.items.forEach((item, i) => {
-        const sampleUrl = this.sampleGenerators[i].next().value;
-        if(sampleUrl && !PIXI.utils.TextureCache[sampleUrl]) {
-          loader.add(sampleUrl);
+        const sample = this.sampleGenerators[i].next().value;
+        if(sample && !PIXI.utils.TextureCache[sample.id]) {
+          loader.add(sample.id, sample.url);
         }
       });
       
@@ -118,7 +104,7 @@ export default {
     }
   },
   beforeMount: function() {
-    console.log("hello this is a cloud")
+    //console.log("hello this is a cloud")
 
     // create container for tag cloud
     this.cloudContainer = new PIXI.Container()
@@ -133,11 +119,18 @@ export default {
     this.createSampleGenerators();
     this.loadSampleChunks();
 
-    //if we came here with a spread transition that skips fade-in, enable fade-in again
-    if(this.$store.state.skipFadeIn) {
+    //if we came here with transition, enable fade-in again (vizCloudSamples)
+    //@todo vizTransition should commit this
+    if(this.$store.state.isTransitioning) {
       this.$nextTick(() => {
-        this.$store.commit('skipFadeIn', false);
+        this.$store.dispatch('endVizTransition');
       });
+    //if this is a fresh page load, zoom to fit (vizTransition takes care of that otherwise)
+    } else {
+      const cloudBBox = this.$store.getters.cloudBBox(this.cloudname);
+      this.$store.dispatch('computeWorldSize', cloudBBox);
+      EventBus.$emit('zoomToWorld');
+      EventBus.$emit('moveToCenter');
     }
     
     //pause and resume loading sample chunks on window blur/focus
@@ -148,13 +141,14 @@ export default {
       this.loadChunkTimeout = window.setTimeout(this.loadSampleChunks, durations.sampleVisible * 1000);
     })
 
-    this.resize(this.canvas);
-
-    this.viewport.addChild(this.cloudContainer);
+    this.vizContainer.addChild(this.cloudContainer);
   },
-  beforeDestroy: function () {
-    this.viewport.removeChild(this.cloudContainer)
+  beforeDestroy: function() {
+    this.vizContainer.removeChild(this.cloudContainer)
     window.clearTimeout(this.loadChunkTimeout);
+  },
+  destroyed: function() {
+    this.cloudContainer.destroy(true);
   }
 }
 </script>

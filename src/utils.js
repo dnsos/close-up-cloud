@@ -10,18 +10,14 @@ export function sanitizeLabel(label) {
 /**
  * getCutoutUID
  * Creates a unique identifier for a cutout - that is also the filename
- * @param {String} tagTitle 
- * @param {Object} sample 
+ * @param {String} origin filename of origin
+ * @param {String} tagTitle unsafe tag title
+ * @param {String} left geo x
+ * @param {String} top geo y
  */
-export function getCutoutUID(tagTitle, sample) {
-  
-  const labelSant = sanitizeLabel(tagTitle);      
-  const filename = sample.origin;
-  const top = sample.y;
-  const left = sample.x;
-  const uid = `${filename}-${labelSant}-${top}-${left}`;
-
-  return uid;
+export function getCutoutUID(origin, tagTitle, left, top) {
+  const labelSant = sanitizeLabel(tagTitle);   
+  return `${origin}-${labelSant}-${top}-${left}`;
 }
 
 /**
@@ -37,14 +33,9 @@ export function convertTagOccurencesToCloudItems(tag) {
 
     //per occurencant object: sample all geometries
     const samples = occ.geometry.map(geo => {
-      const sample = {
-        origin: occ.origin,
-        x: geo.x,
-        y: geo.y,
-        size: geo.size
+      return {
+        id: getCutoutUID(occ.origin, tag.title, geo.x, geo.y)
       }
-      sample.id = getCutoutUID(tag.title, sample);
-      return sample;
     });
 
     return {

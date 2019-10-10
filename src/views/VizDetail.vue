@@ -8,16 +8,19 @@
 <script>
 import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
-import { TweenLite, TimelineLite, Power2 } from 'gsap/TweenMax'
-import PolyBool from 'polybooljs';
+import { TweenLite, Power2 } from 'gsap/TweenMax'
 import VizDetailInteract from '../components/VizDetailInteract.vue';
 import EventBus from '../eventbus.js';
-import { durations, mkgGold } from '../variables.js'
-import { getBBoxScaleFactor } from '../utils.js'
+import { durations } from '../variables.js'
 
 export default {
   name: 'viz-detail',
-  computed: mapState(['PIXIApp', 'canvas', 'viewport']),
+  computed: {
+    ...mapState(['PIXIApp', 'canvas', 'vizContainer', 'vizTransition']),
+    frameBBox() {
+      return this.object.tags.find(tag => tag.title === "Frame").geometry[0];
+    },
+  },
   components: { VizDetailInteract },
   props: {
     object: {
@@ -31,39 +34,14 @@ export default {
       }
     }
   },
-  watch: {
-    canvas(newval) {
-      this.resize(newval);
-    }
-  },
   data: function() {
     return {
       detailContainer: null,
       sprite: null
     }
   },
-  methods: {
-    resize(canvas) {
-      
-      //center container on canvas
-      if(this.detailContainer) {
-        this.detailContainer.position.set(canvas.width/2, canvas.height/2)
-      }
-
-      const frameBBox = this.object.tags.find(tag => tag.title === "Frame").geometry[0];
-  
-      //zoom to fit and center
-      EventBus.$emit('zoomToBBox', canvas);
-
-      //apply scaling to stay within viewport dimensions
-      const scaleFactor = getBBoxScaleFactor(this.canvas, frameBBox);
-      this.detailContainer.scale.set(scaleFactor);
-      //this.sprite.width = frameBBox.width * scaleFactor;
-      //this.sprite.height = frameBBox.height * scaleFactor;
-    },
-  },
   beforeMount: function() {
-    console.log("hello this is a detail view")
+    //console.log("hello this is a detail view")
 
     const detailContainer = this.detailContainer = new PIXI.Container();
     const sprite = this.sprite = new PIXI.Sprite()
@@ -75,10 +53,10 @@ export default {
       const loader = new PIXI.Loader();
       loader
         .add(this.object.id, `${process.env.VUE_APP_URL_DETAIL}/${this.object.id}/${this.object.id}-Frame.jpg`)
-        .load((loader, resources) => {
+        .load(() => {
           sprite.texture = PIXI.utils.TextureCache[this.object.id];
           
-          if(!this.$store.state.skipFadeIn) {
+          if(!this.$store.state.isTransitioning) {
             detailContainer.alpha = 0;
             TweenLite.to(detailContainer, durations.detailFadeIn, {alpha: 1, ease: Power2.easeInOut})
           }
@@ -86,25 +64,37 @@ export default {
     } else {
       sprite.texture = PIXI.utils.TextureCache[this.object.id];
     }
-
-    this.resize(this.canvas);
   },
   mounted: function () {
 
-    this.viewport.addChild(this.detailContainer) 
+    this.vizContainer.addChild(this.detailContainer) 
 
-    //if we came here with a spread transition that skips fade-in, enable fade-in again
-    if(this.$store.state.skipFadeIn) {
+    //if we came here with a spread transition, end it
+    //@todo vizTransition should do this
+    if(this.$store.state.isTransitioning) {
       this.$nextTick(() => {
-        this.$store.commit('skipFadeIn', false);
+        this.$store.dispatch('endVizTransition');
       });
+    //if this is a fresh page load, zoom to fit (vizTransition takes care of that otherwise)
+    } else {
+      this.$store.dispatch('computeWorldSize', this.frameBBox);
+      EventBus.$emit('zoomToWorld');
+      EventBus.$emit('moveToCenter');
     }
 
+    EventBus.$on('fadeOutDetail', () => {
+      TweenLite.to(this.detailContainer, durations.detailFadeOut, { alpha: 0 }, Power2.easeOut);
+    });
+    
+
     //htmlviz
-    this.$refs.detail.style.backgroundImage = `url(${process.env.VUE_APP_URL_IMG}/${this.object.id}/${this.object.id}.jpg)`;
+    //this.$refs.detail.style.backgroundImage = `url(${process.env.VUE_APP_URL_IMG}/${this.object.id}/${this.object.id}.jpg)`;
   },
   beforeDestroy: function () {
-    this.viewport.removeChild(this.detailContainer)
+    this.vizContainer.removeChild(this.detailContainer)
+  },
+  destroyed: function() {
+    this.detailContainer.destroy(true);
   }
 }
 </script>

@@ -2,9 +2,9 @@ import * as d3 from 'd3';
 
 export default function forceLayout(data, options) {
 
-    const layoutData = new ForceLayout(data, options)
-        .calculate()
-        .getLayoutData();
+    const fl = new ForceLayout(data, options);
+    const layoutData = fl.calculate().getLayoutData();
+    fl.destroy();
 
     //re-center layout according to bounding box
     const x = Math.min(...layoutData.map(d => d.x)),
@@ -39,9 +39,9 @@ export class ForceLayout {
     constructor(data, options) {
 
         this.options = Object.assign({
-            rectPadding: 4,
+            rectPadding: 24,
             ticks: 400,
-            scaleFactor: 8, //item size = scalingFunction(item weight) * scaleFactor
+            scaleFactor: 64, //item size = scalingFunction(item weight) * scaleFactor
             canvasWidth: 1280,
             canvasHeight: 800
         }, options);
@@ -50,6 +50,7 @@ export class ForceLayout {
         this.nodes = [];    //x-y-size representations of data
         this.rects = [];    //d3 rects
         this.svg = null;    //d3 svg
+        this.simulation = null;
     }
 
     calculate() {
@@ -90,14 +91,15 @@ export class ForceLayout {
         let collisionForce = rectCollide()
             .size(function (d) { return [d.size, d.size] })
         
-        let simulation = d3.forceSimulation(this.nodes)
+        this.simulation = d3.forceSimulation(this.nodes)
             .velocityDecay(0.15)
             .force("x", d3.forceX().strength(0.01))
             .force("y", d3.forceY().strength(0.01))
             .force("collide", collisionForce)
             .force("center", d3.forceCenter(this.options.canvasWidth/2, this.options.canvasHeight/2))
+            .stop()
             
-        simulation
+        this.simulation
             .on("tick", () => {
                 this.rects
                     .attr("x", d => d.x)
@@ -163,7 +165,6 @@ export class ForceLayout {
         
         //scale logarithmic by weight
         //return Math.log(1+weight)
-
         
         //scale logarithmic with d3
         /*const weightList = data.map(tag => tag.weight)
@@ -190,17 +191,16 @@ export class ForceLayout {
 
         return layoutData;
     }
-}
 
-/*
-function withPromise(data, options) {
-    return new Promise((resolve, reject) => {
-        const fl = new ForceLayout(data, options);
-        ForceLayout.on('calculated', (data) => resolve(data));
-    });
+    destroy() {
+        this.svg.remove();
+        delete this.svg;
+        delete this.simulation;
+        delete this.rects;
+        delete this.nodes;
+        delete this.data;
+    }
 }
-*/
-
 
 
 /**

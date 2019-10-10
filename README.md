@@ -25,6 +25,54 @@ npm run test
 npm run lint
 ```
 
+
+## Image Sizes
+
+Full Detail Images are available in different resolutions, based on their original size (100%, 50%, 25%, 12.5%). At 100% they are up to 6000 Pixels wide/tall.
+
+Viewport zoom "1" is equivalent to viewing a detail image at 100% percent resolution.
+You can only zoom out, not zoom in more than "1".
+
+Cutouts in Clouds are only available in one resolution, that is 64x64 at it's smallest (64x64 equals a cloud item with weight "1"). 
+
+
+## Data Structures
+
+### Object
+
+### Sample
+
+
+
+### Cloud Items (Input Data for VizCloud)
+
+```
+items = [{
+    id: Sterne,
+    weight: 20,
+    samples: [
+        {
+            id: 'P2017.3.1609-Sterne-701-1962'
+        },
+        {
+            id: 'P2017.3.1609-Sterne-778-2300'
+        }
+    ]
+},
+{
+    id: Kastanien,
+    weight: 10,
+    samples: [
+        {
+            id: 'P2017.3.1409-Kastanien-701-1962'
+        },
+        {
+            id: 'P2017.3.1409-Kastanien-778-2300'
+        }
+    ]
+}]
+```
+
 ## Vue Structure for Viz 
 
 ### All Tags
@@ -68,80 +116,12 @@ npm run lint
 ```
 <Viz> ................ Top Level View, load data
     <VizRenderer> ........ PIXI 
-        <VizDetail /> ........ Subroute of Viz
+        <VizDetail> ........ Subroute of Viz
+            <VizDetailRegion />
+        </VizDetail>
     </VizRenderer>
 </Viz>
 ```
-
-## Input for Cloud
-
-### All Tags
-
-```
-items = [{
-    id: Blumenornamente,
-    weight: 20,
-    samples: [
-        {
-            origin: P1232,
-            x, y, size
-        },
-        {
-            origin: P1233,
-            x, y, size
-        }
-    ]
-},
-{
-    id: Kastanien,
-    weight: 10,
-    samples: [
-        {
-            origin: P1220,
-            x, y, size
-        },
-        {
-            origin: P1221,
-            x, y, size
-        }
-    ]
-}]
-```
-
-### Single Tag
-
-```
-items: [{
-    id: P1232,
-    weight: 5,
-    samples: [
-        {
-            origin: P1232,
-            x, y, size
-        },
-        {
-            origin: P1232,
-            x, y, size
-        },
-        {
-            origin: P1232,
-            x, y, size
-        }
-    ]
-},
-{
-    id: P1233,
-    weight 5,
-    samples: [
-        {
-            origin: P1233,
-            x, y, size
-        }
-    ]
-}]
-```
-
-
 
 
 

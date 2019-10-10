@@ -1,16 +1,20 @@
 <template>
   <div>
-  Hello this is Viz Transition Watcher
+    Viz Transition Watcher
+
+    <VizCloudSample v-for="sample in renderStack" ref="cloudsamples"
+      :id="sample.id"
+      :size="sample.size"
+      :key="`viz-transition-${sample.id}`" />
   </div>
 </template>
 
 <script>
 import * as PIXI from 'pixi.js'
 import { mapState } from 'vuex'
-import { TweenLite, Power2, Sine } from 'gsap/TweenMax'
+import { TweenLite, Power2 } from 'gsap/TweenMax'
 import VizCloudSample from './VizCloudSample.vue'
-import VizTooltip from './VizTooltip.vue'
-import { getCutoutUID, convertTagOccurencesToCloudItems, getBBoxScaleFactor } from '../utils.js'
+import { convertTagOccurencesToCloudItems, getCutoutUID } from '../utils.js'
 import { durations } from '../variables.js'
 import EventBus from '../eventbus.js';
 
@@ -18,17 +22,18 @@ export default {
   name: 'viz-transition',
   data: function() {
     return {
-      fauxDetail: null
+      samplesContainer: null,
+      fauxDetail: null,
+      renderStack: []
     }
   },
+  components: { VizCloudSample },
   computed: {
-  ...mapState(['canvas', 'viewport', 'vizTransition']),
+  ...mapState(['canvas', 'viewport', 'world', 'vizContainer', 'vizTransition']),
   },
   watch: {
-    vizTransition({from, to, trigger, targetPath}) {
-      console.log('Hi this is Viz Transition Watcher triggered by', trigger);
-
-      //@todo pause viewport interactions while transitioning
+    vizTransition({from, to}) {
+      //console.log('Hi this is Viz Transition Watcher');
 
       if(from === 'viz-overview' && to === 'viz-tag') {
         this.transitionOverviewToTag();
@@ -40,36 +45,47 @@ export default {
     },
     $route() {
       if(this.fauxDetail) this.destroyFauxDetail();
+      if(this.renderStack.length) this.renderStack = [];
     }
   },
   methods: {
 
     transitionOverviewToTag() {
-
+      
       const loader = new PIXI.Loader();
+      const tagTitle = this.vizTransition.targetId;
 
-      this.stageSamples(loader);
+      //collect all first geometries of selected tag as sample ids
+      const tag = this.$store.getters.tag(tagTitle);
+      const samples = tag.occurrences.map(occ => {
+        return {
+          id: getCutoutUID(occ.origin, tag.title, occ.geometry[0].x, occ.geometry[0].y)
+        }
+      });
+      this.stageSamples(loader, samples);
+
       this.prepareForceLayout();
       
-      const tagId = this.vizTransition.trigger.id;
-      const targetPositions = this.$store.state.clouds[tagId];
-      const targetBBox = this.$store.getters.cloudBBox(tagId);
+      EventBus.$emit('centerWorld', durations.sampleSpreadDelay);
 
       loader.load(() => {
-        //@todo better timeout solution
         window.setTimeout(() => {
+
           //Zoom viewport to fit the next view
-          EventBus.$emit('zoomToBBox', targetBBox);
+          const targetBBox = this.$store.getters.cloudBBox(tagTitle);
+          this.$store.dispatch('computeWorldSize', targetBBox);
+          EventBus.$emit('zoomToWorld');
+          
           //Spread out target VizCloudSamples
+          const targetPositions = this.$store.state.clouds[tagTitle];
           EventBus.$emit('spreadCloudItemSamples', {
-            targetId: tagId,
+            targetId: tagTitle,
             targetPositions
           });
           //Route to the target view
+          //@todo no timeouts / better handling
           window.setTimeout(() => {
             this.$router.push({ path: this.vizTransition.targetPath })
-            //this.$store.dispatch('endVizTransition');  
-            //EventBus.$emit('endVizTransition');
           }, durations.sampleSpread * 1000);
         }, durations.sampleSpreadDelay * 1000)
       });
@@ -78,32 +94,51 @@ export default {
     transitionTagToDetail() {
 
       const loader = new PIXI.Loader();
-      const tagId = this.vizTransition.trigger.id;
-      const targetPositions = this.getDetailPositions();
+      const tagTitle = this.$route.params.id;
+      const objectId = this.vizTransition.targetId;
+      const targetPositions = this.getDetailPositions(objectId, tagTitle);
 
-      this.stageSamples(loader);
+      //preloading: collect all geometries of tag in one object as sample ids
+      const object = this.$store.getters.object(objectId);
+      const samples = object.tags.find(el => el.title === tagTitle).geometry.map(geo => {
+        return {
+          id: getCutoutUID(objectId, tagTitle, geo.x, geo.y)
+        }
+      });
+
+      this.stageSamples(loader, samples);
       this.stageDetail(loader);
+      
+      EventBus.$emit('centerWorld', durations.sampleSpreadDelay);
 
       loader.load(() => {
-        //@todo better timeout solution
+        
+        this.createFauxDetail();
+
         window.setTimeout(() => {
+
           //Zoom viewport to fit the next view
-          EventBus.$emit('zoomToBBox', this.canvas);
+          const frameBBox = this.$store.getters.detailFrameBBox(objectId);
+          this.$store.dispatch('computeWorldSize', frameBBox);
+          EventBus.$emit('zoomToWorld');
+          
           //Spread out target VizCloudSamples
           EventBus.$emit('spreadCloudItemSamples', {
-            targetId: tagId,
+            targetId: tagTitle,
             targetPositions
           });
 
           //Fade-In Faux Detail
-          this.createFauxDetail();
+          TweenLite.to(this.fauxDetail, durations.detailFadeIn, {
+            alpha: 1,
+            delay: durations.sampleSpread+0.5,
+            ease: Power2.easeIn
+          });
 
           //Route to the target view
           window.setTimeout(() => {
             this.$router.push({ path: this.vizTransition.targetPath })
-            //this.$store.dispatch('endVizTransition');  
-            //EventBus.$emit('endVizTransition');
-          }, (durations.sampleSpread +  durations.detailFadeIn) * 1000);
+          }, (durations.sampleSpread + 0.5 + durations.detailFadeIn) * 1000);
         }, durations.sampleSpreadDelay * 1000)
       });
     },
@@ -111,73 +146,144 @@ export default {
 
     transitionDetailToTag() {
 
-      this.prepareForceLayout();
-      const tagId = this.vizTransition.trigger.id;
-      const targetPositions = this.$store.state.clouds[tagId];
-      const targetBBox = this.$store.getters.cloudBBox(tagId);
+      const loader = new PIXI.Loader();
+      const objectId = this.$route.params.id;
+      const tagTitle = this.vizTransition.targetId;
 
-      //@todo better timeout solution
-      window.setTimeout(() => {
-        //Zoom viewport to fit the next view
-        EventBus.$emit('zoomToBBox', targetBBox);
-        //Spread out target VizCloudSamples
-        EventBus.$emit('collectCloudItemSamples', {
-          targetId: tagId,
-          targetPositions
+      this.prepareForceLayout();
+      
+      const spawnPositions = this.getDetailPositions(objectId, tagTitle);      
+      const largestSize = Math.max(... spawnPositions.map(el => el.size));
+
+      //preloading: collect all geometries of this tag in this object
+      const object = this.$store.getters.object(objectId);
+      const samples = object.tags.find(el => el.title === tagTitle).geometry.map(geo => {
+        return {
+          id: getCutoutUID(objectId, tagTitle, geo.x, geo.y)
+        }
+      });
+      this.stageSamples(loader, samples);
+
+      //preloading: also add first geometries of this tag in all other objects
+      const tag = this.$store.getters.tag(tagTitle);
+      const otherSamples = tag.occurrences.filter(occ => occ.origin !== objectId).map(occ => {
+        return {
+          id: getCutoutUID(occ.origin, tagTitle, occ.geometry[0].x, occ.geometry[0].y)
+        }
+      });
+      this.stageSamples(loader, otherSamples);      
+      
+      loader.load(() => {
+
+        EventBus.$emit('fadeOutDetail');
+        
+        //mount VizCloudSamples for transition animation
+        this.renderStack = samples;
+        //render first item on top
+        const originSample = this.renderStack.shift();
+        this.renderStack.push(originSample);
+
+        //wait for vue to reflect the new renderStack
+        this.$nextTick(() => {
+          
+          //centering
+          EventBus.$emit('centerWorld', durations.sampleSpread);
+          this.$refs.cloudsamples.forEach((cloudSample) => {
+            const spawnPosition = spawnPositions.find(el => el.id === cloudSample.id);
+
+            TweenLite
+              .fromTo(cloudSample.sprite, durations.sampleSpread, {
+                x: spawnPosition.x,
+                y: spawnPosition.y,
+                width: spawnPosition.size,
+                height: spawnPosition.size
+              }, {
+                x: -largestSize/2,
+                y: -largestSize/2,
+                width: largestSize,
+                height: largestSize,
+                ease: Power2.easeInOut
+              })
+          });
+          
+          window.setTimeout(() => {
+            //now that all samples are centered, lets switch the renderStack to otherSamples 
+            const originSample = this.renderStack.pop();
+            otherSamples.push(originSample);
+
+            //Zoom viewport to fit the next view
+            const targetBBox = this.$store.getters.cloudBBox(tagTitle);
+            this.$store.dispatch('computeWorldSize', targetBBox);
+            EventBus.$emit('zoomToWorld');
+
+
+            //force vue to remount the VizCloudSamples
+            this.renderStack = [];
+            //wait for vue to reflect the new renderStack
+            this.$nextTick(() => {
+              
+              this.renderStack = otherSamples;
+                
+              //wait for vue to reflect the new renderStack
+              this.$nextTick(() => {
+
+                //Spread samples
+                this.$refs.cloudsamples.forEach((cloudSample) => {
+                  const objectId = cloudSample.id.split('-')[0];
+                  const targetPosition = this.$store.getters.positionInCloud(tagTitle, objectId);
+                  
+                  TweenLite
+                    .fromTo(cloudSample.sprite, durations.sampleSpread, {
+                      x: -largestSize/2,
+                      y: -largestSize/2,
+                      width: largestSize,
+                      height: largestSize
+                    }, {
+                      x: targetPosition.x,
+                      y: targetPosition.y,
+                      width: targetPosition.size,
+                      height: targetPosition.size,
+                      ease: Power2.easeInOut,
+                      onComplete: () => {
+                        this.$router.push({ path: this.vizTransition.targetPath })
+                      }
+                    })
+                })
+              })
+            })
+
+          }, (durations.sampleSpread + 0.5) * 1000);
         });
-        //Route to the target view
-        window.setTimeout(() => {
-          this.$router.push({ path: this.vizTransition.targetPath })
-          //this.$store.dispatch('endVizTransition');  
-          //EventBus.$emit('endVizTransition');
-        }, durations.sampleSpread * 1000);
-      }, durations.sampleSpreadDelay * 1000)
+      });
     },
 
 
-    getDetailPositions() {
+    getDetailPositions(objectId, tagTitle) {
 
-      const detailId = this.vizTransition.trigger.id;
-      const detailFrameBBox = this.$store.getters.detailFrameBBox(detailId);
-      const detailScaleFactor = getBBoxScaleFactor(this.canvas, detailFrameBBox);
-
-      const positions = [];
-      this.vizTransition.trigger.samples.forEach(sample => {
-
-        let {x, y, size} = sample;
-        
-        //subtract frame offset
-        x -= detailFrameBBox.x;
-        y -= detailFrameBBox.y;
-
-        //subtract half size
-        x -= detailFrameBBox.width/2;
-        y -= detailFrameBBox.height/2;
-
-        //apply scaling
-        x *= detailScaleFactor;
-        y *= detailScaleFactor;
-        size *= detailScaleFactor;
-
-        positions.push({
-          id: sample.id,
-          x, y, size
-        });
-      });
+      const object = this.$store.getters.object(objectId);
+      const detailFrameBBox = this.$store.getters.detailFrameBBox(objectId);
       
-      return positions;
+      //collect all geometries of tag in one object as sample ids
+      return object.tags.find(el => el.title === tagTitle).geometry.map(geo => {
+        return {
+          id: getCutoutUID(objectId, tagTitle, geo.x, geo.y),
+          x: geo.x - detailFrameBBox.x - (detailFrameBBox.width/2),
+          y: geo.y - detailFrameBBox.y - (detailFrameBBox.height/2),
+          size: geo.size
+        }
+      });
     },
 
     prepareForceLayout() {
 
-      const tagId = this.vizTransition.trigger.id;
+      const tagTitle = this.vizTransition.targetId;
 
       //only ever compute cloud layout once
-      if(!this.$store.state.clouds[tagId]) {
-        const tag = this.$store.getters.tag(tagId)
+      if(!this.$store.state.clouds[tagTitle]) {
+        const tag = this.$store.getters.tag(tagTitle)
         const cloudItems = convertTagOccurencesToCloudItems(tag)
         this.$store.dispatch('computeForceLayout', {
-          key: tagId,
+          key: tagTitle,
           data: cloudItems
         });
       }
@@ -186,12 +292,11 @@ export default {
     /**
      * add samples to loader for preloading
      */
-    stageSamples(loader) {
-      this.vizTransition.trigger.samples.forEach((sample) => {
-        const fileName = sample.origin;
-        const sampleUrl = `${process.env.VUE_APP_URL_SAMPLE}/${fileName}/${sample.id}.jpg`;
-        if(!PIXI.utils.TextureCache[sampleUrl]) {
-          loader.add(sampleUrl);
+    stageSamples(loader, samples) {
+      samples.forEach((sample) => {
+        if(!PIXI.utils.TextureCache[sample.id]) {
+          const origin = sample.id.split('-')[0];
+          loader.add(sample.id, `${process.env.VUE_APP_URL_SAMPLE}/${origin}/${sample.id}.jpg`);
         }
       })
     },
@@ -200,7 +305,7 @@ export default {
      * add detail image to loader for preloading
      */
     stageDetail(loader) {
-      const detailId = this.vizTransition.trigger.id;
+      const detailId = this.vizTransition.targetId;
       if(!PIXI.utils.TextureCache[detailId]) {
         loader.add(detailId, `${process.env.VUE_APP_URL_DETAIL}/${detailId}/${detailId}-Frame.jpg`)
       }
@@ -211,40 +316,31 @@ export default {
      */
     createFauxDetail() {
     
-      const detailId = this.vizTransition.trigger.id;
+      const detailId = this.vizTransition.targetId;
       const sprite = this.fauxDetail = new PIXI.Sprite()
       sprite.alpha = 0;
       sprite.anchor.set(0.5);
-      sprite.position.set(this.canvas.width/2, this.canvas.height/2)
       sprite.texture = PIXI.utils.TextureCache[detailId]
       
-      //apply scaling to stay within viewport dimensions
-      const detailFrameBBox = this.$store.getters.detailFrameBBox(detailId);
-      const detailScaleFactor = getBBoxScaleFactor(this.canvas, detailFrameBBox);
-      sprite.width = detailFrameBBox.width * detailScaleFactor;
-      sprite.height = detailFrameBBox.height * detailScaleFactor;
-      
       //fade-in detail image
-      this.viewport.addChild(sprite) 
-      TweenLite.to(sprite, durations.detailFadeIn, {
-        alpha: 1,
-        delay: durations.sampleSpread,
-        ease: Power2.easeIn
-      });
+      this.vizContainer.addChild(sprite) 
     },
 
     destroyFauxDetail() {
-      if(this.fauxDetail) this.viewport.removeChild(this.fauxDetail);
+      if(this.fauxDetail) this.vizContainer.removeChild(this.fauxDetail);
       this.fauxDetail = null;
     }
 
   },
   beforeMount() {
+    this.samplesContainer = new PIXI.Container();
   },
   mounted() {
+    this.vizContainer.addChild(this.samplesContainer);
   },
   beforeDestroy() {
     this.destroyFauxDetail();
+    this.vizContainer.removeChild(this.samplesContainer)
   }
 }
 </script>
