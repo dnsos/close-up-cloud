@@ -59,7 +59,7 @@ export default {
           },
           {
             name: 'Sarah Kreiseler',
-            role: 'Kulturhistorische Betreuung'
+            role: 'Kunstwissenschaftliche Betreuung'
           },
           {
             name: 'Prof. Dr. Marian Dörk',
