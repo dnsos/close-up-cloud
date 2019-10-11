@@ -81,5 +81,6 @@ export default {
 <style lang="scss" scoped>
 .overlay {
   font-size: var(--font-size-small);
+  user-select: none;
 }
 </style>

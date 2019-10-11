@@ -260,13 +260,14 @@ export default {
         clickPoly.on('pointerover', () => {
           TweenLite.to(this.masks[tagPoly.tagTitle], 0.2, {alpha: 0.66});
 
-          for(let key in this.highlights) {
+          //show other cutouts
+          /*for(let key in this.highlights) {
             if(key === tagPoly.tagTitle) {
             //  TweenLite.to(this.highlights[key], 0.2, {alpha: 1});
             } else {
               TweenLite.to(this.highlights[key], 0.2, {alpha: 0.25});
             }
-          }
+          }*/
 
           //@todo attach tooltip to this coordinate
           //the data is currently in original size
@@ -277,9 +278,9 @@ export default {
         clickPoly.on('pointerout', () => {
           TweenLite.to(this.masks[tagPoly.tagTitle], 0.2, {alpha: 0, ease: Power2.easeIn});
           
-          for(let key in this.highlights) {
+          /*for(let key in this.highlights) {
             TweenLite.to(this.highlights[key], 0.2, {alpha: 0, ease: Power2.easeIn});
-          }
+          }*/
         })
         
         this.interactContainer.addChild(clickPoly);

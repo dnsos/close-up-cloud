@@ -6,13 +6,15 @@
 
 <script>
 import { mapState } from 'vuex'
+import { throttled } from '../utils'
 
 export default {
   name: 'viz-transition',
   data: function() {
     return {
       panStartPointer: { x: 0, y: 0 },
-      panStartCam: { x: 0, y: 0 }
+      panStartCam: { x: 0, y: 0 },
+      throttledPan: null
     }
   },
   computed: {
@@ -70,11 +72,11 @@ export default {
         y: e.clientY
       };
       this.panStartCam = { ...this.camera };
-      document.body.addEventListener('mousemove', this.handlePanMove);
+      document.body.addEventListener('mousemove', this.tHandlePanMove);
     },
     handlePanEnd() {
       this.$store.commit('dragEnd');
-      document.body.removeEventListener('mousemove', this.handlePanMove);
+      document.body.removeEventListener('mousemove', this.tHandlePanMove);
     },
     handlePanMove(e) {
       if(this.isTransitioning) return;
@@ -93,9 +95,13 @@ export default {
   beforeMount() {
   },
   mounted() {
+    //storing throttled event handlers so we can remove them later
+    this.tHandlePanMove = throttled(25, this.handlePanMove);
+    this.tHandleCursorMove = throttled(25, this.handleCursorMove);
+
     document.addEventListener('wheel', this.handleScroll, { passive: false});
     window.addEventListener('blur', this.handlePanEnd);
-    document.body.addEventListener('mousemove', this.handleCursorMove);
+    document.body.addEventListener('mousemove', this.tHandleCursorMove);
     document.body.addEventListener('mousedown', this.handlePanStart);
     document.body.addEventListener('mouseup', this.handlePanEnd);
     document.body.addEventListener('mouseleave', this.handlePanEnd);
@@ -103,7 +109,7 @@ export default {
   beforeDestroy() {
     document.removeEventListener('wheel', this.handleScroll);
     window.removeEventListener('blur', this.handlePanEnd);
-    document.body.addEventListener('mousemove', this.handleCursorMove);
+    document.body.removeEventListener('mousemove', this.tHandleCursorMove);
     document.body.removeEventListener('mousedown', this.handlePanStart);
     document.body.removeEventListener('mouseup', this.handlePanEnd);
     document.body.removeEventListener('mouseleave', this.handlePanEnd);
