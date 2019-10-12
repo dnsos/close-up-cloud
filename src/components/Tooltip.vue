@@ -2,7 +2,7 @@
   <div
     v-show="tooltip.isVisible"
     class="tooltip"
-    :style="'top:' + tooltip.position.y + 'px;' + 'left:' + tooltip.position.x + 'px;'"
+    :style="'top:' + screenCoordinates.y + 'px;' + 'left:' + screenCoordinates.x + 'px;'"
   >
     <div v-if="isView('viz-overview')">
       {{ tooltip.content.text }}&nbsp;<span class="tooltip__content--highlighted">{{ tooltip.content.count }}</span>
@@ -24,7 +24,14 @@ import { mapState } from 'vuex'
 export default {
   name: 'tooltip',
   computed: {
-    ...mapState(['viewport', 'tooltip']),
+    ...mapState(['tooltip']),
+    screenCoordinates: function () {
+      const screenCoordinates = this.$store.getters.worldToScreen({
+        x: this.tooltip.worldCoordinates.x,
+        y: this.tooltip.worldCoordinates.y
+      })
+      return screenCoordinates
+    }
   },
   methods: {
     isView: function (route) {

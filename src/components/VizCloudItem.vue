@@ -160,7 +160,7 @@ export default {
   beforeMount: function() {
     //console.log("hello this is a cloud item")
   
-    // itemContainer stores samplesContainer and textBox
+    // itemContainer stores samplesContainer
     const itemContainer = this.itemContainer = new PIXI.Container();
     itemContainer.x = this.position.x
     itemContainer.y = this.position.y
@@ -171,23 +171,18 @@ export default {
     samplesContainer.height = this.position.size
     itemContainer.addChild(samplesContainer)
 
-    // samplesContainer is interactive to avoid events
-    // on itemContainer (that also stores textBox)
     samplesContainer.interactive = true;
     samplesContainer.buttonMode = true;
     samplesContainer.on('pointertap', this.handlePointerTap);
     samplesContainer.on('pointerover', () => {    
       this.isHovered = true
 
-      //@todo tooltip at this point
-      const tooltipPos = this.$store.getters.worldToScreen({
-        x: this.position.x,
-        y: this.position.y + this.position.size
-      })
-      console.log(tooltipPos);
-
       this.$store.commit('setTooltip', {
-        position: tooltipPos,
+        // we first commit world coords, because camera values need to be watched and included continuously
+        worldCoordinates: {
+          x: this.position.x,
+          y: this.position.y + this.position.size
+        },
         content: {
           id: this.item.id,
           text: this.$route.name === 'viz-overview' ? this.item.id : this.$store.getters.object(this.item.id).title,
@@ -201,8 +196,9 @@ export default {
 
       // if pointerover event on another item has already fired and replaced this item in tooltip,
       // we are not unsetting the tooltip
-      if (this.item.id != this.tooltip.content.id) return
-      this.$store.commit('unsetTooltip')
+      if (this.item.id === this.tooltip.content.id) {
+        this.$store.commit('unsetTooltip')
+      }
     })
 
     //@debug adds a sprite and random tint that will be removed on load

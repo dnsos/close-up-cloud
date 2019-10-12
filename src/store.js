@@ -44,7 +44,7 @@ export default new Vuex.Store({
     clouds: {},
     tooltip: {
       isVisible: false,
-      position: {
+      worldCoordinates: {
         x: 0,
         y: 0
       },
@@ -172,11 +172,12 @@ export default new Vuex.Store({
     },
     setTooltip: (state, payload) => {
       state.tooltip.isVisible = true
-      state.tooltip.position = payload.position
+      state.tooltip.worldCoordinates = payload.worldCoordinates
       state.tooltip.content = payload.content
     },
     unsetTooltip: (state) => {
       state.tooltip.isVisible = false
+      // TODO: negative implications of not resetting content and coordinates?
     },
     dragStart: (state) => {
       state.isDragging = true
