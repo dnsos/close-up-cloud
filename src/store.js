@@ -134,9 +134,9 @@ export default new Vuex.Store({
       state.PIXIApp = payload
     },
     setCamera: (state, payload) => {
-
-      //constrain the the cameras pixel offset from center
-      if(!state.isTransitioning) {        
+      
+      if(!state.isTransitioning) {
+        //constrain the the cameras pixel offset from center
         const constrains = {
           x: Math.abs(((state.world.width/2) * state.cameraZoom.zoom) - (state.canvas.width/2)),
           y: Math.abs(((state.world.height/2) * state.cameraZoom.zoom) - (state.canvas.height/2))
@@ -283,7 +283,16 @@ export default new Vuex.Store({
       width = Math.max(width, state.canvas.width);
       height = Math.max(height, state.canvas.height);
 
-      //make world*1.25 to enable some panning at 100%
+      //adapt world to canvas size to prevent zoom jitter
+      //@todo for super responsiveness world should update on resize
+      const canvasRatio = state.canvas.width / state.canvas.height;
+      if(canvasRatio > 1) {
+        width = height * canvasRatio;
+      } else {
+        height = width * canvasRatio;
+      }
+
+      //make world*1.25 to enable some panning
       width *= 1.25;
       height *= 1.25;
 

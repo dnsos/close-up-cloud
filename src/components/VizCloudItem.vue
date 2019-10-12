@@ -39,7 +39,7 @@ export default {
   },
   components: { VizCloudSample },
   computed: {
-  ...mapState(['canvas', 'tooltip']),
+  ...mapState(['canvas', 'isDragging', 'tooltip']),
     position: function () {
       return this.$store.getters.positionInCloud(this.cloudname, this.item.id)
     }
@@ -49,6 +49,10 @@ export default {
 
       //don't shuffle while hovered
       if(this.isHovered) return;
+
+      //don't shuffle while dragging
+      //@todo this should already happen in VizCloud and prevent loading in the first place
+      if(this.isDragging) return;
 
       //if there is only one sample that is already in the renderStack, do nothing
       if(this.item.samples.length === 1 && this.renderStack.length === 1) return;
