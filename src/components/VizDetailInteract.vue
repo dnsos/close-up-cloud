@@ -6,7 +6,6 @@
 
 <script>
 import * as PIXI from 'pixi.js'
-import { mapState } from 'vuex'
 import { TweenLite, TimelineLite, Power2 } from 'gsap/TweenMax'
 import PolyBool from 'polybooljs';
 import { mkgGold } from '../variables.js'
@@ -14,7 +13,9 @@ import { mkgGold } from '../variables.js'
 export default {
   name: 'viz-detail',
   computed: {
-    ...mapState(['canvas']),
+    tooltip: function() {
+      return this.$store.state.tooltip
+    },
     frame: function() {
       return this.$store.getters.detailFrameBBox(this.object.id);
     }
@@ -247,6 +248,11 @@ export default {
         clickPoly.on('pointertap', () => {
           if(this.$store.state.isDragging) return;
           console.log('detail cutout tap!', tagPoly.tagTitle);
+
+          // end interactivity and unset tooltip
+          clickPoly.interactive = false
+          clickPoly.buttonMode = false
+          this.$store.commit('unsetTooltip')
           
           //start the transition
           //this.$router.push({ path: `/viz/tag/${tagPoly.tagTitle}` });
@@ -257,7 +263,7 @@ export default {
             targetPath: `/viz/tag/${tagPoly.tagTitle}`
           });
         })
-        clickPoly.on('pointerover', () => {
+        clickPoly.on('pointerover', (e) => {
           TweenLite.to(this.masks[tagPoly.tagTitle], 0.2, {alpha: 0.66});
 
           //show other cutouts
@@ -269,11 +275,27 @@ export default {
             }
           }*/
 
-          //@todo attach tooltip to this coordinate
-          //the data is currently in original size
-          //const local = e.data.getLocalPosition(this.background);
-          //const hoverGeo = this.getHoverGeometry(tagPoly.tagTitle, local.x, local.y);
-          //console.log('Hovering Rect Geometry at', hoverGeo.x, hoverGeo.y)
+          // access coordinates of hovered geometry
+          const localPosition = e.data.getLocalPosition(this.background);
+          const hoverGeometry = this.getHoverGeometry(tagPoly.tagTitle, localPosition.x, localPosition.y);
+
+          const hoverCoordinates = {
+            /* we need to subtract 1/2 of the detailContainer's width & height (because sprite.anchor at 0.5) */
+            x: hoverGeometry.x - (this.$parent.detailContainer.width/2),
+            y: hoverGeometry.y - (this.$parent.detailContainer.height/2) + hoverGeometry.size
+          }
+
+          this.$store.commit('setTooltip', {
+            worldCoordinates: {
+              x: hoverCoordinates.x,
+              y: hoverCoordinates.y
+            },
+            content: {
+              id: tagPoly.tagTitle,
+              text: tagPoly.tagTitle,
+              count: null
+            }
+          })
         })
         clickPoly.on('pointerout', () => {
           TweenLite.to(this.masks[tagPoly.tagTitle], 0.2, {alpha: 0, ease: Power2.easeIn});
@@ -281,6 +303,11 @@ export default {
           /*for(let key in this.highlights) {
             TweenLite.to(this.highlights[key], 0.2, {alpha: 0, ease: Power2.easeIn});
           }*/
+
+          // only unset if another tooltip event hasn't already fired
+          if (tagPoly.tagTitle === this.tooltip.content.id) {
+            this.$store.commit('unsetTooltip')
+          }
         })
         
         this.interactContainer.addChild(clickPoly);
