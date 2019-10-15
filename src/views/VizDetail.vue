@@ -66,6 +66,8 @@ export default {
     }
   },
   mounted: function () {
+    
+    document.title = `${this.object.title} – Close-Up Cloud`;
 
     this.vizContainer.addChild(this.detailContainer) 
 
@@ -91,6 +93,7 @@ export default {
     //this.$refs.detail.style.backgroundImage = `url(${process.env.VUE_APP_URL_IMG}/${this.object.id}/${this.object.id}.jpg)`;
   },
   beforeDestroy: function () {
+    document.title = `Close-Up Cloud`;
     this.vizContainer.removeChild(this.detailContainer)
   },
   destroyed: function() {

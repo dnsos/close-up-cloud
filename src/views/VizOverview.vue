@@ -40,8 +40,10 @@ export default {
     //console.log("hello this is a tag overview cloud")
   },
   mounted: function() {
+    document.title = `Übersicht – Close-Up Cloud`;
   },
   beforeDestroy: function() {
+    document.title = `Close-Up Cloud`;
   }
 }
 </script>

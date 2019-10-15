@@ -30,8 +30,10 @@ export default {
     //console.log("hello this is a single tag cloud")
   },
   mounted: function() {
+    document.title = `${this.tag.title} – Close-Up Cloud`;
   },
   beforeDestroy: function() {
+    document.title = `Close-Up Cloud`;
   }
 }
 </script>
