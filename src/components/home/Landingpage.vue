@@ -6,7 +6,6 @@
         width="500"
         autoplay="true"
         muted="true"
-        loop="true"
       ></video>
       <p>Die Close-Up Cloud ist eine experimentelle Visualisierungstechnologie für die Erkundung verschlagworteter Bildsammlungen.</p>
       <button class="button__viz button--primary"><router-link to="/viz" exact>Zur Visualisierung</router-link></button>
@@ -19,7 +18,7 @@
 export default {
   name: 'landingpage',
   computed: {
-    animatedLogo: function (id) {
+    animatedLogo: function () {
       return `${process.env.VUE_APP_URL_LOGOS}/CUC_Logo_Animation.mp4`
     }
   }
@@ -28,12 +27,12 @@ export default {
 
 <style scoped lang="scss">
 .home__landingpage {
-  min-height: 100vh;
+  height: 90vh;
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
-  /* background-color: var(--color-canvas); */
+  background-color: var(--color-canvas);
 
   .section__landingpage {
     width: 80%;

@@ -2,8 +2,8 @@
   <div class="view__home">
     <Landingpage />
     <Project />
-    <Publications />
     <Collection />
+    <Publications />
     <Participants />
     <CreditsFooter />
   </div>

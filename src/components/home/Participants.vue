@@ -33,7 +33,7 @@ export default {
         core: [
           {
             name: 'Pauline Junginger',
-            role: 'Konzeption, Theoriearbeit'
+            role: 'Konzeption, Theoriearbeit - Forschung, Dokumentation'
           },
           {
             name: 'Dennis Ostendorf',
