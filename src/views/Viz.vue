@@ -1,46 +1,51 @@
 <template>
-  <main class="grid-viz">
-    <pixi-renderer />
-  </main>
+  <div class="view__viz">
+    <main class="layer__viz" ref="main">
+      <VizRenderer v-if="dataFetched" />
+    </main>
+    <VizOverlay class="layer__overlay" v-if="dataFetched" />
+  </div>
 </template>
 
 <script>
-import * as PIXI from 'pixi.js'
-import PixiRenderer from '@/components/PixiRenderer.vue'
+import VizRenderer from '@/components/VizRenderer.vue'
+import VizOverlay from '@/components/VizOverlay.vue'
 
 export default {
-  name: 'grid-viz',
-  provide: function () {
-    // initial settings for PIXI
-    return {
-      PIXIApp: new PIXI.Application({
-        width: 800,
-        height: 600,
-        antialias: true,
-        transparent: true,
-        resolution: 1
-      })
+  name: 'viz',
+  components: { VizRenderer, VizOverlay },
+  computed: {
+    dataFetched: function () {
+      return this.$store.state.dataFetched
     }
   },
-  components: {
-    'pixi-renderer': PixiRenderer
-  },
-  data: function () {
-    return {}
-  },
-  methods: {},
-  created: function () {
-    // check if WebGL is available
-    const type = !PIXI.utils.isWebGLSupported() ? 'canvas' : 'WebGL'
-    PIXI.utils.sayHello(type) 
+  mounted: function() {
+    //console.log('Hello this is a Viz')
+    
+    //only ever fetch data once
+    if(this.dataFetched) return;
+
+    this.$store.dispatch('fetchData').then(() => {
+      this.$store.commit('setDataFetched')
+    });
   }
 }
 </script>
 
-<style scoped lang="scss">
-.grid-viz {
+<style lang="scss" scoped>
+.view__viz {
   width: 100%;
-  height: max-content;
-  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+.layer__viz { 
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.layer__overlay { 
+  z-index: 1;
 }
 </style>

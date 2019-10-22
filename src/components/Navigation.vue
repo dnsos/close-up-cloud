@@ -1,8 +1,7 @@
 <template>
   <nav>
-    <router-link to="/" exact>Home</router-link> |
-    <router-link to="/viz" exact>Visualisierung</router-link> |
-    <router-link to="/info" exact>Info</router-link>
+    <router-link to="/viz">Visualisierung</router-link>
+    <router-link to="/info">Über das Projekt</router-link>
   </nav>
 </template>
 
@@ -13,4 +12,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+nav {
+  >*:not(:last-child) {
+    margin-right: .5rem;
+  }
+}
 </style>
