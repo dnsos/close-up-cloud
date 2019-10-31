@@ -41,10 +41,6 @@ export default {
   }
 }
 
-.logo--animated {
-  width: 100%;
-}
-
 .button__viz, .button__about {
   margin-bottom: calc(var(--grid-spacing)/2);
 }
