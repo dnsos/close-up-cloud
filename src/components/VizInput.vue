@@ -51,6 +51,11 @@ export default {
         desiredZoom = Math.min(desiredZoom, 1);
       }
 
+      this.$store.commit('cursor', {
+        x: e.clientX,
+        y: e.clientY
+      });
+
       this.$store.commit('setCameraZoom', {
         zoom: desiredZoom,
         center: this.cursor
