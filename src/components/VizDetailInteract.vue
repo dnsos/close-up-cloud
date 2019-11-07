@@ -122,6 +122,7 @@ export default {
     createPolygons() {
 
       const allPolygons = [];
+      // console.log(this.geometries)
       this.geometries.forEach((tagGeo) => {
         
         const tagPolygons = [];
@@ -140,10 +141,18 @@ export default {
         }) //end each geometry
 
         //combine all tagPolygons via PolyBool
-        let result = tagPolygons[0];
-        for (let i=1; i < tagPolygons.length; i++) {
-          result = PolyBool.union(result, tagPolygons[i]);
+        // console.log(tagPolygons)
+        // let result = tagPolygons[0];
+        // for (let i=1; i < tagPolygons.length; i++) {
+        //   result = PolyBool.union(result, tagPolygons[i]);
+        // }
+        var segments = PolyBool.segments(tagPolygons[0]);
+        for (var i = 1; i < tagPolygons.length; i++){
+          var seg2 = PolyBool.segments(tagPolygons[i]);
+          var comb = PolyBool.combine(segments, seg2);
+          segments = PolyBool.selectUnion(comb);
         }
+        var result = PolyBool.polygon(segments);
 
         //convert PolyBool regions to PIXI Polygons
         const pixiRegions = [];
@@ -246,8 +255,8 @@ export default {
         clickPoly.interactive = true;
         clickPoly.buttonMode = true;
         clickPoly.on('pointertap', () => {
+          console.log('detail cutout tap!', tagPoly.tagTitle, "dragging" , this.$store.state.isDragging);
           if(this.$store.state.isDragging) return;
-          console.log('detail cutout tap!', tagPoly.tagTitle);
 
           // end interactivity and unset tooltip
           clickPoly.interactive = false
@@ -316,18 +325,34 @@ export default {
   },
 
   beforeMount: function() {
-    //console.log("hello this is a detail interaction layer")
-
+    console.log("hello this is a detail interaction layer")
+    
     this.interactContainer = new PIXI.Container();
     this.interactContainer.position.set(-(this.frame.width/2), -(this.frame.height/2))
-
+    console.time("collectGeometry")
     this.collectGeometry();
+    console.timeEnd("collectGeometry")
+
+    console.time("createPolygons")
     this.createPolygons();
+    console.timeEnd("createPolygons")
     
+    console.time("buildBackground")
     this.buildBackground();
+    console.timeEnd("buildBackground")
+
+    console.time("buildMasks")
     this.buildMasks();
+    console.timeEnd("buildMasks")
+
+    console.time("buildHighlights")
     this.buildHighlights();
+    console.timeEnd("buildHighlights")
+
+    console.time("buildClickpolys")
     this.buildClickpolys();
+    console.timeEnd("buildClickpolys")
+
   },
   mounted: function () {
     this.$parent.detailContainer.addChild(this.interactContainer) 
