@@ -129,7 +129,9 @@ export default {
     },
     handleTouchEnd(){
       this.hypo = null
-      this.$store.commit('dragEnd');
+      setTimeout(() => {
+        this.$store.commit('dragEnd');
+      },50)
     }
   },
   beforeMount() {
