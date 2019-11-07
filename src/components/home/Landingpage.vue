@@ -3,7 +3,6 @@
     <div class="section__wrapper section__landingpage">
       <video
         :src="animatedLogo"
-        width="500"
         autoplay="true"
         muted="true"
       ></video>
@@ -46,5 +45,10 @@ export default {
 }
 .button__about {
   margin-left: calc(var(--grid-spacing)/2);
+}
+
+video {
+  width: 100%;
+  max-width: 500px;
 }
 </style>
