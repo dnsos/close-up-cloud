@@ -17,7 +17,9 @@ export default {
       panStartCam: { x: 0, y: 0 },
       throttledPan: null,
       hypo: null,
-      scale: 0
+      scale: 0,
+      lastTouchEvent: 0,
+      paning: false
     }
   },
   computed: {
@@ -94,44 +96,94 @@ export default {
         this.$store.commit('dragStart');
       }
     },
-    handleTouchMove(e){
-      if (e.touches.length === 2) {
-          this.$store.commit('dragStart');
+    handleTouchStart(e){
+      if(this.isTransitioning) return;
 
-          e.preventDefault();
-          let hypo = Math.hypot(
-            (e.touches[0].pageX - e.touches[1].pageX),
-            (e.touches[0].pageY - e.touches[1].pageY)
-          );
+      this.lastTouchEvent = Date.now()
+      this.$store.state.touchTime = Date.now()
 
-          let center = {
-            x: (e.touches[0].pageX + e.touches[1].pageX)/2,
-            y: (e.touches[0].pageY + e.touches[1].pageY)/2
-          }
 
-          if (this.hypo === null) {
-              this.hypo = hypo;
-          }
-
-          let scale = ((hypo / this.hypo) - 1)/10
-          // this.scale = scale
-
-          let desiredZoom = this.cameraZoom.zoom + scale;
-          desiredZoom = Math.min(Math.max(desiredZoom, this.cameraMinZoom), 1);
-
-          this.$store.commit('setCameraZoom', {
-            zoom: desiredZoom,
-            center
-          });
-
-          this.hypo = hypo;
-      }
+      if (e.touches.length === 1 && !this.zooming) {
+        this.panStartPointer = { 
+          x: e.touches[0].pageX,
+          y: e.touches[0].pageY
+        };
+        this.panStartCam = { ...this.camera };
+      } 
     },
-    handleTouchEnd(){
+    handleTouchMove(e){
+      if(this.isTransitioning) return;
+      const touchTime = Date.now()- this.lastTouchEvent;
+      
+      if (e.touches.length === 1 && !this.zooming) {
+
+        if(touchTime > 200){
+          this.$store.commit('dragStart');  
+        }
+        // console.log(e.touches[0])
+
+        const offset = {
+          x: this.panStartCam.x + e.touches[0].pageX - this.panStartPointer.x,
+          y: this.panStartCam.y + e.touches[0].pageY - this.panStartPointer.y
+        }
+        // console.log(offset)
+
+        this.$store.commit('setCamera', offset);
+
+      } else if (e.touches.length === 2) {
+
+        if(touchTime > 200){
+          this.$store.commit('dragStart');  
+        }
+
+        this.zooming = true
+        e.preventDefault();
+        let hypo = Math.hypot(
+          (e.touches[0].pageX - e.touches[1].pageX),
+          (e.touches[0].pageY - e.touches[1].pageY)
+        );
+
+        let center = {
+          x: (e.touches[0].pageX + e.touches[1].pageX)/2,
+          y: (e.touches[0].pageY + e.touches[1].pageY)/2
+        }
+
+        if (this.hypo === null) {
+            this.hypo = hypo;
+        }
+
+        let scale = ((hypo / this.hypo) - 1)/5
+        // this.scale = scale
+
+        let desiredZoom = this.cameraZoom.zoom + scale;
+        desiredZoom = Math.min(Math.max(desiredZoom, this.cameraMinZoom), 1);
+
+        this.$store.commit('setCameraZoom', {
+          zoom: desiredZoom,
+          center
+        });
+
+        this.hypo = hypo;
+      }
+      
+    },
+    handleTouchEnd(e){
       this.hypo = null
-      setTimeout(() => {
+      if(e.touches.length === 0){
+        this.zooming = false
         this.$store.commit('dragEnd');
-      },50)
+
+        const touchTime = Date.now()- this.lastTouchEvent
+        console.log("touchTime", touchTime)
+      }
+      
+      // if(touchTime > 300){
+      //   e.preventDefault()
+      //   e.stopPropagation()
+      // }
+      
+      setTimeout(() => {       
+      },30)
     }
   },
   beforeMount() {
@@ -147,6 +199,7 @@ export default {
     document.body.addEventListener('mousedown', this.handlePanStart);
     document.body.addEventListener('mouseup', this.handlePanEnd);
     document.body.addEventListener('mouseleave', this.handlePanEnd);
+    document.body.addEventListener('touchstart', this.handleTouchStart, false);
     document.body.addEventListener('touchmove', this.handleTouchMove, false);
     document.body.addEventListener('touchend', this.handleTouchEnd, false);
   },
@@ -157,6 +210,7 @@ export default {
     document.body.removeEventListener('mousedown', this.handlePanStart);
     document.body.removeEventListener('mouseup', this.handlePanEnd);
     document.body.removeEventListener('mouseleave', this.handlePanEnd);
+    document.body.removeEventListener('touchstart', this.handleTouchStart, false);
     document.body.removeEventListener('touchmove', this.handleTouchMove, false);
     document.body.removeEventListener('touchend', this.handleTouchEnd, false);
   }
