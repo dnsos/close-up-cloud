@@ -1,6 +1,7 @@
 <template>
   <div>
     Viz Input Watcher
+    <!-- {{ scale }} {{ hypo }} -->
   </div>
 </template>
 
@@ -14,7 +15,9 @@ export default {
     return {
       panStartPointer: { x: 0, y: 0 },
       panStartCam: { x: 0, y: 0 },
-      throttledPan: null
+      throttledPan: null,
+      hypo: null,
+      scale: 0
     }
   },
   computed: {
@@ -50,11 +53,6 @@ export default {
         desiredZoom += deltaZoom;
         desiredZoom = Math.min(desiredZoom, 1);
       }
-
-      this.$store.commit('cursor', {
-        x: e.clientX,
-        y: e.clientY
-      });
 
       this.$store.commit('setCameraZoom', {
         zoom: desiredZoom,
@@ -95,6 +93,43 @@ export default {
       } else {
         this.$store.commit('dragStart');
       }
+    },
+    handleTouchMove(e){
+      if (e.touches.length === 2) {
+          this.$store.commit('dragStart');
+
+          e.preventDefault();
+          let hypo = Math.hypot(
+            (e.touches[0].pageX - e.touches[1].pageX),
+            (e.touches[0].pageY - e.touches[1].pageY)
+          );
+
+          let center = {
+            x: (e.touches[0].pageX + e.touches[1].pageX)/2,
+            y: (e.touches[0].pageY + e.touches[1].pageY)/2
+          }
+
+          if (this.hypo === null) {
+              this.hypo = hypo;
+          }
+
+          let scale = ((hypo / this.hypo) - 1)/10
+          // this.scale = scale
+
+          let desiredZoom = this.cameraZoom.zoom + scale;
+          desiredZoom = Math.min(Math.max(desiredZoom, this.cameraMinZoom), 1);
+
+          this.$store.commit('setCameraZoom', {
+            zoom: desiredZoom,
+            center
+          });
+
+          this.hypo = hypo;
+      }
+    },
+    handleTouchEnd(){
+      this.hypo = null
+      this.$store.commit('dragEnd');
     }
   },
   beforeMount() {
@@ -110,6 +145,8 @@ export default {
     document.body.addEventListener('mousedown', this.handlePanStart);
     document.body.addEventListener('mouseup', this.handlePanEnd);
     document.body.addEventListener('mouseleave', this.handlePanEnd);
+    document.body.addEventListener('touchmove', this.handleTouchMove, false);
+    document.body.addEventListener('touchend', this.handleTouchEnd, false);
   },
   beforeDestroy() {
     document.removeEventListener('wheel', this.handleScroll);
@@ -118,6 +155,8 @@ export default {
     document.body.removeEventListener('mousedown', this.handlePanStart);
     document.body.removeEventListener('mouseup', this.handlePanEnd);
     document.body.removeEventListener('mouseleave', this.handlePanEnd);
+    document.body.removeEventListener('touchmove', this.handleTouchMove, false);
+    document.body.removeEventListener('touchend', this.handleTouchEnd, false);
   }
 }
 </script>
