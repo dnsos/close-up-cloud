@@ -30,7 +30,7 @@ export default {
   mounted: function () {
     this.videoWrapperWidth = this.$refs.videoWrapper.offsetWidth
 
-    window.addEventListener('resize', (e) => {
+    window.addEventListener('resize', () => {
       this.videoWrapperWidth = this.$refs.videoWrapper.offsetWidth
     })
   }
