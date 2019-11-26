@@ -4,16 +4,29 @@
       <div class="about__text">
         <div class="text-block">
           <h2>Das Projekt</h2>
-          <p>Text über das Projekt. Lorem ipsum dolor sit amet consectetur adipisicing elit. Dignissimos, ut eveniet quod ex pariatur eligendi debitis praesentium enim accusamus omnis consectetur quis veritatis earum hic odit. Consequatur possimus impedit quam. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repudiandae maxime sed iste illum rerum a facilis sit, eum optio! Neque odio quaerat numquam itaque vero fuga sequi quia? Quasi, aperiam?</p>
-          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Perspiciatis, provident quas cum, quaerat quis veritatis expedita amet tempore reprehenderit quod modi voluptatum id cupiditate aperiam corrupti voluptate accusamus asperiores deserunt.</p>
+          <p>
+            Text über das Projekt. Lorem ipsum dolor sit amet consectetur
+            adipisicing elit. Dignissimos, ut eveniet quod ex pariatur eligendi
+            debitis praesentium enim accusamus omnis consectetur quis veritatis
+            earum hic odit. Consequatur possimus impedit quam. Lorem ipsum dolor
+            sit amet, consectetur adipisicing elit. Repudiandae maxime sed iste
+            illum rerum a facilis sit, eum optio! Neque odio quaerat numquam
+            itaque vero fuga sequi quia? Quasi, aperiam?
+          </p>
+          <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit.
+            Perspiciatis, provident quas cum, quaerat quis veritatis expedita
+            amet tempore reprehenderit quod modi voluptatum id cupiditate
+            aperiam corrupti voluptate accusamus asperiores deserunt.
+          </p>
         </div>
       </div>
       <div class="about__video" ref="videoWrapper">
         <video controls :width="videoWrapperWidth">
-          <source src="" type="video/webm">
-          <source src="" type="video/mp4">
+          <source src="assets/video/sequenz2_2311_720_2.mov" type="video/mp4" />
+          <!-- <source src="" type="video/webm"> -->
           Video
-         </video>
+        </video>
       </div>
     </div>
   </section>
@@ -21,24 +34,25 @@
 
 <script>
 export default {
-  name: 'project',
-  data: function () {
+  name: "project",
+  data: function() {
     return {
       videoWrapperWidth: 320
-    }
+    };
   },
-  mounted: function () {
-    this.videoWrapperWidth = this.$refs.videoWrapper.offsetWidth
+  mounted: function() {
+    this.videoWrapperWidth = this.$refs.videoWrapper.offsetWidth;
 
-    window.addEventListener('resize', () => {
-      this.videoWrapperWidth = this.$refs.videoWrapper.offsetWidth
-    })
+    window.addEventListener("resize", () => {
+      this.videoWrapperWidth = this.$refs.videoWrapper.offsetWidth;
+    });
   }
-}
+};
 </script>
 
 <style scoped lang="scss">
-.about__text, .about__video {
+.about__text,
+.about__video {
   display: flex;
   align-items: center;
 }
