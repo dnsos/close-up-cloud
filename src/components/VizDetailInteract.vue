@@ -57,7 +57,7 @@ export default {
   },
   methods: {
     flashHighlights() {
-      if (this.$store.getters.isTouchDevice) {
+      if (this.$store.state.isTouchDevice) {
         for (let tag in this.highlights) {
           new TimelineLite()
             .from(this.highlights[tag], 0, { alpha: 0 })
@@ -340,7 +340,9 @@ export default {
         };
 
         clickPoly.on("touchstart", e => {
-          if (clickPoly.lastTapped && Date.now() - clickPoly.lastTapped < 300) {
+          console.log(e.data.originalEvent);
+          const time = Date.now() - clickPoly.lastTapped;
+          if (clickPoly.lastTapped && time < 300 && time > 50) {
             console.log("click");
             clickEvent();
           } else {
@@ -348,7 +350,16 @@ export default {
             pointerover(e);
           }
         });
+
+        clickPoly.on("touchmove", () => {
+          if (this.$store.state.isDragging) {
+            this.masks[tagPoly.tagTitle].alpha = 0;
+            this.$store.commit("unsetTooltip");
+          }
+        });
+
         clickPoly.on("touchend", pointerout);
+        clickPoly.on("touchendoutside", pointerout);
 
         clickPoly.on("pointerover", pointerover);
         clickPoly.on("pointerout", pointerout);
@@ -393,7 +404,7 @@ export default {
   mounted: function() {
     this.$parent.detailContainer.addChild(this.interactContainer);
 
-    if (this.$store.getters.isTouchDevice) {
+    if (this.$store.state.isTouchDevice) {
       this.mobileInterval = setInterval(() => {
         this.flashHighlights();
       }, 10000);

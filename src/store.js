@@ -53,7 +53,8 @@ export default new Vuex.Store({
         text: "",
         count: null
       }
-    }
+    },
+    isTouchDevice: false
   },
   getters: {
     tag: state => title => {
@@ -62,7 +63,6 @@ export default new Vuex.Store({
     object: state => objectID => {
       return state.data.find(object => object.id === objectID);
     },
-    isTouchDevice: () => "ontouchstart" in window || navigator.msMaxTouchPoints,
     totalNumberOfCloseups: state => {
       let counter = 0;
       state.data.map(object => {
@@ -189,9 +189,11 @@ export default new Vuex.Store({
       // TODO: negative implications of not resetting content and coordinates?
     },
     dragStart: state => {
+      console.log("dragStart");
       state.isDragging = true;
     },
     dragEnd: state => {
+      console.log("dragENd");
       state.isDragging = false;
     },
     cursor: (state, payload) => {
