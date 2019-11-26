@@ -1,20 +1,20 @@
 <template>
   <div>
-    <h4>Detail Interact {{object.id}}</h4>
+    <h4>Detail Interact {{ object.id }}</h4>
   </div>
 </template>
 
 <script>
-import * as PIXI from 'pixi.js'
-import { TweenLite, TimelineLite, Power2 } from 'gsap/TweenMax'
-import PolyBool from 'polybooljs';
-import { mkgGold } from '../variables.js'
+import * as PIXI from "pixi.js";
+import { TweenLite, TimelineLite, Power2 } from "gsap/TweenMax";
+import PolyBool from "polybooljs";
+import { mkgGold } from "../variables.js";
 
 export default {
-  name: 'viz-detail',
+  name: "viz-detail",
   computed: {
     tooltip: function() {
-      return this.$store.state.tooltip
+      return this.$store.state.tooltip;
     },
     frame: function() {
       return this.$store.getters.detailFrameBBox(this.object.id);
@@ -23,18 +23,17 @@ export default {
   props: {
     object: {
       //in case we get no object prop passed down, try to fetch it from the store
-      default: function () {
+      default: function() {
         if (this.$route.params.id) {
-          return this.$store.getters.object(this.$route.params.id)
+          return this.$store.getters.object(this.$route.params.id);
         } else {
-          console.error('initialized VizDetail without id')
+          console.error("initialized VizDetail without id");
         }
       }
     }
   },
   data: function() {
     return {
-
       interactContainer: null,
 
       //full-size rectangle for flashing highlights on tap
@@ -48,47 +47,60 @@ export default {
 
       //tag highlights are containers of label outlines (individual PIXI rectangles)
       highlights: {}, //key tagTitle, content: PIXI.Container
-      
+
       //tag masks are the semi-transparent overlays (merged into a polygon)
-      masks: {}, //key tagTitle, content: PIXI.Graphics      
+      masks: {} //key tagTitle, content: PIXI.Graphics
 
       //tag clickpolys are interactive polygons per tag (merged into a polygon)
       //clickpolys: {} //key tagTitle, content: PIXI.Graphics
-    }
+    };
   },
   methods: {
-
     flashHighlights() {
-      for(let tag in this.highlights) {
-        new TimelineLite()
-          .from(this.highlights[tag], 0, {alpha: 0})
-          .to(this.highlights[tag], 0.25, {alpha: 1})
-          .to(this.highlights[tag], 0.25, {alpha: 0})
-          .to(this.highlights[tag], 0.25, {alpha: 1})
-          .to(this.highlights[tag], 0.25, {alpha: 0})
+      if (this.$store.getters.isTouchDevice) {
+        for (let tag in this.highlights) {
+          new TimelineLite()
+            .from(this.highlights[tag], 0, { alpha: 0 })
+            .to(this.highlights[tag], 1, { alpha: 1 })
+            .to(this.highlights[tag], 1, { alpha: 0 });
+        }
+      } else {
+        for (let tag in this.highlights) {
+          new TimelineLite()
+            .from(this.highlights[tag], 0, { alpha: 0 })
+            .to(this.highlights[tag], 0.25, { alpha: 1 })
+            .to(this.highlights[tag], 0.25, { alpha: 0 })
+            .to(this.highlights[tag], 0.25, { alpha: 1 })
+            .to(this.highlights[tag], 0.25, { alpha: 0 });
+        }
       }
     },
 
     getHoverGeometry(tagTitle, mouseX, mouseY) {
+      console.log("getHoverGeometry", tagTitle);
 
-      const tagGeometries = this.geometries.find(tagGeo => tagGeo.tagTitle === tagTitle);
-      for(let i=0; i<tagGeometries.geometry.length; i++) {
-
+      const tagGeometries = this.geometries.find(
+        tagGeo => tagGeo.tagTitle === tagTitle
+      );
+      for (let i = 0; i < tagGeometries.geometry.length; i++) {
         const geo = tagGeometries.geometry[i];
-        if(mouseX >= geo.x && mouseX <= geo.x + geo.size &&
-          mouseY >= geo.y && mouseY <= geo.y + geo.size) {
-            return geo;
-          }
+        if (
+          mouseX >= geo.x &&
+          mouseX <= geo.x + geo.size &&
+          mouseY >= geo.y &&
+          mouseY <= geo.y + geo.size
+        ) {
+          return geo;
+        }
       }
-      console.error('no geometry found for', ... arguments);
+      console.error("no geometry found for", ...arguments);
     },
 
     collectGeometry() {
-
       const allGeometries = [];
       this.object.tags.forEach(tag => {
-        if(tag.title === 'Frame') return;
-        
+        if (tag.title === "Frame") return;
+
         const tagGeometries = {
           tagTitle: tag.title,
           geometry: []
@@ -96,9 +108,9 @@ export default {
 
         //store geometry for every rectangle
         tag.geometry.forEach(geo => {
-          tagGeometries.geometry.push({ 
-            x: geo.x - this.frame.x, 
-            y: geo.y - this.frame.y, 
+          tagGeometries.geometry.push({
+            x: geo.x - this.frame.x,
+            y: geo.y - this.frame.y,
             size: geo.size
           });
         });
@@ -109,36 +121,34 @@ export default {
       allGeometries.sort((a, b) => {
         let aSize = 0;
         let bSize = 0;
-        for(let i=0; i<a.geometry.length; i++) aSize += a.geometry[i].size;
-        for(let i=0; i<b.geometry.length; i++) bSize += b.geometry[i].size;
+        for (let i = 0; i < a.geometry.length; i++) aSize += a.geometry[i].size;
+        for (let i = 0; i < b.geometry.length; i++) bSize += b.geometry[i].size;
 
-        if(aSize === bSize) return 0;
-        return (aSize < bSize) ? 1 : -1;
+        if (aSize === bSize) return 0;
+        return aSize < bSize ? 1 : -1;
       });
 
       this.geometries = allGeometries;
     },
 
     createPolygons() {
-
       const allPolygons = [];
       // console.log(this.geometries)
-      this.geometries.forEach((tagGeo) => {
-        
+      this.geometries.forEach(tagGeo => {
         const tagPolygons = [];
         tagGeo.geometry.forEach(geo => {
           tagPolygons.push({
             regions: [
-                [
-                    [geo.x, geo.y],
-                    [geo.x+geo.size, geo.y],
-                    [geo.x+geo.size, geo.y+geo.size],
-                    [geo.x, geo.y+geo.size]
-                ]
+              [
+                [geo.x, geo.y],
+                [geo.x + geo.size, geo.y],
+                [geo.x + geo.size, geo.y + geo.size],
+                [geo.x, geo.y + geo.size]
+              ]
             ],
             inverted: false
-          })          
-        }) //end each geometry
+          });
+        }); //end each geometry
 
         //combine all tagPolygons via PolyBool
         // console.log(tagPolygons)
@@ -147,7 +157,7 @@ export default {
         //   result = PolyBool.union(result, tagPolygons[i]);
         // }
         var segments = PolyBool.segments(tagPolygons[0]);
-        for (var i = 1; i < tagPolygons.length; i++){
+        for (var i = 1; i < tagPolygons.length; i++) {
           var seg2 = PolyBool.segments(tagPolygons[i]);
           var comb = PolyBool.combine(segments, seg2);
           segments = PolyBool.selectUnion(comb);
@@ -156,97 +166,88 @@ export default {
 
         //convert PolyBool regions to PIXI Polygons
         const pixiRegions = [];
-        for(let i=0; i<result.regions.length; i++) {
+        for (let i = 0; i < result.regions.length; i++) {
           const region = result.regions[i];
           const pixiRegion = [];
-          for(let k=0; k<region.length; k++) {
-            pixiRegion.push(...region[k])
+          for (let k = 0; k < region.length; k++) {
+            pixiRegion.push(...region[k]);
           }
-          pixiRegions.push(pixiRegion)
+          pixiRegions.push(pixiRegion);
         }
 
         allPolygons.push({
           tagTitle: tagGeo.tagTitle,
           geometry: pixiRegions
-        })
+        });
 
         this.polygons = allPolygons;
-      })
+      });
     },
 
-
     buildBackground() {
-      const rect = this.background = new PIXI.Graphics();
+      const rect = (this.background = new PIXI.Graphics());
       rect.alpha = 0;
-      rect.beginFill(0x0000FF);
+      rect.beginFill(0x0000ff);
       rect.drawRect(0, 0, this.frame.width, this.frame.height);
       rect.endFill();
       this.interactContainer.addChild(rect);
-    
+
       //add interactivity
       rect.interactive = true;
       rect.buttonMode = true;
-      rect.on('pointertap', () => {
-        if(this.$store.state.isDragging) return;
-        console.log('detail background tap!');
+      rect.on("pointertap", () => {
+        if (this.$store.state.isDragging) return;
+        console.log("detail background tap!");
         this.flashHighlights();
       });
     },
 
     //outlines
     buildHighlights() {
-
       this.geometries.forEach(tagGeo => {
-        
-        const highlightContainer = new PIXI.Container(); 
+        const highlightContainer = new PIXI.Container();
         highlightContainer.alpha = 0;
 
         tagGeo.geometry.forEach(geo => {
           const rect = new PIXI.Graphics();
-          rect.beginFill(0xFFFFFF, 0);
+          rect.beginFill(0xffffff, 0);
           rect.lineStyle(12, mkgGold);
           rect.drawRect(geo.x, geo.y, geo.size, geo.size);
           rect.endFill();
-          
-          highlightContainer.addChild(rect)
-        })
-        
+
+          highlightContainer.addChild(rect);
+        });
+
         this.highlights[tagGeo.tagTitle] = highlightContainer;
         this.interactContainer.addChild(highlightContainer);
       });
-
     },
 
-
     buildMasks() {
-
       this.polygons.forEach(tagPoly => {
-
         const tagMask = new PIXI.Graphics();
         tagMask.alpha = 0;
         tagMask.beginFill(0x000000);
         tagMask.drawRect(0, 0, this.frame.width, this.frame.height);
         tagMask.beginHole();
-        for(let i=0; i<tagPoly.geometry.length; i++) {
+        for (let i = 0; i < tagPoly.geometry.length; i++) {
           tagMask.drawPolygon(tagPoly.geometry[i]);
         }
         tagMask.endHole();
         tagMask.endFill();
-        
+
         this.masks[tagPoly.tagTitle] = tagMask;
         this.interactContainer.addChild(tagMask);
       });
-
     },
 
     buildClickpolys() {
-
       this.polygons.forEach(tagPoly => {
-
+        console.log("buildClickpolys", tagPoly);
         const clickPoly = new PIXI.Graphics();
-        clickPoly.beginFill(0xFF0000);
+        clickPoly.beginFill(0xff0000);
         clickPoly.alpha = 0;
-        for(let i=0; i<tagPoly.geometry.length; i++) {
+        for (let i = 0; i < tagPoly.geometry.length; i++) {
           clickPoly.drawPolygon(tagPoly.geometry[i]);
         }
         clickPoly.endFill();
@@ -254,26 +255,34 @@ export default {
         //add interactivity
         clickPoly.interactive = true;
         clickPoly.buttonMode = true;
-        clickPoly.on('pointertap', () => {
-          console.log('detail cutout tap!', tagPoly.tagTitle, "dragging" , this.$store.state.isDragging);
-          if(this.$store.state.isDragging) return;
+
+        const clickEvent = () => {
+          console.log(
+            "detail cutout tap!",
+            tagPoly.tagTitle,
+            "dragging",
+            this.$store.state.isDragging
+          );
+          if (this.$store.state.isDragging) return;
 
           // end interactivity and unset tooltip
-          clickPoly.interactive = false
-          clickPoly.buttonMode = false
-          this.$store.commit('unsetTooltip')
-          
+          clickPoly.interactive = false;
+          clickPoly.buttonMode = false;
+          this.$store.commit("unsetTooltip");
+
           //start the transition
           //this.$router.push({ path: `/viz/tag/${tagPoly.tagTitle}` });
-          this.$store.dispatch('beginVizTransition', { 
-            from: 'viz-detail', 
-            to: 'viz-tag', 
+          this.$store.dispatch("beginVizTransition", {
+            from: "viz-detail",
+            to: "viz-tag",
             targetId: tagPoly.tagTitle,
             targetPath: `/viz/tag/${tagPoly.tagTitle}`
           });
-        })
-        clickPoly.on('pointerover', (e) => {
-          TweenLite.to(this.masks[tagPoly.tagTitle], 0.2, {alpha: 0.66});
+        };
+        clickPoly.on("click", clickEvent);
+
+        const pointerover = e => {
+          TweenLite.to(this.masks[tagPoly.tagTitle], 0.2, { alpha: 0.66 });
 
           //show other cutouts
           /*for(let key in this.highlights) {
@@ -286,15 +295,22 @@ export default {
 
           // access coordinates of hovered geometry
           const localPosition = e.data.getLocalPosition(this.background);
-          const hoverGeometry = this.getHoverGeometry(tagPoly.tagTitle, localPosition.x, localPosition.y);
+          const hoverGeometry = this.getHoverGeometry(
+            tagPoly.tagTitle,
+            localPosition.x,
+            localPosition.y
+          );
 
           const hoverCoordinates = {
             /* we need to subtract 1/2 of the detailContainer's width & height (because sprite.anchor at 0.5) */
-            x: hoverGeometry.x - (this.$parent.detailContainer.width/2),
-            y: hoverGeometry.y - (this.$parent.detailContainer.height/2) + hoverGeometry.size
-          }
+            x: hoverGeometry.x - this.$parent.detailContainer.width / 2,
+            y:
+              hoverGeometry.y -
+              this.$parent.detailContainer.height / 2 +
+              hoverGeometry.size
+          };
 
-          this.$store.commit('setTooltip', {
+          this.$store.commit("setTooltip", {
             worldCoordinates: {
               x: hoverCoordinates.x,
               y: hoverCoordinates.y
@@ -304,67 +320,93 @@ export default {
               text: tagPoly.tagTitle,
               count: null
             }
-          })
-        })
-        clickPoly.on('pointerout', () => {
-          TweenLite.to(this.masks[tagPoly.tagTitle], 0.2, {alpha: 0, ease: Power2.easeIn});
-          
+          });
+        };
+
+        const pointerout = () => {
+          TweenLite.to(this.masks[tagPoly.tagTitle], 0.2, {
+            alpha: 0,
+            ease: Power2.easeIn
+          });
+
           /*for(let key in this.highlights) {
             TweenLite.to(this.highlights[key], 0.2, {alpha: 0, ease: Power2.easeIn});
           }*/
 
           // only unset if another tooltip event hasn't already fired
           if (tagPoly.tagTitle === this.tooltip.content.id) {
-            this.$store.commit('unsetTooltip')
+            this.$store.commit("unsetTooltip");
           }
-        })
-        
+        };
+
+        clickPoly.on("touchstart", e => {
+          if (clickPoly.lastTapped && Date.now() - clickPoly.lastTapped < 300) {
+            console.log("click");
+            clickEvent();
+          } else {
+            clickPoly.lastTapped = Date.now();
+            pointerover(e);
+          }
+        });
+        clickPoly.on("touchend", pointerout);
+
+        clickPoly.on("pointerover", pointerover);
+        clickPoly.on("pointerout", pointerout);
+
         this.interactContainer.addChild(clickPoly);
       });
     }
   },
 
   beforeMount: function() {
-    console.log("hello this is a detail interaction layer")
-    
+    console.log("hello this is a detail interaction layer");
+
     this.interactContainer = new PIXI.Container();
-    this.interactContainer.position.set(-(this.frame.width/2), -(this.frame.height/2))
-    console.time("collectGeometry")
+    this.interactContainer.position.set(
+      -(this.frame.width / 2),
+      -(this.frame.height / 2)
+    );
+    console.time("collectGeometry");
     this.collectGeometry();
-    console.timeEnd("collectGeometry")
+    console.timeEnd("collectGeometry");
 
-    console.time("createPolygons")
+    console.time("createPolygons");
     this.createPolygons();
-    console.timeEnd("createPolygons")
-    
-    console.time("buildBackground")
+    console.timeEnd("createPolygons");
+
+    console.time("buildBackground");
     this.buildBackground();
-    console.timeEnd("buildBackground")
+    console.timeEnd("buildBackground");
 
-    console.time("buildMasks")
+    console.time("buildMasks");
     this.buildMasks();
-    console.timeEnd("buildMasks")
+    console.timeEnd("buildMasks");
 
-    console.time("buildHighlights")
+    console.time("buildHighlights");
     this.buildHighlights();
-    console.timeEnd("buildHighlights")
+    console.timeEnd("buildHighlights");
 
-    console.time("buildClickpolys")
+    console.time("buildClickpolys");
     this.buildClickpolys();
-    console.timeEnd("buildClickpolys")
+    console.timeEnd("buildClickpolys");
+  },
+  mounted: function() {
+    this.$parent.detailContainer.addChild(this.interactContainer);
 
+    if (this.$store.getters.isTouchDevice) {
+      this.mobileInterval = setInterval(() => {
+        this.flashHighlights();
+      }, 10000);
+    }
   },
-  mounted: function () {
-    this.$parent.detailContainer.addChild(this.interactContainer) 
-  },
-  beforeDestroy: function () {
-    this.$parent.detailContainer.removeChild(this.interactContainer) 
+  beforeDestroy: function() {
+    this.$parent.detailContainer.removeChild(this.interactContainer);
+    clearInterval(this.mobileInterval);
   },
   destroyed: function() {
     this.interactContainer.destroy(true);
   }
-}
+};
 </script>
 
-<style scoped lang="scss">
-</style>
+<style scoped lang="scss"></style>
