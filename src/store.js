@@ -62,7 +62,6 @@ export default new Vuex.Store({
       return state.taglist.find(tag => tag.title === title);
     },
     object: state => objectID => {
-      console.log(objectID, state.data);
       return state.data.find(object => object.id === objectID);
     },
     totalNumberOfCloseups: state => {

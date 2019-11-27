@@ -7,8 +7,8 @@
 <script>
 import * as PIXI from "pixi.js";
 import { TweenLite, TimelineLite, Power2 } from "gsap/TweenMax";
+import PolyBool from "polybooljs";
 import { mkgGold } from "../variables.js";
-import { polygon } from "polygon-tools";
 
 export default {
   name: "viz-detail",
@@ -135,26 +135,58 @@ export default {
       const allPolygons = [];
       // console.log(this.geometries)
       this.geometries.forEach(tagGeo => {
-        const tagPolygons = tagGeo.geometry.map(geo => [
-          [geo.x, geo.y],
-          [geo.x + geo.size, geo.y],
-          [geo.x + geo.size, geo.y + geo.size],
-          [geo.x, geo.y + geo.size]
-        ]);
+        const tagPolygons = [];
+        tagGeo.geometry.forEach(geo => {
+          tagPolygons.push({
+            regions: [
+              [
+                [geo.x, geo.y],
+                [geo.x + geo.size, geo.y],
+                [geo.x + geo.size, geo.y + geo.size],
+                [geo.x, geo.y + geo.size]
+              ]
+            ],
+            inverted: false
+          });
+        }); //end each geometry
 
-        // const polies = tagPolygons.map(d => d.regions[0]);
-        // console.log("polise", polies);
-        let union = polygon.union(...tagPolygons);
-        let flat = union.map(u => u.flat());
-        // console.log(union, flat);
+        //combine all tagPolygons via PolyBool
+        // console.log(tagPolygons)
+        // let result = tagPolygons[0];
+        // for (let i=1; i < tagPolygons.length; i++) {
+        //   result = PolyBool.union(result, tagPolygons[i]);
+        // }
+        // console.log(tagPolygons);
+        // console.time("calc");
+        var segments = PolyBool.segments(tagPolygons[0]);
+        for (var i = 1; i < tagPolygons.length; i++) {
+          var seg2 = PolyBool.segments(tagPolygons[i]);
+          var comb = PolyBool.combine(segments, seg2);
+          segments = PolyBool.selectUnion(comb);
+        }
+        var result = PolyBool.polygon(segments);
+        // console.timeEnd("calc");
+
+        //convert PolyBool regions to PIXI Polygons
+        const pixiRegions = [];
+        for (let i = 0; i < result.regions.length; i++) {
+          const region = result.regions[i];
+          const pixiRegion = [];
+          for (let k = 0; k < region.length; k++) {
+            pixiRegion.push(...region[k]);
+          }
+          pixiRegions.push(pixiRegion);
+        }
+
+        // console.log(tagGeo.tagTitle, pixiRegions);
 
         allPolygons.push({
           tagTitle: tagGeo.tagTitle,
-          geometry: flat
+          geometry: pixiRegions
         });
       });
-      // console.log("allPolygons");
-      // console.log(JSON.stringify(allPolygons));
+      console.log("allPolygons");
+      console.log(JSON.stringify(allPolygons));
       this.polygons = allPolygons;
     },
 
@@ -217,7 +249,7 @@ export default {
 
     buildClickpolys() {
       this.polygons.forEach(tagPoly => {
-        // console.log("buildClickpolys", tagPoly);
+        console.log("buildClickpolys", tagPoly);
         const clickPoly = new PIXI.Graphics();
         clickPoly.beginFill(0xff0000);
         clickPoly.alpha = 0;
@@ -255,7 +287,6 @@ export default {
         };
 
         const pointerover = e => {
-          // console.log(this.masks[tagPoly.tagTitle]);
           TweenLite.to(this.masks[tagPoly.tagTitle], 0.2, { alpha: 0.66 });
 
           //show other cutouts
