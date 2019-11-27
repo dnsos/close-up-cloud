@@ -12,10 +12,10 @@ export default {
 	name: "sammlung",
 	computed: {
 		url: function() {
-			const default = "http://sammlungonline.mkg-hamburg.de/de/object/Kaffeekanne/P2017.3.1185a/mkg-e00157089"
-			const item = this.$store.getters
-				.object(this.$route.params.id)
-			return item ? item.permalink : default
+			const dummyUrl =
+				"http://sammlungonline.mkg-hamburg.de/de/object/Kaffeekanne/P2017.3.1185a/mkg-e00157089";
+			const item = this.$store.getters.object(this.$route.params.id);
+			return item ? item.permalink : dummyUrl;
 		}
 	}
 };
