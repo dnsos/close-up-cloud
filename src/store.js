@@ -54,13 +54,15 @@ export default new Vuex.Store({
         count: null
       }
     },
-    isTouchDevice: false
+    isTouchDevice: false,
+    isMkg: false
   },
   getters: {
     tag: state => title => {
       return state.taglist.find(tag => tag.title === title);
     },
     object: state => objectID => {
+      console.log(objectID, state.data);
       return state.data.find(object => object.id === objectID);
     },
     totalNumberOfCloseups: state => {
