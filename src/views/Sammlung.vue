@@ -12,9 +12,10 @@ export default {
 	name: "sammlung",
 	computed: {
 		url: function() {
-			return this.$store.getters
+			const default = "http://sammlungonline.mkg-hamburg.de/de/object/Kaffeekanne/P2017.3.1185a/mkg-e00157089"
+			const item = this.$store.getters
 				.object(this.$route.params.id)
-				.permalink.replace("https", "http");
+			return item ? item.permalink : default
 		}
 	}
 };
