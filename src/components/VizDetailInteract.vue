@@ -279,7 +279,6 @@ export default {
             targetPath: `/viz/tag/${tagPoly.tagTitle}`
           });
         };
-        clickPoly.on("click", clickEvent);
 
         const pointerover = e => {
           TweenLite.to(this.masks[tagPoly.tagTitle], 0.2, { alpha: 0.66 });
@@ -356,12 +355,12 @@ export default {
             this.$store.commit("unsetTooltip");
           }
         });
-
         clickPoly.on("touchend", pointerout);
         clickPoly.on("touchendoutside", pointerout);
 
-        clickPoly.on("pointerover", pointerover);
-        clickPoly.on("pointerout", pointerout);
+        clickPoly.on("click", clickEvent);
+        clickPoly.on("mouseover", pointerover);
+        clickPoly.on("mouseout", pointerout);
 
         this.interactContainer.addChild(clickPoly);
       });

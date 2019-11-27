@@ -217,8 +217,8 @@ export default {
     };
 
     samplesContainer.on("click", this.handlePointerTap);
-    samplesContainer.on("pointeover", pointerover);
-    samplesContainer.on("pointerout", pointerout);
+    samplesContainer.on("mouseover", pointerover);
+    samplesContainer.on("mouseout", pointerout);
 
     samplesContainer.on("touchstart", e => {
       const time = Date.now() - samplesContainer.lastTapped;
