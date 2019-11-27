@@ -340,7 +340,6 @@ export default {
         };
 
         clickPoly.on("touchstart", e => {
-          console.log(e.data.originalEvent);
           const time = Date.now() - clickPoly.lastTapped;
           if (clickPoly.lastTapped && time < 300 && time > 50) {
             console.log("click");
