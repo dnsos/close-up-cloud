@@ -13,7 +13,7 @@ export default {
 	computed: {
 		url: function() {
 			const dummyUrl =
-				"http://sammlungonline.mkg-hamburg.de/de/object/Kaffeekanne/P2017.3.1185a/mkg-e00157089";
+				"https://sammlungonline.mkg-hamburg.de/de/object/Kaffeekanne/P2017.3.1185a/mkg-e00157089";
 			const item = this.$store.getters.object(this.$route.params.id);
 			return item ? item.permalink : dummyUrl;
 		}
