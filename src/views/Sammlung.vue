@@ -1,7 +1,7 @@
 <template>
 	<div class="sammlung">
-		<div class="menu">
-			<span @click="$router.go(-1)">Zurück zur Visualisierung</span>
+		<div class="menu" @click="$router.go(-1)">
+			<span>Zurück zur Visualisierung</span>
 		</div>
 		<iframe :src="url"></iframe>
 	</div>
@@ -24,10 +24,11 @@ export default {
 .menu {
 	height: 50px;
 	padding: 10px;
+	cursor: pointer;
 }
 iframe {
 	width: 100vw;
-	height: calc(100vh - 100px);
+	height: calc(100vh - 50px);
 	border: none;
 }
 </style>
