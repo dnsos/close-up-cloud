@@ -55,7 +55,8 @@ export default new Vuex.Store({
       }
     },
     isTouchDevice: false,
-    isMkg: false
+    isMkg: false,
+    lastTouchedId: null
   },
   getters: {
     tag: state => title => {

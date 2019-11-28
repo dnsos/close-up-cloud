@@ -221,12 +221,10 @@ export default {
     samplesContainer.on("mouseout", pointerout);
 
     samplesContainer.on("touchstart", e => {
-      const time = Date.now() - samplesContainer.lastTapped;
-      if (samplesContainer.lastTapped && time < 300 && time > 50) {
-        console.log("click");
+      if (this.isHovered && this.$store.state.lastTouchedId === this.item.id) {
         this.handlePointerTap(e);
       } else {
-        samplesContainer.lastTapped = Date.now();
+        this.$store.state.lastTouchedId = this.item.id;
         pointerover(e);
       }
     });
@@ -234,8 +232,8 @@ export default {
     samplesContainer.on("touchmove", () => {
       if (this.isDragging) pointerout();
     });
-    samplesContainer.on("touchend", pointerout);
-    samplesContainer.on("touchendoutside", pointerout);
+    //samplesContainer.on("touchend", pointerout);
+    //samplesContainer.on("touchendoutside", pointerout);
 
     //@debug adds a sprite and random tint that will be removed on load
     /*let sprite = new PIXI.Sprite(PIXI.Texture.WHITE)
