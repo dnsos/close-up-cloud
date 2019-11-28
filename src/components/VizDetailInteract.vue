@@ -172,6 +172,8 @@ export default {
       rect.on("pointertap", () => {
         if (this.$store.state.isDragging) return;
         console.log("detail background tap!");
+        this.$store.commit("unsetTooltip");
+        Object.values(this.masks).forEach(m => (m.alpha = 0));
         this.flashHighlights();
       });
     },
@@ -314,12 +316,14 @@ export default {
         };
 
         clickPoly.on("touchstart", e => {
-          const time = Date.now() - clickPoly.lastTapped;
-          if (clickPoly.lastTapped && time < 300 && time > 50) {
-            console.log("click");
+          if (
+            this.$store.state.tooltip.isVisible &&
+            this.$store.state.lastTouchedId === tagPoly.tagTitle
+          ) {
             clickEvent();
           } else {
-            clickPoly.lastTapped = Date.now();
+            this.$store.state.lastTouchedId = tagPoly.tagTitle;
+            Object.values(this.masks).forEach(m => (m.alpha = 0));
             pointerover(e);
           }
         });
@@ -330,8 +334,8 @@ export default {
             this.$store.commit("unsetTooltip");
           }
         });
-        clickPoly.on("touchend", pointerout);
-        clickPoly.on("touchendoutside", pointerout);
+        //clickPoly.on("touchend", pointerout);
+        //clickPoly.on("touchendoutside", pointerout);
 
         clickPoly.on("click", clickEvent);
         clickPoly.on("mouseover", pointerover);
