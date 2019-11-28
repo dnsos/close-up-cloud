@@ -46,6 +46,8 @@ export default {
     const detailContainer = (this.detailContainer = new PIXI.Container());
     const sprite = (this.sprite = new PIXI.Sprite());
     sprite.anchor.set(0.5);
+    sprite.width = this.object.origWidth;
+    sprite.height = this.object.origHeight;
     detailContainer.addChild(sprite);
 
     //load texture
