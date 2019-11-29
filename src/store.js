@@ -193,6 +193,7 @@ export default new Vuex.Store({
     dragStart: state => {
       console.log("dragStart");
       state.isDragging = true;
+      // state.lastTouchedId = false;
     },
     dragEnd: state => {
       console.log("dragENd");

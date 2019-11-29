@@ -221,18 +221,23 @@ export default {
     samplesContainer.on("mouseout", pointerout);
 
     samplesContainer.on("touchstart", e => {
-      if (this.isHovered && this.$store.state.lastTouchedId === this.item.id) {
-        this.handlePointerTap(e);
-      } else {
-        this.$store.state.lastTouchedId = this.item.id;
-        pointerover(e);
-      }
+      this.touchStarted = Date.now();
+      pointerover(e);
     });
 
     samplesContainer.on("touchmove", () => {
       if (this.isDragging) pointerout();
     });
-    //samplesContainer.on("touchend", pointerout);
+    samplesContainer.on("touchend", e => {
+      if (
+        this.isHovered &&
+        this.$store.state.lastTouchedId === this.item.id &&
+        Date.now() - this.touchStarted < 300
+      ) {
+        this.handlePointerTap(e);
+      }
+      this.$store.state.lastTouchedId = this.item.id;
+    });
     //samplesContainer.on("touchendoutside", pointerout);
 
     //@debug adds a sprite and random tint that will be removed on load

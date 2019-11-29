@@ -172,6 +172,7 @@ export default {
       rect.on("pointertap", () => {
         if (this.$store.state.isDragging) return;
         console.log("detail background tap!");
+        this.$store.state.lastTouchedId = null;
         this.$store.commit("unsetTooltip");
         Object.values(this.masks).forEach(m => (m.alpha = 0));
         this.flashHighlights();
@@ -316,25 +317,37 @@ export default {
         };
 
         clickPoly.on("touchstart", e => {
-          if (
-            this.$store.state.tooltip.isVisible &&
-            this.$store.state.lastTouchedId === tagPoly.tagTitle
-          ) {
-            clickEvent();
-          } else {
-            this.$store.state.lastTouchedId = tagPoly.tagTitle;
-            Object.values(this.masks).forEach(m => (m.alpha = 0));
-            pointerover(e);
-          }
+          clickPoly.touchStarted = Date.now();
+          Object.values(this.masks)
+            .filter(m => m != this.masks[tagPoly.tagTitle])
+            .forEach(m => (m.alpha = 0));
+          pointerover(e);
         });
 
         clickPoly.on("touchmove", () => {
+          console.log("isDragging", this.$store.state.isDragging);
           if (this.$store.state.isDragging) {
             this.masks[tagPoly.tagTitle].alpha = 0;
             this.$store.commit("unsetTooltip");
+            this.$store.state.lastTouchedId = null;
           }
         });
-        //clickPoly.on("touchend", pointerout);
+        clickPoly.on("touchend", () => {
+          console.log(
+            "isVisible",
+            this.$store.state.tooltip.isVisible,
+            this.$store.state.lastTouchedId
+          );
+          if (
+            this.$store.state.tooltip.isVisible &&
+            this.$store.state.lastTouchedId === tagPoly.tagTitle &&
+            Date.now() - clickPoly.touchStarted < 300
+          ) {
+            console.log("click!!");
+            clickEvent();
+          }
+          this.$store.state.lastTouchedId = tagPoly.tagTitle;
+        });
         //clickPoly.on("touchendoutside", pointerout);
 
         clickPoly.on("click", clickEvent);
