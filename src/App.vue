@@ -52,9 +52,10 @@ export default {
   --color-neutral-0: hsl(0, 0%, 100%);
 
   // theme specific styles
-  --color-canvas: var(--color-neutral-5);
+/*  --color-canvas: var(--color-neutral-5);*/
+	--color-canvas: rgb(244,244,244);
   --color-ui-bg: var(--color-neutral-0);
-  --color-ui-primary: var(--color-neutral-75);
+	--color-ui-primary: var(--color-neutral-75);
   --color-ui-secondary: var(--color-neutral-25);
   --color-ui-highlighted: var(--color-gold-dark);
 }

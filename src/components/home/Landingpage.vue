@@ -8,7 +8,7 @@
           muted="true"
         ></video>
       </div>
-      <p>Die Close-Up Cloud ist eine experimentelle Visualisierungstechnologie für die Erkundung verschlagworteter Bildsammlungen.</p>
+      <p>Eine experimentelle Visualisierung zur Erkundung von Bildsammlungen</p>
       <router-link class="button button__viz button--primary" to="/viz" exact>Zur Visualisierung</router-link>
       <a class="button button__about" href="#about">Über das Projekt</a>
     </div>
@@ -60,11 +60,15 @@ export default {
   video {
     position: absolute;
     top: 0;
-    left: 0;
+    left: 1.5rem;
     width: 100%;
   }
 }
 
+.section__landingpage p {
+	margin-bottom: 3rem;
+	margin-left: -1.5rem;
+}
 //fade in text
 .section__landingpage p,
 .section__landingpage a {

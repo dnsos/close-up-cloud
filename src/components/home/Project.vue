@@ -5,12 +5,12 @@
         <div class="text-block">
           <h2>Das Projekt</h2>
           <p>
-            Die Close-Up Cloud ermöglicht die visuelle Erkundung einer Sammlung von 
-            historischen Glasnegativen. Eine Übersicht aus Nahaufnahmen lädt die 
-            Betrachter*innen dazu ein, sich mit der Sammlung vertraut zu machen und 
-            ihren Detailreichtum zu erforschen. Die Größe der einzelnen Abbildungen 
-            verdeutlicht dabei die quantitative Verteilung der ikonografischen Details 
-            in der Sammlung. Die Nahaufnahmen sind die visuellen Navigationselemente, 
+            Die Close-Up Cloud ermöglicht die visuelle Erkundung einer Sammlung 
+            historischer Glasnegative. Die Übersicht aus Nahaufnahmen lädt
+						dazu ein, sich mit der Sammlung vertraut zu machen und 
+            ihren Detailreichtum zu erforschen. Die Größen der Abbildungen 
+            verdeutlichen die quantitative Verteilung der ikonografischen Details 
+            in der Sammlung. Die Nahaufnahmen werden zu visuellen Navigationselementen, 
             über die die Sammlung erkundet werden kann.
           </p>
           <p>
@@ -24,10 +24,9 @@
         </div>
       </div>
       <div class="about__video" ref="videoWrapper">
-        <video controls :width="videoWrapperWidth" poster="assets/video/sequenz2_2311_720_2_poster.png">
+        <video controls :width="videoWrapperWidth" poster="assets/video/sequenz2_2311_720_2_poster.jpg">
           <source src="assets/video/sequenz2_2311_720_2.mov" type="video/mp4" />
-          <!-- <source src="" type="video/webm"> -->
-          Video
+           Video
         </video>
       </div>
     </div>
