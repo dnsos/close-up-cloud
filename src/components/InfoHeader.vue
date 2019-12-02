@@ -2,7 +2,7 @@
   <header class="info-header">
     <router-link to="/viz" exact class="info-header__cuc">
       <img :src="logoFile" alt="Logo Close-Up Cloud" class="info-header__icon filter-invert">
-      <span class="logo-name">Close-Up Cloud</span>
+      <span class="logo-name">Close-Up <span style="font-weight: 400">Cloud</span></span>
     </router-link>
     <div class="info-header__data" v-if="headerDataAvailable">
       <h1 class="info-header__title">{{ headerData.title }}</h1>
@@ -95,7 +95,7 @@ export default {
   .info-header__counter {
     margin: 0;
     text-transform: uppercase;
-    letter-spacing: .05rem;
+    letter-spacing: .0125rem;
   }
 
   .info-header__cuc {
