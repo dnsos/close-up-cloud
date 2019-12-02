@@ -5,24 +5,26 @@
         <div class="text-block">
           <h2>Das Projekt</h2>
           <p>
-            Text über das Projekt. Lorem ipsum dolor sit amet consectetur
-            adipisicing elit. Dignissimos, ut eveniet quod ex pariatur eligendi
-            debitis praesentium enim accusamus omnis consectetur quis veritatis
-            earum hic odit. Consequatur possimus impedit quam. Lorem ipsum dolor
-            sit amet, consectetur adipisicing elit. Repudiandae maxime sed iste
-            illum rerum a facilis sit, eum optio! Neque odio quaerat numquam
-            itaque vero fuga sequi quia? Quasi, aperiam?
+            Die Close-Up Cloud ermöglicht die visuelle Erkundung einer Sammlung von 
+            historischen Glasnegativen. Eine Übersicht aus Nahaufnahmen lädt die 
+            Betrachter*innen dazu ein, sich mit der Sammlung vertraut zu machen und 
+            ihren Detailreichtum zu erforschen. Die Größe der einzelnen Abbildungen 
+            verdeutlicht dabei die quantitative Verteilung der ikonografischen Details 
+            in der Sammlung. Die Nahaufnahmen sind die visuellen Navigationselemente, 
+            über die die Sammlung erkundet werden kann.
           </p>
           <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit.
-            Perspiciatis, provident quas cum, quaerat quis veritatis expedita
-            amet tempore reprehenderit quod modi voluptatum id cupiditate
-            aperiam corrupti voluptate accusamus asperiores deserunt.
+            Die Visualisierung macht die Glasnegative auf eine Weise erfahrbar, die mit 
+            den physischen Objekten nicht möglich wäre. Zwar können auch mit Hilfe eines 
+            Leuchttisches eine Fülle an Details einzelner Glasnegative und ihre Tiefenschärfe 
+            untersucht werden. Die Close-Up Cloud erweitert den Zugang um eine Übersicht 
+            aller Schlagworte, die in der Sammlung vergeben worden sind und lädt zum 
+            interaktiven Erkunden ein.
           </p>
         </div>
       </div>
       <div class="about__video" ref="videoWrapper">
-        <video controls :width="videoWrapperWidth">
+        <video controls :width="videoWrapperWidth" poster="assets/video/sequenz2_2311_720_2_poster.png">
           <source src="assets/video/sequenz2_2311_720_2.mov" type="video/mp4" />
           <!-- <source src="" type="video/webm"> -->
           Video
@@ -67,10 +69,10 @@ export default {
 }
 @media screen and (min-width: 750px) {
   .about__text {
-    grid-column: 1 / 5;
+    grid-column: 1 / 7;
   }
   .about__video {
-    grid-column: 5 / 13;
+    grid-column: 7 / 13;
   }
 }
 </style>
