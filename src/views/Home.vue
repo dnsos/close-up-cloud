@@ -29,7 +29,6 @@ export default {
   },
   beforeMount: function() {
     this.$store.commit("setBrightColors");
-    this.$store.state.isMkg = this.$route.path === "/mkg";
   }
 };
 </script>

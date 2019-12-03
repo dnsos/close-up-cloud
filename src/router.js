@@ -17,17 +17,13 @@ export default new Router({
       component: Home
     },
     {
-      path: "/mkg",
-      name: "home",
-      component: Home
-    },
-    {
       path: "/sammlung/:id",
       name: "sammlung",
       component: Sammlung
     },
     {
       path: "/viz",
+      alias: "/mkg",
       component: Viz,
       children: [
         {
