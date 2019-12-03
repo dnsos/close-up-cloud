@@ -44,7 +44,7 @@ export default {
             role: 'Konzeption, Gestaltung, Video'
           },
           {
-            name: 'Barbara Vissirini',
+            name: 'Barbara Avila Vissirini',
             role: 'Konzeption, Gestaltung, Erschließung'
           },
         ],
