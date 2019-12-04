@@ -20,7 +20,7 @@ export default {
   name: 'landingpage',
   computed: {
     animatedLogo: function () {
-      return `${process.env.VUE_APP_URL_LOGOS}/CUC_Logo_Animation.mp4`
+      return `${process.env.VUE_APP_URL_LOGOS}/CUC_Logo_AnimationX2.mp4` 
     }
   }
 }
@@ -53,15 +53,15 @@ export default {
 
 .video__wrapper {
   position: relative;
-  max-width: 500px;
+  max-width: 1250pxZ
   margin: 0 auto;
-  padding-top: percentage(150/500); //aspect ratio of the video
+  padding-top: percentage(150/500); 
 
   video {
     position: absolute;
     top: 0;
     left: 1.5rem;
-    width: 100%;
+    width: 100%; 
   }
 }
 
