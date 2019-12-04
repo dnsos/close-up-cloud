@@ -21,9 +21,7 @@ export default {
       return this.$store.getters.object(this.$route.params.id);
     },
     url: function() {
-      const dummyUrl =
-        "https://sammlungonline.mkg-hamburg.de/de/object/Kaffeekanne/P2017.3.1185a/mkg-e00157089";
-      return this.item ? this.item.permalink : dummyUrl;
+      return this.item ? this.item.permalink : "";
     }
   }
 };
