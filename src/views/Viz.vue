@@ -23,8 +23,8 @@ export default {
     //console.log('Hello this is a Viz')
 
     //only ever fetch data once
-    console.log("mkg", this.$route.path.startsWith("/mkg"));
-    this.$store.state.isMkg = this.$route.path.startsWith("/mkg");
+    // console.log("mkg", this.$route.path.startsWith("/mkg"));
+    // this.$store.state.isMkg = this.$route.path.startsWith("/mkg");
     if (this.dataFetched) return;
 
     this.$store.dispatch("fetchData").then(() => {

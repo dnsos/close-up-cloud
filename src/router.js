@@ -3,6 +3,7 @@ import Router from "vue-router";
 import Home from "./views/Home.vue";
 import Viz from "./views/Viz.vue";
 import Sammlung from "./views/Sammlung.vue";
+import Mkg from "./views/Mkg.vue";
 import VizOverview from "./views/VizOverview.vue";
 import VizTag from "./views/VizTag.vue";
 import VizDetail from "./views/VizDetail.vue";
@@ -20,6 +21,11 @@ export default new Router({
       path: "/sammlung/:id",
       name: "sammlung",
       component: Sammlung
+    },
+    {
+      path: "/mkg",
+      name: "mkg",
+      component: Mkg
     },
     {
       path: "/viz",
