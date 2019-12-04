@@ -5,8 +5,8 @@
         <video :src="animatedLogo" autoplay="true" muted="true"></video>
       </div>
       <p>Eine experimentelle Visualisierung zur Erkundung von Bildsammlungen</p>
-      <router-link class="button button__viz button--primary" to="/viz" exact>Zur Visualisierung</router-link>
-      <a class="button button__about" href="#about">Über das Projekt</a>
+      <router-link class="button button__viz button--primary" to="/viz" exact>Zur&nbsp;Visualisierung</router-link>
+      <a class="button button__about" href="#about">Über&nbsp;das&nbsp;Projekt</a>
     </div>
   </section>
 </template>
