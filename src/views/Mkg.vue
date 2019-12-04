@@ -1,6 +1,6 @@
 <template>
   <div class="mkg" @click="onclick">
-    <video autoplay poster="assets/video/sequenz2_2311_720_2_poster.jpg">
+    <video autoplay loop poster="assets/video/sequenz2_2311_720_2_poster.jpg">
       <source src="assets/video/sequenz2_2311_720_2.mov" type="video/mp4" />Video
     </video>
   </div>
