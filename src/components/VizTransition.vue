@@ -1,7 +1,6 @@
 <template>
   <div>
     Viz Transition Watcher
-
     <VizCloudSample
       v-for="sample in renderStack"
       ref="cloudsamples"
@@ -173,7 +172,7 @@ export default {
             id: getCutoutUID(objectId, tagTitle, geo.x, geo.y)
           };
         });
-      this.stageSamples(loader, samples);
+      // this.stageSamples(loader, samples);
 
       //preloading: also add first geometries of this tag in all other objects
       const tag = this.$store.getters.tag(tagTitle);
@@ -189,7 +188,13 @@ export default {
             )
           };
         });
-      this.stageSamples(loader, otherSamples);
+      // this.stageSamples(loader, otherSamples);
+
+      const allSamples = [
+        ...new Set([...otherSamples, ...samples].map(d => d.id))
+      ].map(d => ({ id: d }));
+
+      this.stageSamples(loader, allSamples);
 
       loader.load(() => {
         EventBus.$emit("fadeOutDetail");
@@ -319,6 +324,7 @@ export default {
      * add samples to loader for preloading
      */
     stageSamples(loader, samples) {
+      console.log(loader);
       samples.forEach(sample => {
         if (!PIXI.utils.TextureCache[sample.id]) {
           const origin = sample.id.split("-")[0];
