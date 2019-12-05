@@ -6,7 +6,7 @@
       </div>
       <p>Eine experimentelle Visualisierung zur Erkundung von Bildsammlungen</p>
       <router-link class="button button__viz button--primary" to="/viz" exact>Zur Visualisierung</router-link>
-      <a class="button button__about" @click="scrolldown">Über das Projekt</a>
+      <a class="button button__about" @click="scrolldown">Über&nbsp;das&nbsp;Projekt</a>
     </div>
   </section>
 </template>
