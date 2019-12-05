@@ -6,7 +6,7 @@
       </div>
       <p>Eine experimentelle Visualisierung zur Erkundung von Bildsammlungen</p>
       <router-link class="button button__viz button--primary" to="/viz" exact>Zur Visualisierung</router-link>
-      <a class="button button__about" href="#about">Über das Projekt</a>
+      <a class="button button__about" @click="scrolldown">Über das Projekt</a>
     </div>
   </section>
 </template>
@@ -17,6 +17,16 @@ export default {
   computed: {
     animatedLogo: function() {
       return `${process.env.VUE_APP_URL_LOGOS}/CUC_Logo_AnimationX2.mp4`;
+    }
+  },
+  methods: {
+    scrolldown: function() {
+      console.log("scroll");
+      window.scrollTo({
+        top: window.innerHeight * 0.9,
+        behavior: "smooth"
+      });
+      return false;
     }
   }
 };
