@@ -313,6 +313,19 @@ export default new Vuex.Store({
         height: height
       });
     },
+    async log() {
+      const response = await fetch(
+        "https://uclab.fh-potsdam.de/closeupcloud/log/log.php",
+        {
+          method: "POST", // or 'PUT'
+          body: "asdasdasdasdasdasdasdasd", // data can be `string` or {object}!
+          headers: {
+            "Content-Type": "application/json"
+          }
+        }
+      );
+      console.log(response);
+    },
     async fetchData({ commit }) {
       const url = process.env.VUE_APP_URL_DATA;
       console.log(`fetching ${url} ...`);
