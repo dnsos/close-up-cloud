@@ -29,7 +29,7 @@ export default {
   },
   beforeMount: function() {
     this.$store.commit("setBrightColors");
-    this.$store.dispatch("log");
+    this.$store.dispatch("log", ["home"]);
   }
 };
 </script>

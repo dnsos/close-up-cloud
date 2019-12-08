@@ -18,6 +18,7 @@ export default {
   mounted: function() {
     console.log("mkg", this.$route.path.startsWith("/mkg"));
     this.$store.state.isMkg = this.$route.path.startsWith("/mkg");
+    this.$store.dispatch("log", ["mkg"]);
   }
 };
 </script>

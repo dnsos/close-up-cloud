@@ -77,6 +77,7 @@ export default {
     document.title = `${this.object.title} – Close-Up Cloud`;
 
     this.vizContainer.addChild(this.detailContainer);
+    this.$store.dispatch("log", ["detail", this.object.id]);
 
     //if we came here with a spread transition, end it
     //@todo vizTransition should do this

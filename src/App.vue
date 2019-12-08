@@ -6,13 +6,20 @@
 
 <script>
 export default {
-  name: 'app',
+  name: "app",
   computed: {
-    inverted: function () {
-      return this.$store.state.inverted
+    inverted: function() {
+      return this.$store.state.inverted;
     }
+  },
+  mounted: function() {
+    this.$store.dispatch("log", ["mounted"]);
+    window.onbeforeunload = () => {
+      this.$store.dispatch("log", ["exit"]);
+      this.$store.dispatch("sendLogs");
+    };
   }
-}
+};
 </script>
 
 <style lang="scss">
@@ -21,14 +28,14 @@ export default {
 :root {
   --font-size: 16px;
   --font-size-small: 13px;
-  --font-family-primary: 'Overpass', sans-serif;
+  --font-family-primary: "Overpass", sans-serif;
   --grid-spacing: 2.4rem;
   --padding-outer: 1.6rem;
-  --border-width: .1rem;
+  --border-width: 0.1rem;
   --border-solid: var(--border-width) solid var(--color-ui-primary);
   --border-dotted: var(--border-width) dotted var(--color-ui-primary);
 
-  --icon-size: calc(var(--grid-spacing)*1.5);
+  --icon-size: calc(var(--grid-spacing) * 1.5);
 
   --transition-duration: 2s;
 
@@ -41,7 +48,7 @@ export default {
   --font-weight-bold: 800;
 
   // colors
-  --color-gold-medium: #AE9962;
+  --color-gold-medium: #ae9962;
   --color-gold-dark: #887031;
   --color-neutral-100: hsl(0, 0%, 0%);
   --color-neutral-75: hsl(0, 0%, 25%);
@@ -52,10 +59,10 @@ export default {
   --color-neutral-0: hsl(0, 0%, 100%);
 
   // theme specific styles
-/*  --color-canvas: var(--color-neutral-5);*/
-	--color-canvas: rgb(244,244,244);
+  /*  --color-canvas: var(--color-neutral-5);*/
+  --color-canvas: rgb(244, 244, 244);
   --color-ui-bg: var(--color-neutral-0);
-	--color-ui-primary: var(--color-neutral-75);
+  --color-ui-primary: var(--color-neutral-75);
   --color-ui-secondary: var(--color-neutral-25);
   --color-ui-highlighted: var(--color-gold-dark);
 }
@@ -105,30 +112,32 @@ body {
 ----------------------------------------------------- */
 .font-uppercase {
   text-transform: uppercase;
-  letter-spacing: .05rem;
+  letter-spacing: 0.05rem;
 }
 .font-bold {
   font-weight: var(--font-weight-bold);
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   margin-top: 0;
 }
 
 h1 {
-  font-size: calc(var(--font-size)*2);
+  font-size: calc(var(--font-size) * 2);
   font-weight: var(--font-weight-regular);
   color: var(--color-ui-highlighted);
 }
 h2 {
-  font-size: calc(var(--font-size)*1.5);
+  font-size: calc(var(--font-size) * 1.5);
   font-weight: var(--font-weight-medium);
   color: var(--color-ui-highlighted);
 }
 h3 {
   font-size: var(--font-size-small);
   text-transform: uppercase !important;
-  letter-spacing: .05rem;
+  letter-spacing: 0.05rem;
   font-weight: var(--font-weight-medium);
   color: var(--color-ui-primary);
 }
@@ -139,7 +148,7 @@ p {
 a {
   color: var(--color-ui-highlighted);
   text-decoration: none;
-  transition: color .2s ease-in;
+  transition: color 0.2s ease-in;
   &:hover {
     /* color: var(--color-ui-highlighted); */
   }
@@ -152,13 +161,14 @@ a {
   }
 }
 
-button, .button {
+button,
+.button {
   font-weight: 600;
-  padding: calc(var(--grid-spacing)/4);
+  padding: calc(var(--grid-spacing) / 4);
   color: var(--color-ui-primary);
   border: none;
   text-transform: uppercase;
-  letter-spacing: .05rem;
+  letter-spacing: 0.05rem;
   cursor: pointer;
 
   &:not(.button--primary) {
@@ -176,13 +186,11 @@ button, .button {
   }
 }
 
-
-
 /* DEBUG
 ----------------------------------------------------- */
 #d3debug {
   display: none;
-  position: absolute; 
+  position: absolute;
   transform-origin: top left;
   transform: scale(0.25);
   border: 8px solid #eee;
@@ -196,7 +204,7 @@ button, .button {
 }
 
 .vizhtml {
-  display: none;  
+  display: none;
   position: fixed;
   right: 0;
   width: 320px;
@@ -207,14 +215,14 @@ button, .button {
   overflow: auto;
 }
 .tag {
-    padding: 16px;
-    margin: 16px;
-    background: #eee;
+  padding: 16px;
+  margin: 16px;
+  background: #eee;
 }
 .obj {
-    padding: 16px;
-    margin: 16px;
-    border: 1px solid #999;
+  padding: 16px;
+  margin: 16px;
+  border: 1px solid #999;
 }
 .tile {
   width: 64px;
@@ -223,18 +231,18 @@ button, .button {
   display: inline-block;
 }
 .cutout {
-    width: 128px;
-    height: 128px;
-    display: inline-block;
-    margin: 8px;
-    word-break: break-word;
-    line-height: 1;
-    overflow: hidden;
-    background-size: cover;
+  width: 128px;
+  height: 128px;
+  display: inline-block;
+  margin: 8px;
+  word-break: break-word;
+  line-height: 1;
+  overflow: hidden;
+  background-size: cover;
 }
 .detailobj {
-    height: 128px;
-    background: center no-repeat;
-    background-size: contain;
+  height: 128px;
+  background: center no-repeat;
+  background-size: contain;
 }
 </style>

@@ -247,6 +247,8 @@ export default {
           clickPoly.buttonMode = false;
           this.$store.commit("unsetTooltip");
 
+          this.$store.dispatch("log", ["detailclick", tagPoly.tagTitle]);
+
           //start the transition
           //this.$router.push({ path: `/viz/tag/${tagPoly.tagTitle}` });
           this.$store.dispatch("beginVizTransition", {
@@ -298,6 +300,8 @@ export default {
               count: null
             }
           });
+
+          this.$store.dispatch("log", ["detailover", tagPoly.tagTitle]);
         };
 
         const pointerout = () => {

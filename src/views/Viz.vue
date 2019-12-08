@@ -26,7 +26,7 @@ export default {
     // console.log("mkg", this.$route.path.startsWith("/mkg"));
     // this.$store.state.isMkg = this.$route.path.startsWith("/mkg");
     if (this.dataFetched) return;
-
+    this.$store.dispatch("log", ["viz"]);
     this.$store.dispatch("fetchData").then(() => {
       this.$store.commit("setDataFetched");
     });

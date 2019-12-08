@@ -5,24 +5,31 @@
         <transition name="fade">
           <ul>
             <li>
-              <span class="metadata__key">Titel</span><br />
+              <span class="metadata__key">Titel</span>
+              <br />
               <span class="metadata__value">{{ objectInfo.title }}</span>
             </li>
             <li>
-              <span class="metadata__key">Fotograf</span><br />
+              <span class="metadata__key">Fotograf</span>
+              <br />
               <span class="metadata__value">Wilhelm Weimar</span>
             </li>
             <li>
-              <span class="metadata__key">Herstellung</span><br />
+              <span class="metadata__key">Herstellung</span>
+              <br />
               {{ objectInfo.date }}&nbsp;in&nbsp;{{ objectInfo.location }}
             </li>
             <li class="metadata__key" v-if="objectInfo.permalink">
-              <a v-if="!isMkg" :href="objectInfo.permalink" target="_blank"
-                >&#8599;&nbsp;&nbsp;In Sammlung öffnen</a
-              >
-              <router-link v-if="isMkg" :to="'/sammlung/' + objectInfo.id"
-                >&#8599;&nbsp;&nbsp;In Sammlung öffnen</router-link
-              >
+              <a
+                v-if="!isMkg"
+                :href="objectInfo.permalink"
+                target="_blank"
+              >&#8599;&nbsp;&nbsp;In Sammlung öffnen</a>
+              <router-link
+                @click="click"
+                v-if="isMkg"
+                :to="'/sammlung/' + objectInfo.id"
+              >&#8599;&nbsp;&nbsp;In Sammlung öffnen</router-link>
             </li>
           </ul>
         </transition>
@@ -48,6 +55,11 @@ export default {
   },
   computed: {
     ...mapState(["isMkg"])
+  },
+  methods: {
+    click: function() {
+      this.$store.dispatch("log", ["sammlung", this.objectInfo.id]);
+    }
   }
 };
 </script>

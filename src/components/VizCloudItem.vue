@@ -1,8 +1,6 @@
 <template>
   <div class="tag">
-    <router-link :to="`/viz/tag/${item.id}`"
-      >Cloud item {{ item.id }}</router-link
-    >
+    <router-link :to="`/viz/tag/${item.id}`">Cloud item {{ item.id }}</router-link>
 
     <VizCloudSample
       v-for="sample in renderStack"
@@ -135,6 +133,8 @@ export default {
           ? "viz-detail"
           : "";
 
+      this.$store.dispatch("log", ["overviewclick", this.item.id]);
+
       this.$store.dispatch("beginVizTransition", {
         from,
         to,
@@ -188,6 +188,12 @@ export default {
 
     const pointerover = () => {
       this.isHovered = true;
+
+      const id =
+        this.$route.name === "viz-overview"
+          ? this.item.id
+          : this.$store.getters.object(this.item.id).title;
+      this.$store.dispatch("log", ["overviewover", id]);
 
       this.$store.commit("setTooltip", {
         // we first commit world coords, because camera values need to be watched and included continuously

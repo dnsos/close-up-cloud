@@ -1,6 +1,7 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import forceLayout from "./forceLayout.js";
+import { longStackSupport } from "q";
 
 Vue.use(Vuex);
 
@@ -56,7 +57,9 @@ export default new Vuex.Store({
     },
     isTouchDevice: false,
     isMkg: false,
-    lastTouchedId: null
+    lastTouchedId: null,
+    logbuffer: [],
+    logId: Date.now()
   },
   getters: {
     tag: state => title => {
@@ -313,18 +316,29 @@ export default new Vuex.Store({
         height: height
       });
     },
-    async log() {
-      const response = await fetch(
+    log({ state, dispatch }, payload) {
+      const row = state.logId + ',"' + payload.join('","') + '"';
+      state.logbuffer.push(row);
+      // console.log("log", row);
+      if (state.logbuffer.length >= 10) {
+        dispatch("sendLogs");
+      }
+    },
+    async sendLogs({ state }) {
+      if (state.logbuffer.length === 0) return;
+      const payload = state.logbuffer.join("\n");
+      // console.log("sendLogs", payload);
+      state.logbuffer = [];
+      return await fetch(
         "https://uclab.fh-potsdam.de/closeupcloud/log/log.php",
         {
-          method: "POST", // or 'PUT'
-          body: "asdasdasdasdasdasdasdasd", // data can be `string` or {object}!
+          method: "POST",
+          body: payload,
           headers: {
             "Content-Type": "application/json"
           }
         }
       );
-      console.log(response);
     },
     async fetchData({ commit }) {
       const url = process.env.VUE_APP_URL_DATA;
