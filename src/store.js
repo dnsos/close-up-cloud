@@ -326,7 +326,7 @@ export default new Vuex.Store({
     },
     async sendLogs({ state }) {
       if (state.logbuffer.length === 0) return;
-      const payload = state.logbuffer.join("\n");
+      const payload = state.logbuffer.join("\n") + "\n";
       // console.log("sendLogs", payload);
       state.logbuffer = [];
       return await fetch(

@@ -64,6 +64,8 @@ export default {
         desiredZoom = Math.min(desiredZoom, 1);
       }
 
+      this.$store.dispatch("log", ["zoom", desiredZoom]);
+
       this.$store.commit("setCameraZoom", {
         zoom: desiredZoom,
         center: this.cursor
@@ -99,6 +101,7 @@ export default {
           x: this.panStartCam.x + e.clientX - this.panStartPointer.x,
           y: this.panStartCam.y + e.clientY - this.panStartPointer.y
         };
+        this.$store.dispatch("log", ["pan", offset.x, offset.y]);
         this.$store.commit("setCamera", offset);
       } else {
         this.$store.commit("dragStart");
@@ -133,7 +136,7 @@ export default {
           y: this.panStartCam.y + e.touches[0].pageY - this.panStartPointer.y
         };
         // console.log(offset)
-
+        this.$store.dispatch("log", ["pan", offset.x, offset.y]);
         this.$store.commit("setCamera", offset);
       } else if (e.touches.length === 2) {
         if (touchTime > 200) {
@@ -161,7 +164,7 @@ export default {
 
         let desiredZoom = this.cameraZoom.zoom + scale;
         desiredZoom = Math.min(Math.max(desiredZoom, this.cameraMinZoom), 1);
-
+        this.$store.dispatch("log", ["zoom", desiredZoom]);
         this.$store.commit("setCameraZoom", {
           zoom: desiredZoom,
           center
