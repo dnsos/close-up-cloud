@@ -2,7 +2,7 @@
   <section class="home__section">
     <div class="section__wrapper grid-12-columns">
       <h2 class="participants__heading">Beteiligte</h2>
-      <p class="participants__scope">Eine Kooperation zwischen der <a href="https://www.fh-potsdam.de/" target="_blank">Fachhochschule Potsdam</a> und dem <a href="https://www.mkg-hamburg.de/de/home.html" target="_blank">Museum für Kunst und Gewerbe Hamburg</a>. Gefördert durch das <a href="http://www.zem-brandenburg.de/" target="_blank">Brandenburgische Zentrum für Medienwissenschaften (ZeM)</a>.</p>
+      <p class="participants__scope">Ein studentisches Forschungsprojekt der <a href="https://www.fh-potsdam.de/" target="_blank">Fachhochschule Potsdam</a> in Kooperation mit dem <a href="https://www.mkg-hamburg.de/de/home.html" target="_blank">Museum für Kunst und Gewerbe Hamburg</a> gefördert vom <a href="http://www.zem-brandenburg.de/" target="_blank">Brandenburgischen Zentrum für Medienwissenschaften</a>.</p>
       <div class="participants__core">
         <ul class="participants-list">
           <li v-for="participant in participants.core" :key="participant.name">
@@ -33,7 +33,7 @@ export default {
         core: [
           {
             name: 'Pauline Junginger',
-            role: 'Konzeption, Theoriearbeit - Forschung, Dokumentation'
+            role: 'Konzeption, Theoriearbeit, Dokumentation'
           },
           {
             name: 'Dennis Ostendorf',
@@ -44,7 +44,7 @@ export default {
             role: 'Konzeption, Gestaltung, Video'
           },
           {
-            name: 'Barbara Vissirini',
+            name: 'Barbara Avila Vissirini',
             role: 'Konzeption, Gestaltung, Erschließung'
           },
         ],
@@ -80,6 +80,7 @@ export default {
 
 .participants__scope {
   font-size: var(--font-size-small);
+	margin-top: 0.25em;
 }
 
 @media screen and (max-width: 750px) {

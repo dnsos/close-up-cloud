@@ -1,21 +1,15 @@
 <template>
-  <div
-    class="overlay-icon"
-    :class="iconPosition"
-  >
+  <div class="overlay-icon" :class="iconPosition">
     <div
       class="icon button"
       @mouseover="toggleTooltipVisibility()"
       @mouseleave="toggleTooltipVisibility()"
     >
-      <img :src="iconFile" :alt="tooltip.title" class="filter-invert">
+      <img :src="iconFile" :alt="tooltip.title" class="filter-invert" />
     </div>
     <div v-if="tooltip">
       <transition :name="tooltip.side === 'right' ? 'fade-slide-right' : 'fade-slide-left'">
-        <div
-          v-show="tooltipIsVisible"
-          :class="tooltipClass"
-        >
+        <div v-show="tooltipIsVisible" :class="tooltipClass">
           <span>{{ tooltip.title }}</span>
         </div>
       </transition>
@@ -25,7 +19,7 @@
 
 <script>
 export default {
-  name: 'overlay-icon',
+  name: "overlay-icon",
   props: {
     position: {
       type: String,
@@ -40,36 +34,37 @@ export default {
       required: true
     }
   },
-  data: function () {
+  data: function() {
     return {
       tooltipIsVisible: false
-    }
+    };
   },
   computed: {
-    iconPosition: function () {
+    iconPosition: function() {
       return {
-        'bottom-left': this.position === 'bottom-left',
-        'bottom-right': this.position === 'bottom-right',
-        'top-right': this.position === 'top-right'
-      }
+        "bottom-left": this.position === "bottom-left",
+        "bottom-right": this.position === "bottom-right",
+        "top-right": this.position === "top-right"
+      };
     },
-    tooltipClass: function () {
+    tooltipClass: function() {
       return {
-        'tooltip': true,
-        'tooltip-right': this.tooltip.side === 'right',
-        'tooltip-left': this.tooltip.side === 'left'
-      }
+        tooltip: true,
+        "tooltip-right": this.tooltip.side === "right",
+        "tooltip-left": this.tooltip.side === "left"
+      };
     },
-    iconFile: function () {
-      return `${process.env.VUE_APP_URL_ICONS}/${this.iconFileName}`
+    iconFile: function() {
+      return `${process.env.VUE_APP_URL_ICONS}/${this.iconFileName}`;
     }
   },
   methods: {
-    toggleTooltipVisibility: function () {
-      this.tooltipIsVisible = !this.tooltipIsVisible
+    toggleTooltipVisibility: function() {
+      this.tooltipIsVisible = !this.tooltipIsVisible;
+      this.$store.dispatch("log", ["invert", this.tooltipIsVisible]);
     }
   }
-}
+};
 </script>
 
 <style lang="scss" scoped>
@@ -77,7 +72,7 @@ export default {
   position: absolute;
   width: var(--icon-size);
   height: var(--icon-size);
-  
+
   &.bottom-left {
     bottom: var(--padding-outer);
     left: var(--padding-outer);
@@ -115,7 +110,7 @@ export default {
     align-items: center;
     width: auto;
     height: var(--icon-size);
-    padding: 0 calc(var(--icon-size)/2);
+    padding: 0 calc(var(--icon-size) / 2);
     text-transform: uppercase;
     white-space: nowrap;
     color: var(--color-ui-primary);
@@ -128,7 +123,7 @@ export default {
         position: absolute;
         top: 1.375rem;
         left: -0.5rem;
-        content: '';
+        content: "";
         width: 1rem;
         height: 1rem;
         background-color: var(--color-ui-bg);
@@ -143,7 +138,7 @@ export default {
         position: absolute;
         top: 1.375rem;
         right: -0.5rem;
-        content: '';
+        content: "";
         width: 1rem;
         height: 1rem;
         background-color: var(--color-ui-bg);
@@ -152,23 +147,26 @@ export default {
       }
     }
   }
-
 }
 
 /* TRANSITIONS
 ---------------------------------- */
-.fade-slide-right-enter-active, .fade-slide-right-leave-active {
-  transition: transform .2s;
+.fade-slide-right-enter-active,
+.fade-slide-right-leave-active {
+  transition: transform 0.2s;
 }
-.fade-slide-right-enter, .fade-slide-right-leave-to {
+.fade-slide-right-enter,
+.fade-slide-right-leave-to {
   opacity: 0;
-  transform: translateX(-.5rem);
+  transform: translateX(-0.5rem);
 }
-.fade-slide-left-enter-active, .fade-slide-left-leave-active {
-  transition: transform .2s;
+.fade-slide-left-enter-active,
+.fade-slide-left-leave-active {
+  transition: transform 0.2s;
 }
-.fade-slide-left-enter, .fade-slide-left-leave-to {
+.fade-slide-left-enter,
+.fade-slide-left-leave-to {
   opacity: 0;
-  transform: translateX(.5rem);
+  transform: translateX(0.5rem);
 }
 </style>

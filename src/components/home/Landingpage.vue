@@ -1,28 +1,35 @@
 <template>
   <section class="home__section home__landingpage">
     <div class="section__wrapper section__landingpage">
-      <video
-        :src="animatedLogo"
-        width="500"
-        autoplay="true"
-        muted="true"
-      ></video>
-      <p>Die Close-Up Cloud ist eine experimentelle Visualisierungstechnologie für die Erkundung verschlagworteter Bildsammlungen.</p>
-      <button class="button__viz button--primary"><router-link to="/viz" exact>Zur Visualisierung</router-link></button>
-      <button class="button__about"><a href="#about">Über das Projekt</a></button>
+      <div class="video__wrapper">
+        <video :src="animatedLogo" autoplay="true" muted="true"></video>
+      </div>
+      <p>Eine experimentelle Visualisierung zur Erkundung von Bildsammlungen</p>
+      <router-link class="button button__viz button--primary" to="/viz" exact>Zur Visualisierung</router-link>
+      <a class="button button__about" @click="scrolldown">Über&nbsp;das&nbsp;Projekt</a>
     </div>
   </section>
 </template>
 
 <script>
 export default {
-  name: 'landingpage',
+  name: "landingpage",
   computed: {
-    animatedLogo: function () {
-      return `${process.env.VUE_APP_URL_LOGOS}/CUC_Logo_Animation.mp4`
+    animatedLogo: function() {
+      return `${process.env.VUE_APP_URL_LOGOS}/CUC_Logo_AnimationX2.mp4`;
+    }
+  },
+  methods: {
+    scrolldown: function() {
+      console.log("scroll");
+      window.scrollTo({
+        top: window.innerHeight * 0.9,
+        behavior: "smooth"
+      });
+      return false;
     }
   }
-}
+};
 </script>
 
 <style scoped lang="scss">
@@ -41,14 +48,44 @@ export default {
   }
 }
 
-.logo--animated {
-  width: 100%;
-}
-
-.button__viz, .button__about {
-  margin-bottom: calc(var(--grid-spacing)/2);
+.button__viz,
+.button__about {
+  padding: 1rem 1.5rem 0.875rem;
+  color: var(--color-ui-highlighted);
+  margin-bottom: calc(var(--grid-spacing) / 2);
 }
 .button__about {
-  margin-left: calc(var(--grid-spacing)/2);
+  margin-left: calc(var(--grid-spacing) / 2);
+}
+
+.video__wrapper {
+  position: relative;
+  max-width: 1250px;
+  margin: 0 auto;
+  padding-top: percentage(150/500);
+
+  video {
+    position: absolute;
+    top: 0;
+    left: 1.5rem;
+    width: 100%;
+  }
+}
+
+.section__landingpage p {
+  margin-bottom: 3rem;
+  margin-left: -1.5rem;
+}
+//fade in text
+.section__landingpage p,
+.section__landingpage a {
+  opacity: 0;
+  transition: opacity 1s;
+}
+html.wf-active {
+  .section__landingpage p,
+  .section__landingpage a {
+    opacity: 1;
+  }
 }
 </style>

@@ -8,28 +8,30 @@
 </template>
 
 <script>
-import VizRenderer from '@/components/VizRenderer.vue'
-import VizOverlay from '@/components/VizOverlay.vue'
+import VizRenderer from "@/components/VizRenderer.vue";
+import VizOverlay from "@/components/VizOverlay.vue";
 
 export default {
-  name: 'viz',
+  name: "viz",
   components: { VizRenderer, VizOverlay },
   computed: {
-    dataFetched: function () {
-      return this.$store.state.dataFetched
+    dataFetched: function() {
+      return this.$store.state.dataFetched;
     }
   },
   mounted: function() {
     //console.log('Hello this is a Viz')
-    
-    //only ever fetch data once
-    if(this.dataFetched) return;
 
-    this.$store.dispatch('fetchData').then(() => {
-      this.$store.commit('setDataFetched')
+    //only ever fetch data once
+    // console.log("mkg", this.$route.path.startsWith("/mkg"));
+    // this.$store.state.isMkg = this.$route.path.startsWith("/mkg");
+    if (this.dataFetched) return;
+    this.$store.dispatch("log", ["viz"]);
+    this.$store.dispatch("fetchData").then(() => {
+      this.$store.commit("setDataFetched");
     });
   }
-}
+};
 </script>
 
 <style lang="scss" scoped>
@@ -39,13 +41,13 @@ export default {
   overflow: hidden;
 }
 
-.layer__viz { 
+.layer__viz {
   width: 100%;
   height: 100%;
   z-index: 0;
 }
 
-.layer__overlay { 
+.layer__overlay {
   z-index: 1;
 }
 </style>

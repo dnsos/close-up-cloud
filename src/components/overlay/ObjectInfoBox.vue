@@ -5,19 +5,31 @@
         <transition name="fade">
           <ul>
             <li>
-              <span class="metadata__key">Titel</span><br>
-              <span class="metadata__value">{{objectInfo.title}}</span>
+              <span class="metadata__key">Titel</span>
+              <br />
+              <span class="metadata__value">{{ objectInfo.title }}</span>
             </li>
             <li>
-              <span class="metadata__key">Fotograf</span><br>
+              <span class="metadata__key">Fotograf</span>
+              <br />
               <span class="metadata__value">Wilhelm Weimar</span>
             </li>
             <li>
-              <span class="metadata__key">Herstellung</span><br>
-              {{objectInfo.date}}&nbsp;in&nbsp;{{objectInfo.location}}
+              <span class="metadata__key">Herstellung</span>
+              <br />
+              {{ objectInfo.date }}&nbsp;in&nbsp;{{ objectInfo.location }}
             </li>
             <li class="metadata__key" v-if="objectInfo.permalink">
-              <a :href="objectInfo.permalink" target="_blank">&#8599;&nbsp;&nbsp;In Sammlung öffnen</a>
+              <a
+                v-if="!isMkg"
+                :href="objectInfo.permalink"
+                target="_blank"
+              >&#8599;&nbsp;&nbsp;In Sammlung öffnen</a>
+              <router-link
+                @click="click"
+                v-if="isMkg"
+                :to="'/sammlung/' + objectInfo.id"
+              >&#8599;&nbsp;&nbsp;In Sammlung öffnen</router-link>
             </li>
           </ul>
         </transition>
@@ -27,8 +39,10 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
+
 export default {
-  name: 'object-info-box',
+  name: "object-info-box",
   props: {
     objectInfo: {
       type: Object,
@@ -38,8 +52,16 @@ export default {
       type: Boolean,
       required: true
     }
+  },
+  computed: {
+    ...mapState(["isMkg"])
+  },
+  methods: {
+    click: function() {
+      this.$store.dispatch("log", ["sammlung", this.objectInfo.id]);
+    }
   }
-}
+};
 </script>
 
 <style lang="scss" scoped>
@@ -47,7 +69,7 @@ export default {
 ---------------------------------- */
 .object-info {
   position: absolute;
-  bottom: calc(var(--icon-size) + (var(--padding-outer)*2));
+  bottom: calc(var(--icon-size) + (var(--padding-outer) * 2));
   right: var(--padding-outer);
   background-color: var(--color-ui-bg);
   overflow: visible;
@@ -61,14 +83,14 @@ export default {
     grid-template-areas:
       "heading"
       "content";
-    
+
     /* TRIANGLE ARROW
     ---------------------------------- */
     &::after {
-      content: '';
+      content: "";
       position: absolute;
       bottom: -0.5rem;
-      right: calc(var(--icon-size)/2 - 0.5rem);
+      right: calc(var(--icon-size) / 2 - 0.5rem);
       width: 1rem;
       height: 1rem;
       background-color: var(--color-ui-bg);
@@ -90,7 +112,8 @@ export default {
     .content {
       grid-area: content;
       max-width: 35rem;
-      padding: calc(var(--padding-outer)/2) var(--padding-outer) var(--padding-outer);
+      padding: calc(var(--padding-outer) / 2) var(--padding-outer)
+        var(--padding-outer);
 
       ul {
         list-style: none;
@@ -98,7 +121,7 @@ export default {
         margin: 0;
 
         li {
-          margin-bottom: calc(var(--grid-spacing)/2);
+          margin-bottom: calc(var(--grid-spacing) / 2);
           &:last-child {
             margin-bottom: 0;
           }
@@ -110,7 +133,7 @@ export default {
     ---------------------------------- */
     .metadata__key {
       text-transform: uppercase;
-      letter-spacing: .05rem;
+      letter-spacing: 0.05rem;
       color: var(--color-ui-secondary);
     }
 

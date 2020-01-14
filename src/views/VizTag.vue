@@ -7,17 +7,17 @@
 </template>
 
 <script>
-import VizCloud from '../components/VizCloud'
-import { convertTagOccurencesToCloudItems } from '../utils.js'
+import VizCloud from "../components/VizCloud";
+import { convertTagOccurencesToCloudItems } from "../utils.js";
 
 export default {
-  name: 'viz-tag',
+  name: "viz-tag",
   components: { VizCloud },
   props: {
     tag: {
       type: Object,
       default: function() {
-        return this.$store.getters.tag(this.$route.params.id)
+        return this.$store.getters.tag(this.$route.params.id);
       }
     }
   },
@@ -31,11 +31,12 @@ export default {
   },
   mounted: function() {
     document.title = `${this.tag.title} – Close-Up Cloud`;
+    this.$store.dispatch("log", ["tag", this.tag.title]);
   },
   beforeDestroy: function() {
     document.title = `Close-Up Cloud`;
   }
-}
+};
 </script>
 
 <style scoped lang="scss">

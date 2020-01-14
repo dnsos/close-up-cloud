@@ -4,16 +4,30 @@
       <div class="about__text">
         <div class="text-block">
           <h2>Das Projekt</h2>
-          <p>Text über das Projekt. Lorem ipsum dolor sit amet consectetur adipisicing elit. Dignissimos, ut eveniet quod ex pariatur eligendi debitis praesentium enim accusamus omnis consectetur quis veritatis earum hic odit. Consequatur possimus impedit quam. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repudiandae maxime sed iste illum rerum a facilis sit, eum optio! Neque odio quaerat numquam itaque vero fuga sequi quia? Quasi, aperiam?</p>
-          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Perspiciatis, provident quas cum, quaerat quis veritatis expedita amet tempore reprehenderit quod modi voluptatum id cupiditate aperiam corrupti voluptate accusamus asperiores deserunt.</p>
+          <p>
+            Die Close-Up Cloud ermöglicht die visuelle Erkundung einer Sammlung 
+            historischer Glasnegative. Die Übersicht aus Nahaufnahmen lädt
+						dazu ein, sich mit der Sammlung vertraut zu machen und 
+            ihren Detailreichtum zu erforschen. Die Größen der Abbildungen 
+            verdeutlichen die quantitative Verteilung der ikonografischen Details 
+            in der Sammlung. Die Nahaufnahmen werden zu visuellen Navigationselementen, 
+            über die die Sammlung erkundet werden kann.
+          </p>
+          <p>
+            Die Visualisierung macht die Glasnegative auf eine Weise erfahrbar, die mit 
+            den physischen Objekten nicht möglich wäre. Zwar können auch mit Hilfe eines 
+            Leuchttisches eine Fülle an Details einzelner Glasnegative und ihre Tiefenschärfe 
+            untersucht werden. Die Close-Up Cloud erweitert den Zugang um eine Übersicht 
+            aller Schlagworte, die in der Sammlung vergeben worden sind und lädt zum 
+            interaktiven Erkunden ein.
+          </p>
         </div>
       </div>
       <div class="about__video" ref="videoWrapper">
-        <video controls :width="videoWrapperWidth">
-          <source src="" type="video/webm">
-          <source src="" type="video/mp4">
-          Video
-         </video>
+        <video controls :width="videoWrapperWidth" poster="assets/video/sequenz2_2311_720_2_poster.jpg">
+          <source src="assets/video/sequenz2_2311_720_2.mov" type="video/mp4" />
+           Video
+        </video>
       </div>
     </div>
   </section>
@@ -21,24 +35,25 @@
 
 <script>
 export default {
-  name: 'project',
-  data: function () {
+  name: "project",
+  data: function() {
     return {
       videoWrapperWidth: 320
-    }
+    };
   },
-  mounted: function () {
-    this.videoWrapperWidth = this.$refs.videoWrapper.offsetWidth
+  mounted: function() {
+    this.videoWrapperWidth = this.$refs.videoWrapper.offsetWidth;
 
-    window.addEventListener('resize', () => {
-      this.videoWrapperWidth = this.$refs.videoWrapper.offsetWidth
-    })
+    window.addEventListener("resize", () => {
+      this.videoWrapperWidth = this.$refs.videoWrapper.offsetWidth;
+    });
   }
-}
+};
 </script>
 
 <style scoped lang="scss">
-.about__text, .about__video {
+.about__text,
+.about__video {
   display: flex;
   align-items: center;
 }
@@ -53,10 +68,10 @@ export default {
 }
 @media screen and (min-width: 750px) {
   .about__text {
-    grid-column: 1 / 5;
+    grid-column: 1 / 7;
   }
   .about__video {
-    grid-column: 5 / 13;
+    grid-column: 7 / 13;
   }
 }
 </style>

@@ -1,8 +1,8 @@
 <template>
   <header class="info-header">
     <router-link to="/viz" exact class="info-header__cuc">
-      <img :src="logoFile" alt="Logo Close-Up Cloud" class="filter-invert">
-      <span class="logo-name">Close-Up Cloud</span>
+      <img :src="logoFile" alt="Logo Close-Up Cloud" class="info-header__icon filter-invert">
+      <span class="logo-name"><strong>Close-Up</strong> Cloud</span>
     </router-link>
     <div class="info-header__data" v-if="headerDataAvailable">
       <h1 class="info-header__title">{{ headerData.title }}</h1>
@@ -39,7 +39,7 @@ export default {
   computed: {
     ...mapState(['dataFetched']),
     logoFile: function () {
-      return `${process.env.VUE_APP_URL_ICONS}/logo.png`
+      return `${process.env.VUE_APP_URL_LOGOS}/CUC_Logo.png`
     }
   },
   methods: {
@@ -95,17 +95,22 @@ export default {
   .info-header__counter {
     margin: 0;
     text-transform: uppercase;
-    letter-spacing: .05rem;
+    letter-spacing: .0125rem;
   }
 
   .info-header__cuc {
     display: flex;
     align-items: center;
-    color: var(--color-ui-primary);
   }
   .logo-name {
     line-height: 1;
-    margin-left: 2px;
+    font-weight: 400;
+    margin-left: 12px;
+    transform: translateY(1px);
+    color: var(--color-ui-primary);
+  }
+  .logo-name strong {
+    font-weight: 800;
   }
 
   .info-header__data {
@@ -114,6 +119,11 @@ export default {
 
   .info-header__title {
     margin: 0;
+  }
+  
+  .info-header__icon {
+    width: 26px;
+    height: 26px;
   }
 
   .info-header__counter {
