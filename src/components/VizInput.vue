@@ -65,8 +65,13 @@ export default {
       }
 
       this.$store.dispatch("log", ["zoom", desiredZoom]);
+      
+      this.$store.commit('cursor', {
+        x: e.clientX,
+        y: e.clientY
+      });
 
-      this.$store.commit("setCameraZoom", {
+      this.$store.commit('setCameraZoom', {
         zoom: desiredZoom,
         center: this.cursor
       });
