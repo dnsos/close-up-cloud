@@ -1,4 +1,8 @@
-# close-up-cloud
+# Close-Up Cloud
+
+![close-up cloud gif](https://uclab.fh-potsdam.de/vikus/content/1-projects/cc/cc.gif)
+
+https://uclab.fh-potsdam.de/closeupcloud/#/viz
 
 ## Project setup
 ```
@@ -35,6 +39,7 @@ You can only zoom out, not zoom in more than "1".
 
 Cutouts in Clouds are only available in one resolution, that is 64x64 at it's smallest (64x64 equals a cloud item with weight "1"). 
 
+You can find all image assets in the [release](https://github.com/dnsos/close-up-cloud/releases/tag/1.0).
 
 ## Data Structures
 
@@ -125,11 +130,11 @@ items = [{
 
 
 
-// Order of Spread Animation:
-// [1] Center the selected CloudItem
-// [2] Hide all other CloudItems
-// [3] Pre-Load Samples
-// [4] Zoom viewport to fit the next view
-// [5] Align Samples with the next view
-// [6] Spread out all VizCloudSamples
-// [7] Route to the target view
+### Order of Spread Animation
+[1] Center the selected CloudItem  
+[2] Hide all other CloudItems  
+[3] Pre-Load Samples  
+[4] Zoom viewport to fit the next view  
+[5] Align Samples with the next view  
+[6] Spread out all VizCloudSamples  
+[7] Route to the target view  
