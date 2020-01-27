@@ -1,8 +1,9 @@
 # Close-Up Cloud
+*An experimental visualization for the exploration of image collections*
 
 ![close-up cloud gif](https://uclab.fh-potsdam.de/vikus/content/1-projects/cc/cc.gif)
 
-https://uclab.fh-potsdam.de/closeupcloud/#/viz
+Demo: https://uclab.fh-potsdam.de/closeupcloud/#/viz
 
 ## Project setup
 ```
