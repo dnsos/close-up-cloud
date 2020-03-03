@@ -1,7 +1,6 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import forceLayout from "./forceLayout.js";
-import { longStackSupport } from "q";
 
 Vue.use(Vuex);
 
